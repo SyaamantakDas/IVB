@@ -1,4 +1,9 @@
-<p align="center"><img src="assets/logo.png" alt="I♥B, the IVB logo: the heart grows out of the V" width="420"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-white.svg">
+    <img src="assets/logo.svg" alt="I♥B, the IVB logo: a heart whose right arm is a Vande Bharat train" width="420">
+  </picture>
+</p>
 
 # IVB: India on Vande Bharat
 
