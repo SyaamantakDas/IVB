@@ -79,5 +79,7 @@
   {"n": "26651/26652", "l": "KSR Bengaluru – Ernakulam", "t": "cc", "s": ["SBC", "KJM", "SA", "ED", "TUP", "CBE", "PGT", "TCR", "ERS"], "note": "", "u": [], "km": 475},
   {"n": "26505/26506", "l": "Banaras – Khajuraho", "t": "cc", "s": ["BSBS", "BDL", "PCOI", "CKTD", "BNDA", "MBA", "KURJ"], "note": "", "u": [], "km": 390},
   {"n": "26503/26504", "l": "Gomti Nagar – Saharanpur", "t": "cc", "s": ["GTNR", "DAL", "STP", "SPN", "BE", "MB", "NBD", "RK", "SRE"], "note": "", "u": [], "km": 508},
-  {"n": "27575/27576", "l": "Howrah – Kamakhya", "t": "sleeper", "s": ["HWH", "BDC", "NDAE", "KWAE", "AZ", "NFK", "MLDT", "AUB", "NJP", "JPE", "NCB", "NOQ", "NBQ", "RNY", "KYQ"], "note": "India's first Vande Bharat Sleeper; regular service since 22/23 Jan 2026.", "u": [], "km": 854}
+  {"n": "27575/27576", "l": "Howrah – Kamakhya", "t": "sleeper", "s": ["HWH", "BDC", "NDAE", "KWAE", "AZ", "NFK", "MLDT", "AUB", "NJP", "JPE", "NCB", "NOQ", "NBQ", "RNY", "KYQ"], "note": "India's first Vande Bharat Sleeper; regular service since 22/23 Jan 2026.", "u": [], "km": 854},
+  {"n": "27421/27422", "l": "Varanasi – New Delhi", "t": "sleeper", "s": ["BSB", "PRYJ", "CNB", "ALJN", "GZB", "NDLS"], "note": "The second Vande Bharat Sleeper, overnight; regular service since 2 November 2026.", "u": [], "km": 705},
+  {"n": "27651/27652", "l": "Mumbai CSMT – SMVT Bengaluru", "t": "sleeper", "s": ["CSMT", "KYN", "PUNE", "SUR", "KLBG", "YG", "RC", "GTL", "ATP", "SMVB"], "note": "The third Vande Bharat Sleeper, overnight; regular service since 2 November 2026 from Mumbai and 3 November from Bengaluru.", "u": [], "km": 994}
 ]

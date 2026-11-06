@@ -618,6 +618,91 @@
       "checked": "2026-11-06",
       "sleeper": true
     },
+    "27421": {
+      "route": "27421/27422",
+      "from": "BSB",
+      "to": "NDLS",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"],
+      "times": {
+        "BSB": [null, "20:50"],
+        "PRYJ": ["22:35", "22:40"],
+        "CNB": ["00:40+1", "00:45+1"],
+        "ALJN": ["03:55+1", "03:57+1"],
+        "GZB": ["05:23+1", "05:25+1"],
+        "NDLS": ["06:10+1", null]
+      },
+      "src": [
+        "https://etrain.info/train/Vande-Bharat-Sl-27421/schedule",
+        "https://www.sarkaritel.com/?p=420458"
+      ],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
+    "27422": {
+      "route": "27421/27422",
+      "from": "NDLS",
+      "to": "BSB",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"],
+      "times": {
+        "NDLS": [null, "21:40"],
+        "GZB": ["22:13", "22:15"],
+        "ALJN": ["23:20", "23:22"],
+        "CNB": ["02:45+1", "02:50+1"],
+        "PRYJ": ["05:05+1", "05:10+1"],
+        "BSB": ["07:10+1", null]
+      },
+      "src": [
+        "https://etrain.info/train/Vande-Bharat-Sl-27422/schedule",
+        "https://www.sarkaritel.com/?p=420458"
+      ],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
+    "27651": {
+      "route": "27651/27652",
+      "from": "CSMT",
+      "to": "SMVB",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "CSMT": [null, "20:10"],
+        "KYN": ["20:48", "20:50"],
+        "PUNE": ["23:40", "23:45"],
+        "SUR": ["03:00+1", "03:05+1"],
+        "KLBG": ["04:13+1", "04:15+1"],
+        "YG": ["05:08+1", "05:10+1"],
+        "RC": ["06:03+1", "06:05+1"],
+        "GTL": ["07:30+1", "07:35+1"],
+        "ATP": ["08:38+1", "08:40+1"],
+        "SMVB": ["12:00+1", null]
+      },
+      "src": ["https://erail.in/hi/train-enquiry/27651", "https://www.punekarnews.in/?p=248182"],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
+    "27652": {
+      "route": "27651/27652",
+      "from": "SMVB",
+      "to": "CSMT",
+      "days": ["Sun", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "SMVB": [null, "19:45"],
+        "ATP": ["22:28", "22:30"],
+        "GTL": ["23:20", "23:25"],
+        "RC": ["01:03+1", "01:05+1"],
+        "YG": ["01:43+1", "01:45+1"],
+        "KLBG": ["03:08+1", "03:10+1"],
+        "SUR": ["04:20+1", "04:25+1"],
+        "PUNE": ["08:00+1", "08:05+1"],
+        "KYN": ["10:42+1", "10:44+1"],
+        "CSMT": ["11:55+1", null]
+      },
+      "src": [
+        "https://etrain.info/train/Vande-Bharat-Sl-27652/schedule",
+        "https://www.punekarnews.in/?p=248182"
+      ],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
     "22895": {
       "route": "22895/22896",
       "from": "HWH",

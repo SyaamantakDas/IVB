@@ -9,7 +9,7 @@ IVB plans journeys across India on Vande Bharat trains alone. It is a static web
 - **Connections.** Pick any two stations or cities and IVB lists every sensible way to make the journey on Vande Bharats only, with the fewest changes first. It allows a change of station by road within a city (Old Delhi to Hazrat Nizamuddin, say) and shows times and days off for the trains it has timetables for.
 - **Circuits.** Two ready-made loops of the country, with and without a two-week swing through the east. Pick a start city and date and IVB lays the trip out day by day, waiting a night wherever a train has its weekly day off. Every stop says what to see and whether you will be there in a good month.
 - **When to go.** A chart scores every start date by the share of your nights spent in each place's good months, so you can see the best season for the whole loop.
-- **Trains.** All 81 routes and 82 train pairs in service in late 2026, with every halt, on a map of India.
+- **Trains.** All 83 routes and 84 train pairs running on 6 November 2026, including the three Vande Bharat Sleepers, with every halt, on a map of India.
 
 ## Run it locally
 
