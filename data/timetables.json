@@ -1,0 +1,727 @@
+{
+  "checked": "2026-11-06",
+  "trains": {
+    "20901": {
+      "route": "20901/20902",
+      "from": "MMCT",
+      "to": "GNC",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "MMCT": [null, "06:00"],
+        "BVI": ["06:23", "06:25"],
+        "VAPI": ["07:53", "07:55"],
+        "BL": ["08:18", "08:20"],
+        "NVS": ["08:43", "08:45"],
+        "ST": ["09:05", "09:08"],
+        "BRC": ["10:23", "10:26"],
+        "ANND": ["10:48", "10:50"],
+        "ADI": ["11:35", "11:40"],
+        "GNC": ["12:30", null]
+      },
+      "src": ["https://www.railmitra.com/train-schedule/20901"],
+      "checked": "2026-11-06"
+    },
+    "22961": {
+      "route": "22961/22962",
+      "from": "MMCT",
+      "to": "ADI",
+      "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "MMCT": [null, "15:45"],
+        "BVI": ["16:10", "16:13"],
+        "VAPI": ["17:40", "17:42"],
+        "ST": ["18:38", "18:43"],
+        "BRC": ["20:07", "20:10"],
+        "ADI": ["21:15", null]
+      },
+      "src": ["https://etrain.info/train/Vande-Bharat-Exp-22961/schedule"],
+      "checked": "2026-11-06"
+    },
+    "12462": {
+      "route": "12461/12462",
+      "from": "SBIB",
+      "to": "JU",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "SBIB": [null, "16:55"],
+        "MSH": ["17:38", "17:40"],
+        "PNU": ["18:35", "18:37"],
+        "ABR": ["19:15", "19:20"],
+        "FA": ["20:20", "20:22"],
+        "PMY": ["21:29", "21:31"],
+        "JU": ["22:50", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/12462"],
+      "checked": "2026-11-06"
+    },
+    "26481": {
+      "route": "26481/26482",
+      "from": "JU",
+      "to": "DEC",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "JU": [null, "05:30"],
+        "MTD": ["06:36", "06:38"],
+        "DNA": ["07:06", "07:08"],
+        "MKN": ["07:37", "07:39"],
+        "FL": ["08:35", "08:37"],
+        "JP": ["09:20", "09:25"],
+        "GADJ": ["09:34", "09:36"],
+        "AWR": ["11:13", "11:15"],
+        "RE": ["12:13", "12:15"],
+        "GGN": ["12:55", "12:57"],
+        "DEC": ["13:30", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/26481-dec-vandebharat"],
+      "checked": "2026-11-06"
+    },
+    "20977": {
+      "route": "20977/20978",
+      "from": "AII",
+      "to": "CDG",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "AII": [null, "06:10"],
+        "JP": ["07:42", "07:47"],
+        "GADJ": ["07:53", "07:55"],
+        "AWR": ["09:27", "09:30"],
+        "RE": ["10:23", "10:25"],
+        "GGN": ["11:04", "11:06"],
+        "DEC": ["11:30", "11:35"],
+        "UMB": ["14:03", "14:05"],
+        "CDG": ["14:45", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20977-cdg-vandebharat"],
+      "checked": "2026-11-06",
+      "note": "ConfirmTkt also lists a halt at Kishangarh."
+    },
+    "22439": {
+      "route": "22439/22440",
+      "from": "NDLS",
+      "to": "SVDK",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "NDLS": [null, "06:00"],
+        "UMB": ["08:10", "08:12"],
+        "LDH": ["09:19", "09:21"],
+        "JRC": ["10:00", "10:02"],
+        "PTKC": ["11:15", "11:17"],
+        "JAT": ["12:43", "12:45"],
+        "SVDK": ["14:20", null]
+      },
+      "src": [
+        "https://etrain.info/train/Svdk-Vande-Bharat-22439/schedule",
+        "https://www.confirmtkt.com/train-schedule/22439"
+      ],
+      "checked": "2026-11-06"
+    },
+    "26401": {
+      "route": "26401/26402",
+      "from": "JAT",
+      "to": "SINA",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "JAT": [null, "06:20"],
+        "SVDK": [null, "08:08"],
+        "REAI": [null, "08:30"],
+        "BAHL": [null, "09:58"],
+        "SINA": ["11:10", null]
+      },
+      "src": [
+        "https://www.railpost.in/?p=25387",
+        "https://www.newsonair.gov.in/northern-railway-extends-svdk-sina-vande-bharat-express-to-jammu-tawi"
+      ],
+      "checked": "2026-11-06",
+      "note": "Katra, Reasi and Banihal times are from the March 2026 timetable."
+    },
+    "26402": {
+      "route": "26401/26402",
+      "from": "SINA",
+      "to": "JAT",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "SINA": [null, "14:00"],
+        "BAHL": ["14:58", "15:00"],
+        "REAI": ["16:34", "16:36"],
+        "SVDK": ["16:55", "17:00"],
+        "MCTM": ["17:25", "17:27"],
+        "JAT": ["18:50", null]
+      },
+      "src": ["https://etrain.info/train/Vande-Bharat-Exp-26402/schedule"],
+      "checked": "2026-11-06"
+    },
+    "26403": {
+      "route": "26403/26404",
+      "from": "JAT",
+      "to": "SINA",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {"JAT": [null, "13:20"], "SINA": ["18:00", null]},
+      "src": ["https://www.railpost.in/?p=25387"],
+      "checked": "2026-11-06"
+    },
+    "26404": {
+      "route": "26403/26404",
+      "from": "SINA",
+      "to": "JAT",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {"SINA": [null, "08:00"], "JAT": ["12:40", null]},
+      "src": ["https://www.railpost.in/?p=25387"],
+      "checked": "2026-11-06"
+    },
+    "26406": {
+      "route": "26405/26406",
+      "from": "SVDK",
+      "to": "ASR",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri"],
+      "times": {
+        "SVDK": [null, "06:40"],
+        "JAT": ["08:03", "08:05"],
+        "PTK": ["09:35", "09:45"],
+        "GSP": ["10:15", "10:17"],
+        "BAT": ["10:54", "10:56"],
+        "ASR": ["11:40", null]
+      },
+      "src": [
+        "https://etrain.info/train/Vande-Bharat-Exp-26406/schedule",
+        "https://www.confirmtkt.com/train-schedule/26406-VANDE-BHARAT-EXP",
+        "https://www.republicworld.com/india/amritsar-katra-vande-bharat-express-route-revised-check-new-route-timings-and-fare-2026-06-16-128453"
+      ],
+      "checked": "2026-11-06",
+      "note": "Timetables give Saturday as the day off; news reports give Tuesday. IVB avoids both."
+    },
+    "22488": {
+      "route": "22487/22488",
+      "from": "ASR",
+      "to": "DLI",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"],
+      "times": {
+        "ASR": [null, "08:20"],
+        "BEAS": ["08:48", "08:50"],
+        "JRC": ["09:28", "09:30"],
+        "PGW": ["09:41", "09:43"],
+        "LDH": ["10:16", "10:18"],
+        "UMB": ["11:34", "11:36"],
+        "DLI": ["13:50", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/22488"],
+      "checked": "2026-11-06"
+    },
+    "22470": {
+      "route": "22469/22470",
+      "from": "NZM",
+      "to": "KURJ",
+      "days": ["Sun", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "NZM": [null, "06:00"],
+        "AGC": ["07:40", "07:45"],
+        "GWL": ["09:05", "09:10"],
+        "DAA": ["09:59", "10:01"],
+        "VGLJ": ["10:30", "10:35"],
+        "LAR": ["11:35", "11:45"],
+        "TKMG": ["12:21", "12:23"],
+        "MCSC": ["13:16", "13:18"],
+        "KURJ": ["14:20", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/22470"],
+      "checked": "2026-11-06"
+    },
+    "22469": {
+      "route": "22469/22470",
+      "from": "KURJ",
+      "to": "NZM",
+      "days": ["Sun", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "KURJ": [null, "14:50"],
+        "MCSC": ["15:15", "15:17"],
+        "TKMG": ["16:10", "16:12"],
+        "LAR": ["17:10", "17:20"],
+        "VGLJ": ["18:20", "18:25"],
+        "DAA": ["18:42", "18:44"],
+        "GWL": ["19:28", "19:33"],
+        "AGC": ["20:55", "21:00"],
+        "NZM": ["23:10", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/22469-vande-bharat-exp"],
+      "checked": "2026-11-06"
+    },
+    "20176": {
+      "route": "20175/20176",
+      "from": "AGC",
+      "to": "BSBS",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "AGC": [null, "06:00"],
+        "TDL": ["06:43", "06:45"],
+        "ETW": ["07:35", "07:37"],
+        "CNB": ["09:05", "09:10"],
+        "PRYJ": ["11:10", "11:15"],
+        "BSBS": ["13:00", null]
+      },
+      "src": [
+        "https://etrain.info/train/Vande-Bharat-Exp-20176/schedule",
+        "https://www.confirmtkt.com/train-schedule/20176-VANDE-BHARAT-EXP"
+      ],
+      "checked": "2026-11-06",
+      "note": "The 2024 Railway Board circular said Friday; current timetables say Wednesday."
+    },
+    "26506": {
+      "route": "26505/26506",
+      "from": "BSBS",
+      "to": "KURJ",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"],
+      "times": {
+        "BSBS": [null, "05:15"],
+        "BDL": ["06:48", "06:50"],
+        "PCOI": ["07:45", "07:50"],
+        "CKTD": ["09:55", "09:57"],
+        "BNDA": ["10:58", "11:00"],
+        "MBA": ["11:58", "12:00"],
+        "KURJ": ["13:10", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/26506-vande-bharat-exp"],
+      "checked": "2026-11-06"
+    },
+    "20171": {
+      "route": "20171/20172",
+      "from": "RKMP",
+      "to": "NZM",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"],
+      "times": {
+        "RKMP": [null, "05:40"],
+        "VGLJ": ["08:39", "08:43"],
+        "GWL": ["09:41", "09:45"],
+        "AGC": ["11:01", "11:05"],
+        "NZM": ["13:16", null]
+      },
+      "src": ["https://www.railmitra.com/train-schedule/20171"],
+      "checked": "2026-11-06"
+    },
+    "20172": {
+      "route": "20171/20172",
+      "from": "NZM",
+      "to": "RKMP",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"],
+      "times": {
+        "NZM": [null, "14:40"],
+        "AGC": ["16:16", "16:20"],
+        "GWL": ["17:38", "17:42"],
+        "VGLJ": ["18:56", "19:00"],
+        "RKMP": ["22:16", null]
+      },
+      "src": ["https://etrain.info/train/Vande-Bharat-Exp-20172/schedule"],
+      "checked": "2026-11-06"
+    },
+    "20911": {
+      "route": "20911/20912",
+      "from": "INDB",
+      "to": "NGP",
+      "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "INDB": [null, "06:10"],
+        "UJN": ["06:50", "06:55"],
+        "BPL": ["09:10", "09:15"],
+        "NDPM": ["10:22", "10:23"],
+        "ET": ["10:40", "10:45"],
+        "BZU": ["11:58", "12:00"],
+        "NGP": ["14:35", null]
+      },
+      "src": ["https://www.railmitra.com/train-schedule/20911"],
+      "checked": "2026-11-06",
+      "note": "One listing shows all seven days; IVB assumes no Sunday run."
+    },
+    "20101": {
+      "route": "20101/20102",
+      "from": "NGP",
+      "to": "SC",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "NGP": [null, "05:00"],
+        "SEGM": ["05:43", "05:45"],
+        "CD": ["07:03", "07:05"],
+        "BPQ": ["07:20", "07:25"],
+        "SKZR": ["08:09", "08:10"],
+        "MCI": ["08:49", "08:50"],
+        "RDM": ["09:09", "09:10"],
+        "KZJ": ["10:04", "10:06"],
+        "SC": ["12:15", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20101-SC-VANDE-BHARAT"],
+      "checked": "2026-11-06"
+    },
+    "20707": {
+      "route": "20707/20708",
+      "from": "SC",
+      "to": "VSKP",
+      "days": ["Sun", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "SC": [null, "05:00"],
+        "WL": ["06:39", "06:40"],
+        "KMT": ["07:44", "07:45"],
+        "BZA": ["09:00", "09:05"],
+        "EE": ["09:49", "09:50"],
+        "RJY": ["10:48", "10:50"],
+        "SLO": ["11:23", "11:25"],
+        "VSKP": ["13:50", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20707"],
+      "checked": "2026-11-06"
+    },
+    "20678": {
+      "route": "20677/20678",
+      "from": "NS",
+      "to": "MAS",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "NS": [null, "14:50"],
+        "BVRT": ["15:19", "15:20"],
+        "GDV": ["16:04", "16:05"],
+        "BZA": ["16:50", "16:55"],
+        "TEL": ["17:19", "17:20"],
+        "OGL": ["18:29", "18:30"],
+        "NLR": ["19:39", "19:40"],
+        "RU": ["21:50", "21:55"],
+        "MAS": ["23:45", null]
+      },
+      "src": ["https://www.railmitra.com/train-schedule/20678"],
+      "checked": "2026-11-06"
+    },
+    "20607": {
+      "route": "20607/20608",
+      "from": "MAS",
+      "to": "MYS",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "MAS": [null, "05:50"],
+        "KPD": ["07:13", "07:15"],
+        "SBC": ["10:00", "10:05"],
+        "MYS": ["12:20", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20607-mys-vandebharat"],
+      "checked": "2026-11-06"
+    },
+    "20663": {
+      "route": "20663/20664",
+      "from": "MYS",
+      "to": "MAS",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"],
+      "times": {
+        "MYS": [null, "06:00"],
+        "MYA": ["06:28", "06:30"],
+        "SBC": ["07:40", "07:45"],
+        "KJM": ["08:04", "08:06"],
+        "KPD": ["10:38", "10:40"],
+        "MAS": ["12:30", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20663-mas-vande-bharat"],
+      "checked": "2026-11-06"
+    },
+    "26651": {
+      "route": "26651/26652",
+      "from": "SBC",
+      "to": "ERS",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "SBC": [null, "05:10"],
+        "KJM": ["05:28", "05:30"],
+        "SA": ["08:02", "08:05"],
+        "ED": ["08:52", "08:55"],
+        "TUP": ["09:28", "09:30"],
+        "CBE": ["10:12", "10:15"],
+        "PGT": ["11:13", "11:15"],
+        "TCR": ["12:28", "12:30"],
+        "ERS": ["13:50", null]
+      },
+      "src": ["https://www.railmitra.com/train-schedule/26651"],
+      "checked": "2026-11-06"
+    },
+    "20631": {
+      "route": "20631/20632",
+      "from": "MAQ",
+      "to": "TVC",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "MAQ": [null, "06:25"],
+        "KGQ": ["06:57", "07:00"],
+        "CAN": ["07:55", "07:57"],
+        "CLT": ["08:57", "08:59"],
+        "TIR": ["09:22", "09:24"],
+        "SRR": ["09:58", "10:00"],
+        "TCR": ["10:38", "10:40"],
+        "ERS": ["11:45", "11:48"],
+        "ALLP": ["12:38", "12:40"],
+        "QLN": ["13:40", "13:42"],
+        "TVC": ["15:05", null]
+      },
+      "src": [
+        "https://www.totaltraininfo.com/train/20631/schedule",
+        "https://wiki.krisyotam.com/content/wikipedia_en_all_nopic_2026-03/Mangaluru_Central%E2%80%93Thiruvananthapuram_Vande_Bharat_Express"
+      ],
+      "checked": "2026-11-06",
+      "note": "Times are from a 2024 timetable; Wikipedia (2026) gives Wednesday as the day off."
+    },
+    "20632": {
+      "route": "20631/20632",
+      "from": "TVC",
+      "to": "MAQ",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "TVC": [null, "16:05"],
+        "QLN": ["16:53", "16:55"],
+        "ALLP": ["17:55", "17:57"],
+        "ERS": ["18:42", "18:45"],
+        "TCR": ["19:56", "19:58"],
+        "SRR": ["20:30", "20:32"],
+        "TIR": ["21:02", "21:04"],
+        "CLT": ["21:32", "21:34"],
+        "CAN": ["22:36", "22:38"],
+        "KGQ": ["23:46", "23:48"],
+        "MAQ": ["00:40+1", null]
+      },
+      "src": [
+        "https://www.totaltraininfo.com/train/20632/schedule",
+        "https://wiki.krisyotam.com/content/wikipedia_en_all_nopic_2026-03/Mangaluru_Central%E2%80%93Thiruvananthapuram_Vande_Bharat_Express"
+      ],
+      "checked": "2026-11-06",
+      "note": "Times are from a 2024 timetable; Wikipedia (2026) gives Wednesday as the day off."
+    },
+    "20646": {
+      "route": "20645/20646",
+      "from": "MAQ",
+      "to": "MAO",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"],
+      "times": {
+        "MAQ": [null, "08:30"],
+        "UD": ["09:48", "09:50"],
+        "KAWR": ["12:08", "12:10"],
+        "MAO": ["13:10", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/20646"],
+      "checked": "2026-11-06"
+    },
+    "22230": {
+      "route": "22229/22230",
+      "from": "MAO",
+      "to": "CSMT",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"],
+      "times": {
+        "MAO": [null, "14:40"],
+        "THVM": ["15:20", "15:22"],
+        "KKW": ["16:18", "16:20"],
+        "RN": ["17:35", "17:40"],
+        "KHED": ["18:55", "18:57"],
+        "PNVL": ["20:48", "20:50"],
+        "TNA": ["21:35", "21:37"],
+        "DR": ["22:05", "22:07"],
+        "CSMT": ["22:30", null]
+      },
+      "src": ["https://www.confirmtkt.com/train-schedule/22230-CSMT-VANDEBHARAT"],
+      "checked": "2026-11-06",
+      "note": "Konkan Railway runs a slower monsoon timetable from about 10 June to 31 October."
+    },
+    "22346": {
+      "route": "22345/22346",
+      "from": "GTNR",
+      "to": "PNBE",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"],
+      "times": {
+        "GTNR": [null, "15:20"],
+        "AY": ["17:15", "17:20"],
+        "BSB": ["19:50", "19:55"],
+        "DDU": ["20:45", "20:50"],
+        "BXR": ["21:47", "21:49"],
+        "ARA": ["22:33", "22:35"],
+        "PNBE": ["23:45", null]
+      },
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/22346",
+        "https://www.totaltraininfo.com/train/22346/schedule"
+      ],
+      "checked": "2026-11-06"
+    },
+    "22234": {
+      "route": "22233/22234",
+      "from": "PNBE",
+      "to": "NJP",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "PNBE": [null, "13:00"],
+        "PNC": ["13:13", "13:15"],
+        "BGS": ["15:08", "15:10"],
+        "KGG": ["15:36", "15:38"],
+        "NNA": ["16:26", "16:28"],
+        "KIR": ["17:30", "17:35"],
+        "KNE": ["18:40", "18:42"],
+        "NJP": ["20:05", null]
+      },
+      "src": [
+        "https://www.railmitra.com/train-schedule/22234",
+        "https://www.confirmtkt.com/train-schedule/22234-vande-bharat-exp"
+      ],
+      "checked": "2026-11-06"
+    },
+    "22227": {
+      "route": "22227/22228",
+      "from": "NJP",
+      "to": "GHY",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "NJP": [null, "06:10"],
+        "NCB": ["07:30", "07:31"],
+        "NOQ": ["07:46", "07:47"],
+        "GOGH": ["08:17", "08:18"],
+        "KOJ": ["08:39", "08:40"],
+        "NBQ": ["09:10", "09:12"],
+        "BPRD": ["09:44", "09:46"],
+        "RNY": ["10:18", "10:20"],
+        "KYQ": ["11:14", "11:16"],
+        "GHY": ["11:40", null]
+      },
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/22227",
+        "https://www.railmitra.com/train-schedule/22227"
+      ],
+      "checked": "2026-11-06"
+    },
+    "27575": {
+      "route": "27575/27576",
+      "from": "HWH",
+      "to": "KYQ",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"],
+      "times": {},
+      "src": ["https://en.wikipedia.org/wiki/Kamakhya%E2%80%93Howrah_Vande_Bharat_Sleeper_Express"],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
+    "27576": {
+      "route": "27575/27576",
+      "from": "KYQ",
+      "to": "HWH",
+      "days": ["Sun", "Mon", "Tue", "Thu", "Fri", "Sat"],
+      "times": {
+        "KYQ": [null, "18:15"],
+        "RNY": ["18:48", "18:50"],
+        "NBQ": ["20:08", "20:10"],
+        "NOQ": ["21:23", "21:25"],
+        "NCB": ["21:40", "21:42"],
+        "JPE": ["22:55", "22:57"],
+        "NJP": ["23:30", "23:40"],
+        "AUB": ["00:22+1", "00:24+1"],
+        "MLDT": ["03:25+1", "03:35+1"],
+        "NFK": ["04:05+1", "04:07+1"],
+        "AZ": ["04:57+1", "05:02+1"],
+        "KWAE": ["05:46+1", "05:48+1"],
+        "NDAE": ["06:13+1", "06:15+1"],
+        "BDC": ["06:58+1", "07:00+1"],
+        "HWH": ["08:15+1", null]
+      },
+      "src": ["https://en.wikipedia.org/wiki/Kamakhya%E2%80%93Howrah_Vande_Bharat_Sleeper_Express"],
+      "checked": "2026-11-06",
+      "sleeper": true
+    },
+    "22895": {
+      "route": "22895/22896",
+      "from": "HWH",
+      "to": "PURI",
+      "days": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"],
+      "times": {
+        "HWH": [null, "06:10"],
+        "KGP": ["07:40", "07:42"],
+        "BLS": ["09:03", "09:05"],
+        "BHC": ["09:40", "09:42"],
+        "JJKR": ["10:07", "10:09"],
+        "CTC": ["10:50", "10:52"],
+        "BBS": ["11:20", "11:24"],
+        "KUR": ["11:42", "11:44"],
+        "PURI": ["13:00", null]
+      },
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/22895-VANDE-BHARAT-EXP",
+        "https://www.totaltraininfo.com/amp/train/22895/schedule"
+      ],
+      "checked": "2026-11-06",
+      "note": "An older timetable gives 12:35 into Puri."
+    },
+    "20836": {
+      "route": "20835/20836",
+      "from": "PURI",
+      "to": "ROU",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {
+        "PURI": [null, "05:00"],
+        "KUR": ["05:35", "05:40"],
+        "BBS": ["06:00", "06:05"],
+        "CTC": ["06:30", "06:32"],
+        "DNKL": ["07:24", "07:26"],
+        "TLHD": ["08:04", "08:06"],
+        "ANGL": ["08:14", "08:16"],
+        "RAIR": ["09:25", "09:27"],
+        "SBPY": ["10:05", "10:10"],
+        "JSG": ["11:13", "11:15"],
+        "ROU": ["12:45", null]
+      },
+      "src": [
+        "https://www.totaltraininfo.com/train/20836/schedule",
+        "https://odishatv.in/news/odisha/service-schedule-of-puri-rourkela-vande-bharat-express-revised-258852"
+      ],
+      "checked": "2026-11-06"
+    },
+    "20872": {
+      "route": "20871/20872",
+      "from": "ROU",
+      "to": "HWH",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {"ROU": [null, "13:30"], "TATA": ["15:45", "15:50"]},
+      "src": [
+        "https://confirmtkt.com/train-schedule/20872-VANDE-BHARAT-EXP",
+        "https://www.totaltraininfo.com/train/20872/schedule"
+      ],
+      "checked": "2026-11-06",
+      "note": "An older timetable gives 13:40 from Rourkela and 16:05 at Tatanagar."
+    },
+    "20893": {
+      "route": "20893/20894 · 21895/21896",
+      "from": "TATA",
+      "to": "PNBE",
+      "days": ["Wed", "Thu", "Fri", "Sat"],
+      "times": {"TATA": [null, "05:30"], "GAYA": ["11:05", "11:10"], "PNBE": ["12:45", null]},
+      "src": ["https://en.wikipedia.org/wiki/Tatanagar%E2%80%93Patna_Vande_Bharat_Express"],
+      "checked": "2026-11-06",
+      "via": "Gomoh"
+    },
+    "21895": {
+      "route": "20893/20894 · 21895/21896",
+      "from": "TATA",
+      "to": "PNBE",
+      "days": ["Mon"],
+      "times": {"TATA": [null, "05:25"], "GAYA": ["11:00", "11:10"], "PNBE": ["12:45", null]},
+      "src": [
+        "https://www.railmitra.com/train-schedule/21895",
+        "https://en.wikipedia.org/wiki/Tatanagar%E2%80%93Patna_Vande_Bharat_Express"
+      ],
+      "checked": "2026-11-06",
+      "via": "Gomoh"
+    },
+    "21893": {
+      "route": "21893/21894",
+      "from": "TATA",
+      "to": "PNBE",
+      "days": ["Sun"],
+      "times": {"TATA": [null, "05:30"], "GAYA": ["14:30", "14:35"], "PNBE": ["15:55", null]},
+      "src": ["https://en.wikipedia.org/wiki/Tatanagar%E2%80%93Patna_Vande_Bharat_Express"],
+      "checked": "2026-11-06",
+      "via": "Barkakana"
+    },
+    "20887": {
+      "route": "20887/20888",
+      "from": "RNC",
+      "to": "BSB",
+      "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
+      "times": {"RNC": [null, "05:10"], "GAYA": [null, "09:55"], "BSB": ["13:00", null]},
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/20887",
+        "https://en.wikipedia.org/wiki/Ranchi%E2%80%93Varanasi_Vande_Bharat_Express"
+      ],
+      "checked": "2026-11-06"
+    }
+  }
+}

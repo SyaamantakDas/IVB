@@ -1,0 +1,494 @@
+{
+  "circuits": [
+    {
+      "id": "loop",
+      "name": "The India loop",
+      "blurb": "Kashmir to Kerala and back to the start, on Vande Bharat trains alone.",
+      "stops": [
+        {
+          "place": "mumbai",
+          "code": "CSMT",
+          "nights": 2,
+          "move": [
+            {"road": true, "from": "CSMT", "to": "MMCT", "km": 5, "text": "CSMT to Mumbai Central"},
+            {"train": "20901", "from": "MMCT", "to": "ADI"}
+          ]
+        },
+        {
+          "place": "ahmedabad",
+          "code": "ADI",
+          "nights": 1,
+          "move": [
+            {
+              "road": true,
+              "from": "ADI",
+              "to": "SBIB",
+              "km": 6,
+              "text": "Ahmedabad Jn to Sabarmati"
+            },
+            {"train": "12462", "from": "SBIB", "to": "JU"}
+          ]
+        },
+        {
+          "place": "jodhpur",
+          "code": "JU",
+          "nights": 2,
+          "move": [{"train": "26481", "from": "JU", "to": "JP"}]
+        },
+        {
+          "place": "jaipur",
+          "code": "JP",
+          "nights": 2,
+          "move": [{"train": "20977", "from": "JP", "to": "DEC"}]
+        },
+        {
+          "place": "delhi",
+          "code": "DEC",
+          "nights": 1,
+          "note": "You come back through Delhi after Kashmir",
+          "move": [
+            {
+              "road": true,
+              "from": "DEC",
+              "to": "NDLS",
+              "km": 13,
+              "text": "Delhi Cantt to New Delhi"
+            },
+            {"train": "22439", "from": "NDLS", "to": "SVDK"}
+          ]
+        },
+        {
+          "place": "katra",
+          "code": "SVDK",
+          "nights": 1,
+          "move": [{"train": "26401", "from": "SVDK", "to": "SINA"}]
+        },
+        {
+          "place": "srinagar",
+          "code": "SINA",
+          "nights": 3,
+          "move": [{"train": "26402", "from": "SINA", "to": "SVDK"}]
+        },
+        {
+          "place": "katra",
+          "code": "SVDK",
+          "nights": 1,
+          "note": "Add a night here for the Vaishno Devi trek",
+          "move": [{"train": "26406", "from": "SVDK", "to": "ASR"}]
+        },
+        {
+          "place": "amritsar",
+          "code": "ASR",
+          "nights": 1,
+          "move": [{"train": "22488", "from": "ASR", "to": "DLI"}]
+        },
+        {
+          "place": "delhi",
+          "code": "DLI",
+          "nights": 2,
+          "move": [
+            {
+              "road": true,
+              "from": "DLI",
+              "to": "NZM",
+              "km": 8,
+              "text": "Old Delhi to Hazrat Nizamuddin"
+            },
+            {"train": "22470", "from": "NZM", "to": "AGC"}
+          ]
+        },
+        {
+          "place": "agra",
+          "code": "AGC",
+          "nights": 1,
+          "move": [{"train": "20176", "from": "AGC", "to": "BSBS"}]
+        },
+        {
+          "place": "varanasi",
+          "code": "BSBS",
+          "nights": 2,
+          "move": [{"train": "26506", "from": "BSBS", "to": "KURJ"}]
+        },
+        {
+          "place": "khajuraho",
+          "code": "KURJ",
+          "nights": 2,
+          "move": [
+            {"train": "22469", "from": "KURJ", "to": "VGLJ"},
+            {
+              "road": true,
+              "from": "VGLJ",
+              "to": "ORC",
+              "km": 16,
+              "text": "Jhansi to Orchha by road"
+            }
+          ]
+        },
+        {
+          "place": "orchha",
+          "code": "ORC",
+          "nights": 2,
+          "move": [
+            {"road": true, "from": "ORC", "to": "VGLJ", "km": 16, "text": "Back to Jhansi station"},
+            {"train": "20171", "from": "VGLJ", "to": "GWL"}
+          ]
+        },
+        {
+          "place": "gwalior",
+          "code": "GWL",
+          "nights": 0,
+          "note": "A day stop between morning and evening trains",
+          "move": [{"train": "20172", "from": "GWL", "to": "RKMP"}]
+        },
+        {
+          "place": "bhopal",
+          "code": "RKMP",
+          "nights": 2,
+          "move": [
+            {
+              "road": true,
+              "from": "RKMP",
+              "to": "BPL",
+              "km": 6,
+              "text": "Rani Kamlapati to Bhopal Jn"
+            },
+            {"train": "20911", "from": "BPL", "to": "NGP"}
+          ]
+        },
+        {
+          "place": "nagpur",
+          "code": "NGP",
+          "nights": 1,
+          "move": [{"train": "20101", "from": "NGP", "to": "SC"}]
+        },
+        {
+          "place": "hyderabad",
+          "code": "SC",
+          "nights": 2,
+          "move": [
+            {"train": "20707", "from": "SC", "to": "BZA"},
+            {"train": "20678", "from": "BZA", "to": "MAS"}
+          ]
+        },
+        {
+          "place": "chennai",
+          "code": "MAS",
+          "nights": 2,
+          "move": [{"train": "20607", "from": "MAS", "to": "MYS"}]
+        },
+        {
+          "place": "mysuru",
+          "code": "MYS",
+          "nights": 1,
+          "move": [{"train": "20663", "from": "MYS", "to": "SBC"}]
+        },
+        {
+          "place": "bengaluru",
+          "code": "SBC",
+          "nights": 1,
+          "move": [{"train": "26651", "from": "SBC", "to": "ERS"}]
+        },
+        {
+          "place": "kochi",
+          "code": "ERS",
+          "nights": 1,
+          "move": [{"train": "20631", "from": "ERS", "to": "ALLP"}]
+        },
+        {
+          "place": "alappuzha",
+          "code": "ALLP",
+          "nights": 0,
+          "note": "An afternoon on the backwaters between trains",
+          "move": [{"train": "20632", "from": "ALLP", "to": "MAQ"}]
+        },
+        {
+          "place": "mangaluru",
+          "code": "MAQ",
+          "nights": 1,
+          "move": [{"train": "20646", "from": "MAQ", "to": "MAO"}]
+        },
+        {
+          "place": "goa",
+          "code": "MAO",
+          "nights": 2,
+          "move": [{"train": "22230", "from": "MAO", "to": "CSMT"}]
+        }
+      ]
+    },
+    {
+      "id": "loop-east",
+      "name": "The India loop with the east",
+      "blurb": "The same loop with a two-week swing through Bihar, Bengal, Assam, Odisha and Jharkhand.",
+      "stops": [
+        {
+          "place": "mumbai",
+          "code": "CSMT",
+          "nights": 2,
+          "move": [
+            {"road": true, "from": "CSMT", "to": "MMCT", "km": 5, "text": "CSMT to Mumbai Central"},
+            {"train": "20901", "from": "MMCT", "to": "ADI"}
+          ]
+        },
+        {
+          "place": "ahmedabad",
+          "code": "ADI",
+          "nights": 1,
+          "move": [
+            {
+              "road": true,
+              "from": "ADI",
+              "to": "SBIB",
+              "km": 6,
+              "text": "Ahmedabad Jn to Sabarmati"
+            },
+            {"train": "12462", "from": "SBIB", "to": "JU"}
+          ]
+        },
+        {
+          "place": "jodhpur",
+          "code": "JU",
+          "nights": 2,
+          "move": [{"train": "26481", "from": "JU", "to": "JP"}]
+        },
+        {
+          "place": "jaipur",
+          "code": "JP",
+          "nights": 2,
+          "move": [{"train": "20977", "from": "JP", "to": "DEC"}]
+        },
+        {
+          "place": "delhi",
+          "code": "DEC",
+          "nights": 1,
+          "note": "You come back through Delhi after Kashmir",
+          "move": [
+            {
+              "road": true,
+              "from": "DEC",
+              "to": "NDLS",
+              "km": 13,
+              "text": "Delhi Cantt to New Delhi"
+            },
+            {"train": "22439", "from": "NDLS", "to": "SVDK"}
+          ]
+        },
+        {
+          "place": "katra",
+          "code": "SVDK",
+          "nights": 1,
+          "move": [{"train": "26401", "from": "SVDK", "to": "SINA"}]
+        },
+        {
+          "place": "srinagar",
+          "code": "SINA",
+          "nights": 3,
+          "move": [{"train": "26402", "from": "SINA", "to": "SVDK"}]
+        },
+        {
+          "place": "katra",
+          "code": "SVDK",
+          "nights": 1,
+          "note": "Add a night here for the Vaishno Devi trek",
+          "move": [{"train": "26406", "from": "SVDK", "to": "ASR"}]
+        },
+        {
+          "place": "amritsar",
+          "code": "ASR",
+          "nights": 1,
+          "move": [{"train": "22488", "from": "ASR", "to": "DLI"}]
+        },
+        {
+          "place": "delhi",
+          "code": "DLI",
+          "nights": 2,
+          "move": [
+            {
+              "road": true,
+              "from": "DLI",
+              "to": "NZM",
+              "km": 8,
+              "text": "Old Delhi to Hazrat Nizamuddin"
+            },
+            {"train": "22470", "from": "NZM", "to": "AGC"}
+          ]
+        },
+        {
+          "place": "agra",
+          "code": "AGC",
+          "nights": 1,
+          "move": [{"train": "20176", "from": "AGC", "to": "BSBS"}]
+        },
+        {
+          "place": "varanasi",
+          "code": "BSBS",
+          "nights": 1,
+          "note": "You come back to Varanasi after the east",
+          "move": [
+            {"road": true, "from": "BSBS", "to": "BSB", "km": 4, "text": "Banaras to Varanasi Jn"},
+            {"train": "22346", "from": "BSB", "to": "PNBE"}
+          ]
+        },
+        {
+          "place": "patna",
+          "code": "PNBE",
+          "nights": 2,
+          "move": [{"train": "22234", "from": "PNBE", "to": "NJP"}]
+        },
+        {
+          "place": "siliguri",
+          "code": "NJP",
+          "nights": 1,
+          "move": [{"train": "22227", "from": "NJP", "to": "KYQ"}]
+        },
+        {
+          "place": "guwahati",
+          "code": "KYQ",
+          "nights": 1,
+          "move": [{"train": "27576", "from": "KYQ", "to": "HWH"}]
+        },
+        {
+          "place": "kolkata",
+          "code": "HWH",
+          "nights": 2,
+          "move": [{"train": "22895", "from": "HWH", "to": "PURI"}]
+        },
+        {
+          "place": "puri",
+          "code": "PURI",
+          "nights": 2,
+          "move": [
+            {"train": "20836", "from": "PURI", "to": "ROU"},
+            {"train": "20872", "from": "ROU", "to": "TATA"}
+          ]
+        },
+        {
+          "place": "jamshedpur",
+          "code": "TATA",
+          "nights": 1,
+          "move": [
+            {"train": "20893", "from": "TATA", "to": "GAYA", "options": ["20893", "21895", "21893"]}
+          ]
+        },
+        {
+          "place": "gaya",
+          "code": "GAYA",
+          "nights": 2,
+          "move": [{"train": "20887", "from": "GAYA", "to": "BSB"}]
+        },
+        {
+          "place": "varanasi",
+          "code": "BSB",
+          "nights": 2,
+          "move": [
+            {"road": true, "from": "BSB", "to": "BSBS", "km": 4, "text": "Varanasi Jn to Banaras"},
+            {"train": "26506", "from": "BSBS", "to": "KURJ"}
+          ]
+        },
+        {
+          "place": "khajuraho",
+          "code": "KURJ",
+          "nights": 2,
+          "move": [
+            {"train": "22469", "from": "KURJ", "to": "VGLJ"},
+            {
+              "road": true,
+              "from": "VGLJ",
+              "to": "ORC",
+              "km": 16,
+              "text": "Jhansi to Orchha by road"
+            }
+          ]
+        },
+        {
+          "place": "orchha",
+          "code": "ORC",
+          "nights": 2,
+          "move": [
+            {"road": true, "from": "ORC", "to": "VGLJ", "km": 16, "text": "Back to Jhansi station"},
+            {"train": "20171", "from": "VGLJ", "to": "GWL"}
+          ]
+        },
+        {
+          "place": "gwalior",
+          "code": "GWL",
+          "nights": 0,
+          "note": "A day stop between morning and evening trains",
+          "move": [{"train": "20172", "from": "GWL", "to": "RKMP"}]
+        },
+        {
+          "place": "bhopal",
+          "code": "RKMP",
+          "nights": 2,
+          "move": [
+            {
+              "road": true,
+              "from": "RKMP",
+              "to": "BPL",
+              "km": 6,
+              "text": "Rani Kamlapati to Bhopal Jn"
+            },
+            {"train": "20911", "from": "BPL", "to": "NGP"}
+          ]
+        },
+        {
+          "place": "nagpur",
+          "code": "NGP",
+          "nights": 1,
+          "move": [{"train": "20101", "from": "NGP", "to": "SC"}]
+        },
+        {
+          "place": "hyderabad",
+          "code": "SC",
+          "nights": 2,
+          "move": [
+            {"train": "20707", "from": "SC", "to": "BZA"},
+            {"train": "20678", "from": "BZA", "to": "MAS"}
+          ]
+        },
+        {
+          "place": "chennai",
+          "code": "MAS",
+          "nights": 2,
+          "move": [{"train": "20607", "from": "MAS", "to": "MYS"}]
+        },
+        {
+          "place": "mysuru",
+          "code": "MYS",
+          "nights": 1,
+          "move": [{"train": "20663", "from": "MYS", "to": "SBC"}]
+        },
+        {
+          "place": "bengaluru",
+          "code": "SBC",
+          "nights": 1,
+          "move": [{"train": "26651", "from": "SBC", "to": "ERS"}]
+        },
+        {
+          "place": "kochi",
+          "code": "ERS",
+          "nights": 1,
+          "move": [{"train": "20631", "from": "ERS", "to": "ALLP"}]
+        },
+        {
+          "place": "alappuzha",
+          "code": "ALLP",
+          "nights": 0,
+          "note": "An afternoon on the backwaters between trains",
+          "move": [{"train": "20632", "from": "ALLP", "to": "MAQ"}]
+        },
+        {
+          "place": "mangaluru",
+          "code": "MAQ",
+          "nights": 1,
+          "move": [{"train": "20646", "from": "MAQ", "to": "MAO"}]
+        },
+        {
+          "place": "goa",
+          "code": "MAO",
+          "nights": 2,
+          "move": [{"train": "22230", "from": "MAO", "to": "CSMT"}]
+        }
+      ]
+    }
+  ]
+}

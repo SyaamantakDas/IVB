@@ -1,0 +1,425 @@
+{
+  "places": [
+    {
+      "id": "mumbai",
+      "name": "Mumbai",
+      "state": "Maharashtra",
+      "codes": ["CSMT", "MMCT", "DR", "BVI", "TNA"],
+      "months": "221000000122",
+      "see": [
+        "Chhatrapati Shivaji Maharaj Terminus, a working station and a UNESCO site",
+        "Elephanta Caves by ferry from the Gateway of India",
+        "Marine Drive at dusk and the Art Deco buildings around the Oval Maidan",
+        "Kala Ghoda's galleries and the cafés of Colaba"
+      ],
+      "tip": "Vande Bharats leave from CSMT and Mumbai Central; local trains link the two."
+    },
+    {
+      "id": "ahmedabad",
+      "name": "Ahmedabad",
+      "state": "Gujarat",
+      "codes": ["ADI", "SBIB", "SBT", "ASV", "MAN"],
+      "months": "221000000122",
+      "see": [
+        "The pols of the walled city, India's first UNESCO World Heritage City",
+        "Sabarmati Ashram, Gandhi's home from 1917 to 1930",
+        "Adalaj stepwell, 20 km north",
+        "Street food at Manek Chowk after dark"
+      ],
+      "tip": "Trains to Jodhpur leave from Sabarmati, 6 km from Ahmedabad Junction."
+    },
+    {
+      "id": "jodhpur",
+      "name": "Jodhpur",
+      "state": "Rajasthan",
+      "codes": ["JU"],
+      "months": "221000001222",
+      "see": [
+        "Mehrangarh Fort above the blue old city",
+        "The marble cenotaphs of Jaswant Thada",
+        "Umaid Bhawan Palace museum",
+        "The clock tower market at Sardar Bazaar"
+      ],
+      "tip": "The morning train to Jaipur and Delhi leaves at 05:30."
+    },
+    {
+      "id": "jaipur",
+      "name": "Jaipur",
+      "state": "Rajasthan",
+      "codes": ["JP", "GADJ"],
+      "months": "221000001222",
+      "see": [
+        "Amber Fort, best reached early",
+        "City Palace and Jantar Mantar, a UNESCO-listed observatory",
+        "The facade of Hawa Mahal at sunrise",
+        "Nahargarh Fort for the view over the walled city"
+      ],
+      "tip": "The walled city is a UNESCO World Heritage City; Amber gets crowded by mid-morning."
+    },
+    {
+      "id": "delhi",
+      "name": "Delhi",
+      "state": "Delhi",
+      "codes": ["NDLS", "DLI", "NZM", "DEC", "ANVT"],
+      "months": "122100001211",
+      "see": [
+        "Humayun's Tomb and the Qutb Minar, both UNESCO sites",
+        "Red Fort and the lanes of Chandni Chowk",
+        "Lodhi Garden and the lawns around India Gate",
+        "The Crafts Museum and regional food at Dilli Haat"
+      ],
+      "tip": "Vande Bharats use five Delhi stations; allow an hour to cross the city. November smog and December fog are the worst months."
+    },
+    {
+      "id": "katra",
+      "name": "Katra",
+      "state": "Jammu and Kashmir",
+      "codes": ["SVDK"],
+      "months": "112221001221",
+      "see": [
+        "The 13 km climb to the Vaishno Devi shrine",
+        "The lit-up pilgrim path at night",
+        "Reasi and the Chenab bridge, the world's highest railway arch, nearby"
+      ],
+      "tip": "The Vaishno Devi trek takes most of a day; pilgrims must register for a yatra slip first."
+    },
+    {
+      "id": "srinagar",
+      "name": "Srinagar",
+      "state": "Jammu and Kashmir",
+      "codes": ["SINA"],
+      "months": "111222222211",
+      "see": [
+        "A shikara on Dal Lake and a night on a houseboat",
+        "The Mughal gardens of Nishat, Shalimar and Chashme Shahi",
+        "The old city's Jamia Masjid and Khanqah of Shah-e-Hamadan",
+        "Day trips to Gulmarg, Sonamarg or Pahalgam"
+      ],
+      "tip": "The station is at Nowgam, about 10 km from Dal Lake. Winter brings snow and short days; the tulip garden opens in spring."
+    },
+    {
+      "id": "amritsar",
+      "name": "Amritsar",
+      "state": "Punjab",
+      "codes": ["ASR"],
+      "months": "122100001211",
+      "see": [
+        "The Golden Temple at dawn and again at night",
+        "The langar, which feeds tens of thousands a day",
+        "The Jallianwala Bagh memorial",
+        "The Attari–Wagah border ceremony each evening"
+      ],
+      "tip": "The border ceremony is about 30 km away and starts before sunset; arrive early."
+    },
+    {
+      "id": "agra",
+      "name": "Agra",
+      "state": "Uttar Pradesh",
+      "codes": ["AGC"],
+      "months": "122100001221",
+      "see": [
+        "The Taj Mahal at sunrise",
+        "Agra Fort",
+        "Itmad-ud-Daulah's inlaid marble tomb",
+        "Fatehpur Sikri, 40 km west"
+      ],
+      "tip": "The Taj Mahal is closed on Fridays."
+    },
+    {
+      "id": "varanasi",
+      "name": "Varanasi",
+      "state": "Uttar Pradesh",
+      "codes": ["BSB", "BSBS"],
+      "months": "122100001221",
+      "see": [
+        "A boat past the ghats at dawn",
+        "The evening Ganga aarti at Dashashwamedh Ghat",
+        "Sarnath, where the Buddha first taught, 10 km away",
+        "The old city's lanes and Banarasi silk weavers"
+      ],
+      "tip": "Trains use two stations, Varanasi Junction and Banaras, about 4 km apart."
+    },
+    {
+      "id": "patna",
+      "name": "Patna",
+      "state": "Bihar",
+      "codes": ["PNBE", "PNC", "PPTA", "DNR"],
+      "months": "122100000122",
+      "see": [
+        "Bihar Museum",
+        "Takht Sri Patna Sahib, birthplace of Guru Gobind Singh",
+        "The ruins of Nalanda Mahavihara, a UNESCO site, 90 km away",
+        "Rajgir's hills and the Vishwa Shanti Stupa"
+      ],
+      "tip": "Nalanda and Rajgir make a full day out by road."
+    },
+    {
+      "id": "siliguri",
+      "name": "New Jalpaiguri",
+      "state": "West Bengal",
+      "codes": ["NJP"],
+      "months": "112220001221",
+      "see": [
+        "Darjeeling, about three hours up by road",
+        "The Darjeeling Himalayan Railway, a UNESCO site",
+        "Tea gardens around Kurseong",
+        "Mahananda Wildlife Sanctuary"
+      ],
+      "tip": "NJP, in Siliguri, is the gateway to Darjeeling, Sikkim and the Dooars."
+    },
+    {
+      "id": "guwahati",
+      "name": "Guwahati",
+      "state": "Assam",
+      "codes": ["GHY", "KYQ"],
+      "months": "222100000122",
+      "see": [
+        "Kamakhya Temple on Nilachal Hill",
+        "A sunset cruise on the Brahmaputra",
+        "Umananda temple on a river island",
+        "Kaziranga National Park, a UNESCO site, about four hours east"
+      ],
+      "tip": "Kaziranga's safaris run from about November to April."
+    },
+    {
+      "id": "kolkata",
+      "name": "Kolkata",
+      "state": "West Bengal",
+      "codes": ["HWH"],
+      "months": "221000000122",
+      "see": [
+        "Victoria Memorial and the Maidan",
+        "Howrah Bridge and the flower market below it",
+        "Kumartuli, where the clay idols are made",
+        "Dakshineswar and Belur Math on the Hooghly"
+      ],
+      "tip": "Durga Puja in September or October is the city's biggest festival."
+    },
+    {
+      "id": "puri",
+      "name": "Puri",
+      "state": "Odisha",
+      "codes": ["PURI"],
+      "months": "221000000122",
+      "see": [
+        "Jagannath Temple (only Hindus may enter)",
+        "The Sun Temple at Konark, a UNESCO site, 35 km away",
+        "Chilika Lake for dolphins and migratory birds",
+        "Raghurajpur, a village of pattachitra painters"
+      ],
+      "tip": "The Rath Yatra fills the town in June or July."
+    },
+    {
+      "id": "jamshedpur",
+      "name": "Tatanagar",
+      "state": "Jharkhand",
+      "codes": ["TATA"],
+      "months": "221000000122",
+      "see": [
+        "Jubilee Park in Jamshedpur",
+        "Dalma Wildlife Sanctuary, known for its elephants",
+        "Dimna Lake below the Dalma hills"
+      ],
+      "tip": "Tatanagar is Jamshedpur's station, a useful overnight between Odisha and Bihar."
+    },
+    {
+      "id": "gaya",
+      "name": "Gaya",
+      "state": "Bihar",
+      "codes": ["GAYA"],
+      "months": "221000000122",
+      "see": [
+        "The Mahabodhi Temple and the Bodhi tree at Bodh Gaya, a UNESCO site",
+        "Monasteries built by Buddhist countries",
+        "The Great Buddha Statue",
+        "Vishnupad Temple in Gaya town"
+      ],
+      "tip": "Bodh Gaya is 15 km from Gaya station; stay there."
+    },
+    {
+      "id": "khajuraho",
+      "name": "Khajuraho",
+      "state": "Madhya Pradesh",
+      "codes": ["KURJ"],
+      "months": "222100001222",
+      "see": [
+        "The Western Group of temples, a UNESCO site",
+        "The sound and light show at the temples",
+        "Panna National Park, 25 km away",
+        "Raneh Falls canyon"
+      ],
+      "tip": "The Khajuraho Dance Festival runs for a week in late February."
+    },
+    {
+      "id": "orchha",
+      "name": "Orchha",
+      "state": "Madhya Pradesh",
+      "codes": [],
+      "code": "ORC",
+      "lat": 25.3517,
+      "lon": 78.6403,
+      "months": "222100001222",
+      "see": [
+        "Raja Mahal and Jahangir Mahal",
+        "The royal chhatris on the Betwa river",
+        "The evening aarti at Ram Raja Temple",
+        "The view from the roof of Chaturbhuj Temple"
+      ],
+      "tip": "Orchha has no Vande Bharat station; it is 16 km by road from Jhansi."
+    },
+    {
+      "id": "gwalior",
+      "name": "Gwalior",
+      "state": "Madhya Pradesh",
+      "codes": ["GWL"],
+      "months": "122100001221",
+      "see": [
+        "Gwalior Fort and Man Singh Palace",
+        "Teli ka Mandir and the Sas-Bahu temples",
+        "Jai Vilas Palace",
+        "Tansen's tomb"
+      ],
+      "tip": "The fort fits between a morning and an evening train."
+    },
+    {
+      "id": "bhopal",
+      "name": "Bhopal",
+      "state": "Madhya Pradesh",
+      "codes": ["BPL", "RKMP"],
+      "months": "222100001222",
+      "see": [
+        "The stupas of Sanchi, a UNESCO site, 46 km away",
+        "Bhimbetka rock shelters, a UNESCO site, 45 km away",
+        "The Upper Lake at sunset",
+        "Taj-ul-Masajid and the old city"
+      ],
+      "tip": "Trains use Bhopal Junction and Rani Kamlapati, about 6 km apart."
+    },
+    {
+      "id": "nagpur",
+      "name": "Nagpur",
+      "state": "Maharashtra",
+      "codes": ["NGP", "AJNI"],
+      "months": "221000000122",
+      "see": [
+        "Deekshabhoomi, where B. R. Ambedkar became a Buddhist in 1956",
+        "Tadoba tiger reserve, reached through Chandrapur",
+        "Ambazari Lake",
+        "Sitabuldi Fort"
+      ],
+      "tip": "Tadoba's safaris book up early."
+    },
+    {
+      "id": "hyderabad",
+      "name": "Hyderabad",
+      "state": "Telangana",
+      "codes": ["SC", "KCG"],
+      "months": "221000000122",
+      "see": [
+        "Charminar and the Laad Bazaar bangle market",
+        "Golconda Fort and the Qutb Shahi tombs",
+        "Salar Jung Museum",
+        "Hyderabadi biryani"
+      ],
+      "tip": "Trains east and south leave from Secunderabad."
+    },
+    {
+      "id": "chennai",
+      "name": "Chennai",
+      "state": "Tamil Nadu",
+      "codes": ["MAS", "MS", "TBM"],
+      "months": "221000000012",
+      "see": [
+        "Kapaleeshwarar Temple in Mylapore",
+        "Marina Beach and San Thome Basilica",
+        "Fort St George and the Government Museum",
+        "Mahabalipuram's shore temples, a UNESCO site, 55 km away"
+      ],
+      "tip": "Heavy north-east monsoon rain falls from October to early December; the music season follows in December."
+    },
+    {
+      "id": "mysuru",
+      "name": "Mysuru",
+      "state": "Karnataka",
+      "codes": ["MYS"],
+      "months": "221111111212",
+      "see": [
+        "Mysore Palace, lit up on Sunday evenings",
+        "Chamundi Hill and its Nandi",
+        "Srirangapatna's fort and Tipu Sultan's summer palace",
+        "Devaraja Market"
+      ],
+      "tip": "Dasara in September or October is the city's biggest celebration."
+    },
+    {
+      "id": "bengaluru",
+      "name": "Bengaluru",
+      "state": "Karnataka",
+      "codes": ["SBC", "YPR", "BNC", "KJM", "SMVB"],
+      "months": "221111111212",
+      "see": [
+        "Lalbagh and Cubbon Park",
+        "Bangalore Palace and Tipu Sultan's palace",
+        "The food streets of VV Puram",
+        "Nandi Hills at sunrise, 60 km north"
+      ],
+      "tip": "Vande Bharats use four city stations; KSR Bengaluru is the central one."
+    },
+    {
+      "id": "kochi",
+      "name": "Kochi",
+      "state": "Kerala",
+      "codes": ["ERS", "ERN"],
+      "months": "221000000122",
+      "see": [
+        "The Chinese fishing nets of Fort Kochi",
+        "Mattancherry Palace and the Paradesi Synagogue",
+        "A Kathakali performance",
+        "The Kochi-Muziris Biennale, in the winters it runs"
+      ],
+      "tip": "Ernakulam Junction is on the mainland; take the ferry to Fort Kochi."
+    },
+    {
+      "id": "alappuzha",
+      "name": "Alappuzha",
+      "state": "Kerala",
+      "codes": ["ALLP"],
+      "months": "221000000122",
+      "see": [
+        "Houseboats and canoes on the backwaters",
+        "Vembanad Lake",
+        "Alappuzha beach and lighthouse",
+        "Kumarakom's bird sanctuary across the lake"
+      ],
+      "tip": "Even a few hours by canoe through the canals is worth it."
+    },
+    {
+      "id": "mangaluru",
+      "name": "Mangaluru",
+      "state": "Karnataka",
+      "codes": ["MAQ"],
+      "months": "221000000122",
+      "see": [
+        "Panambur and Tannirbhavi beaches",
+        "Kadri Manjunath Temple",
+        "The painted walls of St Aloysius Chapel",
+        "Udupi's Krishna temple, an hour north"
+      ],
+      "tip": "Try kori rotti, neer dosa and the fish curries."
+    },
+    {
+      "id": "goa",
+      "name": "Goa",
+      "state": "Goa",
+      "codes": ["MAO", "THVM"],
+      "months": "221000000122",
+      "see": [
+        "The churches of Old Goa, a UNESCO site",
+        "Fontainhas, the old Latin quarter of Panaji",
+        "Beaches from Palolem in the south to Morjim in the north",
+        "A spice plantation near Ponda"
+      ],
+      "tip": "Madgaon is in the south; Thivim is closer to the northern beaches."
+    }
+  ]
+}

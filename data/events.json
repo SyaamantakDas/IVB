@@ -1,0 +1,23 @@
+{
+  "events": [
+    {
+      "name": "Uttarayan kite festival",
+      "place": "ahmedabad",
+      "from": "2027-01-14",
+      "to": "2027-01-15"
+    },
+    {"name": "Republic Day parade", "place": "delhi", "from": "2027-01-26", "to": "2027-01-26"},
+    {"name": "Saraswati Puja", "place": "kolkata", "from": "2027-02-11", "to": "2027-02-11"},
+    {
+      "name": "Khajuraho Dance Festival",
+      "place": "khajuraho",
+      "from": "2027-02-20",
+      "to": "2027-02-26"
+    },
+    {"name": "Maha Shivratri", "place": "varanasi", "from": "2027-03-06", "to": "2027-03-06"},
+    {"name": "Maha Shivratri", "place": "khajuraho", "from": "2027-03-06", "to": "2027-03-06"},
+    {"name": "Holi", "place": "*", "from": "2027-03-21", "to": "2027-03-22"},
+    {"name": "Konark Dance Festival", "place": "puri", "from": "2026-12-01", "to": "2026-12-05"},
+    {"name": "Konark Dance Festival", "place": "puri", "from": "2027-12-01", "to": "2027-12-05"}
+  ]
+}
