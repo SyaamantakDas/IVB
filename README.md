@@ -7,6 +7,8 @@
 
 # IVB: India on Vande Bharat
 
+**See India on India’s finest trains.**
+
 IVB plans journeys across India on Vande Bharat trains alone. It is a static website with no server, so it can be hosted free on GitHub Pages and installed on a phone like an app.
 
 ## What it does

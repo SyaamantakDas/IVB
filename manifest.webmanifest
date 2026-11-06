@@ -1,7 +1,7 @@
 {
   "name": "IVB: India on Vande Bharat",
   "short_name": "IVB",
-  "description": "Plan journeys and circuits of India on Vande Bharat trains alone.",
+  "description": "See India on India’s finest trains: plan journeys and circuits on Vande Bharat trains alone.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

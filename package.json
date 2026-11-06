@@ -1,7 +1,7 @@
 {
   "name": "ivb",
   "version": "0.1.0",
-  "description": "IVB: India on Vande Bharat. Plan journeys and circuits on Vande Bharat trains alone.",
+  "description": "IVB: India on Vande Bharat. See India on India’s finest trains.",
   "private": true,
   "type": "module",
   "scripts": {
