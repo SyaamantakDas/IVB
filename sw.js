@@ -1,5 +1,5 @@
 // Offline cache for the installed app: serve what we have, refresh it in the background.
-const CACHE = "ivb-v2";
+const CACHE = "ivb-v3";
 const SHELL = [
   "./", "index.html", "manifest.webmanifest",
   "assets/app.css", "assets/app.js", "assets/favicon.svg", "assets/favicon-32.png", "assets/icon-192.png", "assets/icon-512.png",

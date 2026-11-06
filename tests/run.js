@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { buildNetwork, runsOn, DAYS } from "../lib/network.js";
-import { findJourneys } from "../lib/finder.js";
+import { findJourneys, fewestTrains } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, toDay, weekday, fmtDay } from "../lib/schedule.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -54,6 +54,7 @@ for (const c of circuits) {
   }
 }
 ok(extras.has("orchha"), "Orchha needs coordinates");
+ok(stations.MMCT && stations.MMCT[4] === "Maharashtra", "Mumbai Central is in Maharashtra, not Dadra and Nagar Haveli and Daman and Diu");
 
 // ---------- Finder ----------
 console.log("Finder");
@@ -67,6 +68,22 @@ ok(j.length > 0, "Mumbai to Kolkata: some Vande Bharat-only journey exists");
 console.log(`  Mumbai to Kolkata: fewest trains ${j[0] ? j[0].trains : "-"}, ${j.length} options`);
 j = findJourneys(net, ["NDLS"], ["NDLS"], {});
 ok(j.length === 0, "same station returns nothing");
+j = findJourneys(net, city("srinagar"), ["NCJ"], { maxChanges: 6 });
+ok(j.length && j[0].trains === 8, "Srinagar to Nagercoil: Any finds the 8-train journeys");
+ok(findJourneys(net, city("srinagar"), ["NCJ"], { maxChanges: 3 }).length === 0, "Srinagar to Nagercoil: nothing within 3 changes");
+// "Any" must never come back empty: for every pair of places, its first journey has the fewest trains possible
+let deep = 0;
+for (const p of net.PLACES.values()) for (const q of net.PLACES.values()) {
+  if (p === q || !p.codes.length || !q.codes.length) continue;
+  const o = new Set(p.codes), d = new Set(q.codes.filter((c) => !o.has(c)));
+  const f = fewestTrains(net, o, d);
+  ok(!!f, `${p.name} to ${q.name}: Vande Bharats can make it`);
+  if (!f || f.trains < 7) continue;
+  deep++;
+  const jj = findJourneys(net, p.codes, q.codes, { maxChanges: 6, limit: 1 });
+  ok(jj.length && jj[0].trains === f.trains, `${p.name} to ${q.name}: Any finds the ${f.trains}-train journey`);
+}
+console.log(`  ${deep} pairs of places need 7 or more trains; Any finds every one`);
 
 // ---------- Circuits ----------
 console.log("Circuits");

@@ -228,7 +228,9 @@ function start(raw) {
       el.innerHTML = `<div class="res-head"><p class="kicker">Connections</p><h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2></div>` +
         `<p class="empty">${state.wider != null
           ? `No Vande Bharat journey with ${state.maxChanges === 0 ? "no changes" : "up to " + state.maxChanges + (state.maxChanges === 1 ? " change" : " changes")}. The fewest it takes is ${state.wider} ${state.wider === 1 ? "change" : "changes"}: choose “Any” to see them.`
-          : "There is no way to make this journey on Vande Bharat trains alone, even with several changes."}</p>`;
+          : state.allowRoad
+            ? "There is no way to make this journey on Vande Bharat trains alone."
+            : "There is no way to make this journey on Vande Bharat trains alone without a change of station by road. Allow one and IVB will look again."}</p>`;
       return;
     }
     const fewest = js[0].trains;
