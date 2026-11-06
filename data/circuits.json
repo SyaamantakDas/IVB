@@ -2,7 +2,7 @@
   "circuits": [
     {
       "id": "loop",
-      "name": "The India loop",
+      "name": "Central India Loop",
       "blurb": "Kashmir to Kerala and back to the start, on Vande Bharat trains alone.",
       "stops": [
         {
@@ -217,7 +217,7 @@
     },
     {
       "id": "loop-east",
-      "name": "The India loop with the east",
+      "name": "Central India Loop with the east",
       "blurb": "The same loop with a two-week swing through Bihar, Bengal, Assam, Odisha and Jharkhand.",
       "stops": [
         {

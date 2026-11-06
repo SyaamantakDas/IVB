@@ -350,7 +350,7 @@ function start(raw) {
     views.circuits.innerHTML =
       `<div class="cv-head"><p class="kicker">Circuits</p><h2>${esc(c.name)}</h2><p class="cv-blurb">${esc(c.blurb)}</p>` +
       `<div class="cv-controls"><div class="variant" role="group" aria-label="Which loop">` +
-      CIRCUITS.map((x) => `<button type="button" data-variant="${x.id}" aria-pressed="${x.id === c.id}">${x.id === "loop" ? "The India loop" : "With the east"}</button>`).join("") +
+      CIRCUITS.map((x) => `<button type="button" data-variant="${x.id}" aria-pressed="${x.id === c.id}">${x.id === "loop" ? "Central India Loop" : "With the east"}</button>`).join("") +
       `</div><div class="cv-row"><label for="cv-start">Start from<select id="cv-start">${startOptions}</select></label>` +
       `<label for="cv-date">Start date<input type="date" id="cv-date" value="${isoOf(state.startDay)}" min="${isoOf(today)}"></label></div></div>` +
       `<dl class="stats"><div><dt>Days</dt><dd>${plan.days}</dd></div><div><dt>Train rides</dt><dd>${plan.rides}</dd></div><div><dt>Stops</dt><dd>${nstops - 1}</dd></div><div><dt>States and UTs</dt><dd>${statesOf(plan)}</dd></div></dl>` +
