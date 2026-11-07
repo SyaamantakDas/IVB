@@ -1,11 +1,12 @@
 // Data and logic checks. Run with: node tests/run.js
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { buildNetwork, runsOn, DAYS } from "../lib/network.js";
+import { buildNetwork, runsOn, DAYS, haversine, legKm } from "../lib/network.js";
 import { findJourneys, fewestTrains } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, toDay, weekday, fmtDay } from "../lib/schedule.js";
 import { bookingDates, bookingCalendar } from "../lib/booking.js";
+import { decode } from "../lib/polyline.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
@@ -57,6 +58,38 @@ for (const c of circuits) {
 }
 ok(extras.has("orchha"), "Orchha needs coordinates");
 ok(stations.MMCT && stations.MMCT[4] === "Maharashtra", "Mumbai Central is in Maharashtra, not Dadra and Nagar Haveli and Daman and Diu");
+
+// ---------- Track lines and distances ----------
+console.log("Track");
+{
+  const at = (c) => ({ lat: stations[c][1], lon: stations[c][2] });
+  const pairs = new Set();
+  for (const r of routes) for (let i = 1; i < r.s.length; i++) pairs.add([r.s[i - 1], r.s[i]].sort().join(" "));
+  let lines = {}, estimated = [];
+  if (existsSync(join(root, "data", "shapes.json"))) ({ lines, estimated } = load("shapes.json"));
+  for (const [key, text] of Object.entries(lines)) {
+    const [a, b] = key.split(" "), pts = decode(text);
+    ok(pairs.has(key) && a < b, `shapes: "${key}" must be two stops next to each other on a route, in alphabetical order`);
+    if (!(a in stations && b in stations)) continue;
+    const miss = Math.max(haversine(at(a), { lat: pts[0][0], lon: pts[0][1] }), haversine(at(b), { lat: pts[pts.length - 1][0], lon: pts[pts.length - 1][1] }));
+    ok(pts.length >= 2 && miss < 0.5, `shapes: the line for ${key} must start at ${a} and end at ${b} (it misses by ${miss.toFixed(2)} km: rerun tools/build-shapes.mjs)`);
+  }
+  const untraced = [...pairs].filter((key) => !(key in lines) && !estimated.includes(key));
+  if (untraced.length) console.log(`  note: ${untraced.length} pairs of stops have no track line yet, so the map draws them straight (rerun tools/build-shapes.mjs): ${untraced.slice(0, 12).join(", ")}${untraced.length > 12 ? " …" : ""}`);
+  let traced = 0;
+  for (const r of routes) {
+    if (!r.k) continue;
+    traced++;
+    ok(r.k.length === r.s.length && r.k[0] === 0 && r.k.every((x, i) => !i || x >= r.k[i - 1]) && r.km === r.k[r.k.length - 1], `route ${r.n}: k must give the distance to each stop, from 0 up to km`);
+    for (let i = 1; i < r.s.length; i++) {
+      const d = haversine(at(r.s[i - 1]), at(r.s[i])), by = r.k[i] - r.k[i - 1];
+      ok(by >= d - 1.5 && by <= 2 * d + 5, `route ${r.n}: ${by} km by rail from ${r.s[i - 1]} to ${r.s[i]}, against ${d.toFixed(0)} km in a straight line`);
+    }
+  }
+  const r0 = net.ROUTES[0];
+  ok(!r0.k || legKm(r0, 0, r0.stops.length - 1) === r0.km, "legKm: a whole route is its km");
+  console.log(`  ${Object.keys(lines).length} of ${pairs.size} pairs of stops follow the track; ${traced} of ${routes.length} routes have distances along it`);
+}
 
 // ---------- Finder ----------
 console.log("Finder");

@@ -24,7 +24,7 @@ IVB publishes its timetables as a [GTFS](https://gtfs.org/) feed, the world stan
 
 **https://syaamantakdas.github.io/IVB/gtfs/ivb-gtfs.zip**
 
-It holds every Vande Bharat service on IVB's network: 83 routes, 168 trains and 415 stations, with every halt, time and running day. One community feed covers all Indian Railways trains ([indianrailways-gtfs](https://github.com/Neo2308/indianrailways-gtfs)), but it states no licence and was last generated in November 2025. IVB's covers Vande Bharat trains only, and it is openly licensed, names the sources of every train and is re-checked every week. It is rebuilt from `data/` on every change by `tools/build-gtfs.mjs` and checked with [MobilityData's GTFS Validator](https://github.com/MobilityData/gtfs-validator); the publish stops if the validator finds an error, and the latest report is at [gtfs/report/report.html](https://syaamantakdas.github.io/IVB/gtfs/report/report.html). The feed is under the ODbL 1.0, like the rest of IVB's data (see below).
+It holds every Vande Bharat service on IVB's network: 83 routes, 168 trains and 415 stations, with every halt, time and running day, and each route's line along the track. One community feed covers all Indian Railways trains ([indianrailways-gtfs](https://github.com/Neo2308/indianrailways-gtfs)), but it states no licence and was last generated in November 2025. IVB's covers Vande Bharat trains only, and it is openly licensed, names the sources of every train and is re-checked every week. It is rebuilt from `data/` on every change by `tools/build-gtfs.mjs` and checked with [MobilityData's GTFS Validator](https://github.com/MobilityData/gtfs-validator); the publish stops if the validator finds an error, and the latest report is at [gtfs/report/report.html](https://syaamantakdas.github.io/IVB/gtfs/report/report.html). The feed is under the ODbL 1.0, like the rest of IVB's data (see below).
 
 To build it yourself: `node tools/build-gtfs.mjs` writes the feed to `gtfs/`.
 
@@ -65,6 +65,9 @@ The site will be at `https://<you>.github.io/ivb/`. On a phone, open it and choo
 | `lib/network.js` | The network model: stations, routes, directional timetables, destinations |
 | `lib/finder.js` | The connection finder |
 | `lib/schedule.js` | Circuit scheduling around days off, and season scores |
+| `lib/booking.js` | When each ride goes on sale, and the calendar file |
+| `lib/polyline.js` | Reads and writes the track lines in `data/shapes.json` |
+| `tools/` | The GTFS build, the track tracer and the data layout check; see [DATA.md](DATA.md) |
 | `data/` | All the data, as plain JSON; see [DATA.md](DATA.md) |
 | `vendor/d3.min.js` | D3 7.9.0 for the map (ISC licence) |
 | `sw.js`, `manifest.webmanifest` | Offline use and installing on a phone |
@@ -87,4 +90,4 @@ IVB is © 2026 Syaamantak Das.
 - **Credit IVB** wherever you use its code or data: *IVB (India on Vande Bharat) by Syaamantak Das, https://syaamantakdas.github.io/IVB/, data under ODbL 1.0.* If you publish a database built from IVB's data, the ODbL asks you to share it under the ODbL too.
 - **Cite IVB** with the details in [CITATION.cff](CITATION.cff), which GitHub shows as **Cite this repository**.
 - **Name and logo:** the IVB name and the I♥B logo are not covered by either licence.
-- **Other sources:** station positions come from [DataMeet railways](https://github.com/datameet/railways) (CC0), and the map from the Survey of India outline published by [DataMeet maps](https://github.com/datameet/maps) (CC BY 4.0) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data). Credit those projects too when you reuse the map.
+- **Other sources:** station positions come from [DataMeet railways](https://github.com/datameet/railways) (CC0); the map from the Survey of India outline published by [DataMeet maps](https://github.com/datameet/maps) (CC BY 4.0) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data); and the track lines and distances by rail from [OpenStreetMap](https://www.openstreetmap.org/copyright), © OpenStreetMap contributors (ODbL). Credit those projects too when you reuse the map or the feed.

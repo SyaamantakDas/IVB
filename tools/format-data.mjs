@@ -4,14 +4,14 @@
 //
 // stations.json and routes.json: one entry per line.
 // The other files: a value stays on one line when it fits in 100 characters, otherwise one item per line.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const WIDTH = 100;
 const PER_LINE = new Set(["stations.json", "routes.json"]);
-const FILES = ["stations.json", "routes.json", "timetables.json", "places.json", "circuits.json", "events.json"];
+const FILES = ["stations.json", "routes.json", "timetables.json", "places.json", "circuits.json", "events.json", "shapes.json"].filter((f) => existsSync(join(dataDir, f)));
 
 // JSON.parse puts integer-like keys (train numbers) first, in numeric order, so parse into Maps to keep the file's own order
 function parse(text) {

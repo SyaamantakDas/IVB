@@ -3,6 +3,7 @@ import { buildNetwork, DAYS, runsOn } from "../lib/network.js";
 import { findJourneys } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, seasonScore, toDay, fromISO, isoOf, fmtDay, monthOf, yearOf, weekday } from "../lib/schedule.js";
 import { bookingDates, bookingCalendar } from "../lib/booking.js";
+import { decode } from "../lib/polyline.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -829,8 +830,31 @@ function start(raw) {
     let OV = null, ovCodes = new Set(), ovStopCodes = new Set(), ovByImp = [];
 
     const drawOrder = ROUTES.slice().sort((a, b) => (a.type === "sleeper") - (b.type === "sleeper"));
-    const codesD = (codes) => "M" + codes.map((c) => { const s = ST.get(c); return s.x.toFixed(1) + "," + s.y.toFixed(1); }).join("L");
-    const lineD = (r) => codesD(r.stops);
+    // Track lines (data/shapes.json) arrive after the map first draws; until then, and for any pair of stops
+    // without one, a straight line joins the stops. Road changes are always straight.
+    let SHAPES = null;
+    const xy = (x, y) => x.toFixed(1) + "," + y.toFixed(1);
+    function pairLine(a, b) {
+      const s = SHAPES && SHAPES.get(a < b ? a + " " + b : b + " " + a);
+      return s ? (a < b ? s.d : s.r) : null;
+    }
+    function codesD(codes, rail) {
+      let d = "";
+      codes.forEach((c, i) => {
+        const s = ST.get(c), line = rail && i > 0 && pairLine(codes[i - 1], c);
+        d += line || (i ? "L" : "M") + xy(s.x, s.y);
+      });
+      return d;
+    }
+    function projectShapes() {
+      if (!SHAPES) return;
+      for (const s of SHAPES.values()) {
+        const p = s.pts.map(([lat, lon]) => projection([lon, lat]));
+        s.d = p.slice(1).map((q) => "L" + xy(q[0], q[1])).join("");
+        s.r = p.slice(0, -1).reverse().map((q) => "L" + xy(q[0], q[1])).join("");
+      }
+    }
+    const lineD = (r) => codesD(r.stops, true);
     const routeSel = gRoutes.selectAll("path").data(drawOrder).join("path").attr("class", (r) => "route" + (r.type === "sleeper" ? " sl" : ""));
     const hitSel = gHits.selectAll("path").data(drawOrder).join("path").attr("class", "hit");
     const stations = byImp.slice().reverse();
@@ -903,9 +927,9 @@ function start(raw) {
       project();
     }
     function project() {
-      legSel.select(".ov-casing").attr("d", (l) => codesD(l.codes));
-      legSel.select(".ov-line").attr("d", (l) => codesD(l.codes));
-      ovHitSel.attr("d", (l) => codesD(l.codes));
+      legSel.select(".ov-casing").attr("d", (l) => codesD(l.codes, l.kind === "rail"));
+      legSel.select(".ov-line").attr("d", (l) => codesD(l.codes, l.kind === "rail"));
+      ovHitSel.attr("d", (l) => codesD(l.codes, true));
       ovDotSel.attr("cx", (s) => s.x).attr("cy", (s) => s.y);
       radii();
       scheduleLabels();
@@ -1128,6 +1152,7 @@ function start(raw) {
       landPath.attr("d", path(landF));
       innerPath.attr("d", path(innerF));
       for (const s of ST.values()) { const p = projection([s.lon, s.lat]); s.x = p[0]; s.y = p[1]; }
+      projectShapes();
       routeSel.attr("d", lineD);
       hitSel.attr("d", lineD);
       stSel.attr("cx", (s) => s.x).attr("cy", (s) => s.y);
@@ -1147,7 +1172,16 @@ function start(raw) {
     }).observe(mapwrap);
     layout();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { widthCache.clear(); scheduleLabels(); });
-    return { focus, overlay, setOverlay, legFocus, fitOverlay, fit, zoomToRoute, zoomToLeg, ensureVisible };
+    function setShapes(data) {
+      SHAPES = new Map(Object.entries(data.lines).map(([k, text]) => [k, { pts: decode(text) }]));
+      projectShapes();
+      routeSel.attr("d", lineD);
+      hitSel.attr("d", lineD);
+      project();
+      overlay();
+      $("lg-note").innerHTML = `Lines follow the track${data.estimated.length ? ", except a few short stretches drawn straight" : ""}. Track © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.`;
+    }
+    return { focus, overlay, setOverlay, legFocus, fitOverlay, fit, zoomToRoute, zoomToLeg, ensureVisible, setShapes };
   }
 
   /* ---------- Boot ---------- */
@@ -1164,6 +1198,11 @@ function start(raw) {
     try { map = initMap(); } catch (err) { console.error(err); }
   }
   if (!map) { const m = $("map-msg"); m.hidden = false; m.textContent = "The map could not load in this browser. Connections, circuits and the train list still work."; }
+  else {
+    // the track lines are the biggest file, so they load once everything else is on screen
+    const loadShapes = () => fetch("data/shapes.json").then((r) => (r.ok ? r.json() : null)).then((d) => d && map.setShapes(d)).catch((err) => console.error(err));
+    if ("requestIdleCallback" in window) requestIdleCallback(loadShapes, { timeout: 1500 }); else setTimeout(loadShapes, 200);
+  }
 
   // Routing: #connections, #circuits, #trains, a train number (#22435) or a station code (#NDLS)
   function route() {

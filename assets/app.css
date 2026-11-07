@@ -164,6 +164,7 @@ button, input, select { font: inherit; color: inherit; }
 .dt { flex: none; display: inline-block; box-sizing: border-box; width: 7px; height: 7px; border-radius: 50%; background: var(--vb); }
 .dt.t { width: 10px; height: 10px; background: var(--land); border: 2px solid var(--vb); }
 .lg-note { margin-left: auto; }
+.lg-note a { color: inherit; }
 .mapwrap.ov-on .lg-net, .mapwrap:not(.ov-on) .lg-ov { display: none; }
 .zoombar { position: absolute; top: 10px; right: 10px; display: grid; gap: 6px; }
 .zbtn {
