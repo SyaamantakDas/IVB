@@ -24,7 +24,8 @@ for (const [num, t] of Object.entries(timetables.trains)) {
   ok(!!r, `train ${num}: unknown route ${t.route}`);
   if (!r) continue;
   ok(t.days.length > 0 && t.days.every((d) => DAYS.includes(d)), `train ${num}: bad days ${t.days}`);
-  ok(Array.isArray(t.src) && t.src.length > 0, `train ${num}: no source`);
+  ok(Array.isArray(t.src) && t.src.length > 0 && t.src.every((u) => /^https:\/\//.test(u)), `train ${num}: needs at least one https source`);
+  ok(/^\d{4}-\d{2}-\d{2}$/.test(t.checked || "") && t.checked <= timetables.checked, `train ${num}: needs the date it was last checked, no later than the file's`);
   const idx = Object.keys(t.times).filter((c) => r.s.includes(c)).map((c) => r.s.indexOf(c));
   const sorted = [...idx].sort((a, b) => a - b);
   ok(idx.join() === sorted.join() || idx.join() === [...sorted].reverse().join(), `train ${num}: times out of route order`);

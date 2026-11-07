@@ -23,6 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: node tools/format-data.mjs --check
       - run: node tests/run.js
 
   deploy:

@@ -88,8 +88,15 @@ The map outline and state lines, simplified from the Survey of India map publish
 
 1. Find the train's current timetable on at least one timetable site and, where you can, a Railway Board circular or a news report of the change.
 2. Update the halts in `routes.json` if they changed, and the times and days in `timetables.json`.
-3. Put the pages you used in `src` and today's date in `checked`.
-4. Run `node tests/run.js`. It checks that halts and times line up, and that both circuits still only use trains on days they run.
+3. Put the pages you used in `src`, the one the times come from first, and today's date in `checked`.
+4. Run `node tools/format-data.mjs` to lay the files out as IVB keeps them (one entry per line for stations and routes; elsewhere, a value on one line when it fits in 100 characters).
+5. Run `node tests/run.js`. It checks that halts and times line up, that every train names its sources and the date it was checked, and that both circuits still only use trains on days they run.
+
+Timetable sites sometimes show a train as running every day when it has a day off. When sources disagree on days, check the train's Wikipedia page and its return train, and say in `note` which source IVB follows.
+
+## The weekly check
+
+A scheduled task checks the data every Monday morning (India time). It searches for new Vande Bharat services, extensions, new halts and retimings announced in the past ten days, and re-verifies a quarter of the trains against ConfirmTkt and a second site, so every train is checked about once a month. It puts what it found in a pull request: changes with their sources, and new `checked` dates for the trains it verified. If last week's pull request is still open, it adds to that one. It never changes the live site by itself; the owner reviews and merges.
 
 ## Sources
 
