@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Query Overpass for India's main and branch railway lines, tile by tile
+      - name: Query Overpass for India's railway lines, tile by tile
         run: |
           node tools/fetch-osm-rail.mjs
           ls -la osm
