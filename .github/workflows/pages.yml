@@ -23,8 +23,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
       - run: node tools/format-data.mjs --check
       - run: node tests/run.js
+      - name: Build the GTFS feed
+        run: node tools/build-gtfs.mjs gtfs
+      - name: Validate it with MobilityData's GTFS Validator
+        run: |
+          curl -sSfL -o gtfs-validator.jar https://github.com/MobilityData/gtfs-validator/releases/download/v7.1.0/gtfs-validator-7.1.0-cli.jar
+          java -jar gtfs-validator.jar -i gtfs/ivb-gtfs.zip -o gtfs/report -c in
+          node tools/check-gtfs-report.mjs gtfs/report/report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gtfs
+          path: gtfs/
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -35,6 +50,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: gtfs
+          path: gtfs/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
