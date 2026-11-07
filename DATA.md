@@ -2,6 +2,14 @@
 
 Everything IVB knows lives in `data/` as plain JSON. Edit the files directly, then run `node tests/run.js` before you commit.
 
+## Licence
+
+The IVB data is © 2026 Syaamantak Das and is made available under the [Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/); the full text is in [data/LICENSE](data/LICENSE). Original text in it, such as the notes on places and circuits, is under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+When you use the data, credit it as *IVB (India on Vande Bharat) by Syaamantak Das, https://syaamantakdas.github.io/IVB/, data under ODbL 1.0*. If you publish a database built from it, share that database under the ODbL as well.
+
+Parts of the data come from other projects and keep their own terms: station positions from [DataMeet railways](https://github.com/datameet/railways) (CC0), and the map outline in `india.geo.json` from [DataMeet maps](https://github.com/datameet/maps) (CC BY 4.0) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data).
+
 ## Files
 
 ### `stations.json`

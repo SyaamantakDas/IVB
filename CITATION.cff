@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use IVB or its data, please cite it as below."
+type: software
+title: "IVB: India on Vande Bharat"
+abstract: >-
+  A planner for journeys and circuits across India on Vande Bharat trains
+  alone, with an open dataset of the network: stations, routes, halts and
+  timetables, also published as a GTFS feed. The code is released under the
+  MIT licence and the data under the Open Database License (ODbL) 1.0.
+authors:
+  - family-names: Das
+    given-names: Syaamantak
+repository-code: "https://github.com/SyaamantakDas/IVB"
+url: "https://syaamantakdas.github.io/IVB/"
+license: MIT
+keywords:
+  - Vande Bharat
+  - Indian Railways
+  - rail travel
+  - journey planner
+  - GTFS
+  - open data

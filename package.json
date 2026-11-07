@@ -2,11 +2,12 @@
   "name": "ivb",
   "version": "0.1.0",
   "description": "IVB: India on Vande Bharat. See India on India’s finest trains.",
+  "author": "Syaamantak Das",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node tests/run.js",
     "serve": "python3 -m http.server 8000"
-  },
-  "license": "MIT"
+  }
 }

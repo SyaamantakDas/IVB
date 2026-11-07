@@ -68,6 +68,13 @@ Vande Bharat services change every few weeks: new trains, extensions, extra halt
 
 IVB is an unofficial planner. It is not connected with Indian Railways or IRCTC, and it does not sell tickets or show seat availability. Timetables can change at short notice, and a few trains have different days off in different sources (IVB notes these on the train). Always check NTES or IRCTC before you book.
 
-## Licence
+## Licence and credit
 
-The code is released under the MIT licence (see [LICENSE](LICENSE)). Station positions come from [DataMeet railways](https://github.com/datameet/railways), and the map from the Survey of India outline published by [DataMeet maps](https://github.com/datameet/maps) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data); see those projects for their terms. The destination notes are original text.
+IVB is © 2026 Syaamantak Das.
+
+- **Code:** the MIT licence; see [LICENSE](LICENSE).
+- **Data:** everything in `data/`, and the GTFS feed built from it, is under the [Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/); the full text is in [data/LICENSE](data/LICENSE). Original text in the data, such as the notes on places and circuits, is under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Credit IVB** wherever you use its code or data: *IVB (India on Vande Bharat) by Syaamantak Das, https://syaamantakdas.github.io/IVB/, data under ODbL 1.0.* If you publish a database built from IVB's data, the ODbL asks you to share it under the ODbL too.
+- **Cite IVB** with the details in [CITATION.cff](CITATION.cff), which GitHub shows as **Cite this repository**.
+- **Name and logo:** the IVB name and the I♥B logo are not covered by either licence.
+- **Other sources:** station positions come from [DataMeet railways](https://github.com/datameet/railways) (CC0), and the map from the Survey of India outline published by [DataMeet maps](https://github.com/datameet/maps) (CC BY 4.0) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data). Credit those projects too when you reuse the map.
