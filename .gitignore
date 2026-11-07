@@ -4,3 +4,12 @@ node_modules/
 gtfs/
 gtfs-validator.jar
 osm/
+# built by tools/build-pages.mjs
+pages/
+train/
+station/
+place/
+go/
+loop/
+browse/
+sitemap.xml

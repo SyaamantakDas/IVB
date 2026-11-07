@@ -40,6 +40,12 @@ jobs:
         with:
           name: gtfs
           path: gtfs/
+      - name: Build a page for every train, station, place, journey and circuit
+        run: node tools/build-pages.mjs pages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages
+          path: pages/
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -54,6 +60,10 @@ jobs:
         with:
           name: gtfs
           path: gtfs/
+      - uses: actions/download-artifact@v4
+        with:
+          name: pages
+          path: .
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

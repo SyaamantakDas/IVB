@@ -29,6 +29,10 @@ It holds every Vande Bharat service on IVB's network: 83 routes, 168 trains and 
 
 To build it yourself: `node tools/build-gtfs.mjs` writes the feed to `gtfs/`.
 
+## Pages for every train, station and place
+
+Besides the app, the site has a plain page for every train (`train/22435/`), station (`station/ndls/`), place (`place/varanasi/`), journey between two places (`go/delhi-to-varanasi/`) and circuit (`loop/loop/`), with an index at [browse/](https://syaamantakdas.github.io/IVB/browse/) and a [sitemap](https://syaamantakdas.github.io/IVB/sitemap.xml). They work without JavaScript, so search engines and slow phones can read them. `tools/build-pages.mjs` builds them on every change; they are not kept in the repository. To have Google index them, add the site to [Google Search Console](https://search.google.com/search-console) and submit the sitemap (a `robots.txt` only counts at the root of a domain, so this project site cannot use one).
+
 ## Run it locally
 
 The site loads its data with `fetch`, so open it through a web server rather than straight from disk:
