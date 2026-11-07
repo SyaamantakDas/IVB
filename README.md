@@ -14,7 +14,8 @@ IVB plans journeys across India on Vande Bharat trains alone. It is a static web
 ## What it does
 
 - **Connections.** Pick any two stations or cities and IVB lists every sensible way to make the journey on Vande Bharats only, with the fewest changes first. It allows a change of station by road within a city (Old Delhi to Hazrat Nizamuddin, say) and shows times and days off for every train.
-- **Circuits.** The Central India Loop, Kashmir to Kerala and back, with or without a two-week swing through the east. Pick a start city and date and IVB lays the trip out day by day, waiting a night wherever a train has its weekly day off. Every stop says what to see and whether you will be there in a good month.
+- **Dated journeys.** Pick a day to leave and IVB lists the actual trains and dates, soonest arrival first, each leaving as late as it can; it searches every run of every train with RAPTOR, the round-based method journey planners use. Each ride shows when its booking opens.
+- **Circuits.** The Central India Loop, Kashmir to Kerala and back, with or without a two-week swing through the east, or **your own**: pick the places and the nights in each, and IVB finds the Vande Bharats between them and brings you back to the start. Pick a start date and IVB lays the trip out day by day, waiting a night wherever a train has its weekly day off. Every stop says what to see and whether you will be there in a good month.
 - **When to go.** A chart scores every start date by the share of your nights spent in each place's good months, so you can see the best season for the whole loop.
 - **Trains.** All 83 routes and 84 train pairs running on 8 November 2026, including the three Vande Bharat Sleepers, with every halt, on a map of India.
 
@@ -64,6 +65,8 @@ The site will be at `https://<you>.github.io/ivb/`. On a phone, open it and choo
 | `index.html`, `assets/` | The page, styles, logo and app code |
 | `lib/network.js` | The network model: stations, routes, directional timetables, destinations |
 | `lib/finder.js` | The connection finder |
+| `lib/planner.js` | Dated journeys (RAPTOR) |
+| `lib/own.js` | Your own circuit: the trains between the places you choose |
 | `lib/schedule.js` | Circuit scheduling around days off, and season scores |
 | `lib/booking.js` | When each ride goes on sale, and the calendar file |
 | `lib/polyline.js` | Reads and writes the track lines in `data/shapes.json` |

@@ -1,9 +1,11 @@
 // IVB: India on Vande Bharat. Connections, circuits and the train list on one map.
 import { buildNetwork, DAYS, runsOn } from "../lib/network.js";
 import { findJourneys } from "../lib/finder.js";
+import { planJourneys } from "../lib/planner.js";
 import { schedule, rotate, seasonScan, seasonScore, toDay, fromISO, isoOf, fmtDay, monthOf, yearOf, weekday } from "../lib/schedule.js";
-import { bookingDates, bookingCalendar } from "../lib/booking.js";
+import { bookingDates, bookingCalendar, ADVANCE_DAYS } from "../lib/booking.js";
 import { decode } from "../lib/polyline.js";
+import { OWN_ID, MAX_NIGHTS, ownPlaces, ownToText, ownFromText, buildCircuit } from "../lib/own.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -52,7 +54,7 @@ function provenance(t) {
   const list = links.length > 1 ? links.slice(0, -1).join(", ") + " and " + links[links.length - 1] : links[0];
   return `${t.checked ? `Checked ${esc(fmtISO(t.checked))}` : "Checked"} against ${list}`;
 }
-const fmtDur = (min) => `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`;
+const fmtDur = (min) => (min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`);
 
 async function boot() {
   const files = ["stations", "routes", "timetables", "places", "circuits", "events", "india.geo"];
@@ -110,7 +112,7 @@ function start(raw) {
   const state = {
     tab: "connections", view: "connections", sel: null, history: [], hover: null, hoverStation: null,
     type: "all", q: "", sort: "num",
-    from: null, to: null, maxChanges: store.get("max", 6), allowRoad: store.get("road", true), journeys: [], jSel: 0,
+    from: null, to: null, maxChanges: store.get("max", 6), allowRoad: store.get("road", true), onDay: null, journeys: [], jSel: 0,
     variant: store.get("variant", "loop"), startPlace: store.get("startPlace", "mumbai"), startDay: null, plan: null, scan: null,
     leg: null, legHover: null,
   };
@@ -118,17 +120,24 @@ function start(raw) {
   const params = new URLSearchParams(location.search);
   if (/^[0-6]$/.test(params.get("max") || "")) state.maxChanges = +params.get("max");
   if (params.has("road")) state.allowRoad = params.get("road") !== "0";
-  if (CIRCUITS.some((c) => c.id === params.get("loop"))) state.variant = params.get("loop");
+  if (CIRCUITS.some((c) => c.id === params.get("loop")) || params.get("loop") === OWN_ID) state.variant = params.get("loop");
+  // Your own circuit: the places and nights you chose, kept on this device and in a shared link (?loop=own&stops=delhi.2,agra.1)
+  state.own = (params.get("loop") === OWN_ID && ownFromText(net, params.get("stops"))) || ownFromText(net, store.get("own", "")) ||
+    [{ place: "delhi", nights: 2 }, { place: "agra", nights: 1 }, { place: "varanasi", nights: 2 }];
   if (PLACES.has(params.get("start"))) state.startPlace = params.get("start");
   if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("date") || "")) state.startDay = Math.max(fromISO(params.get("date")), today);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("on") || "")) state.onDay = Math.max(fromISO(params.get("on")), today);
   // Keep the address bar in step with the plan, so it can be copied or shared at any time
   function syncURL() {
     const p = new URLSearchParams();
     if (state.tab === "connections" && state.from && state.to) {
       p.set("from", state.from.label); p.set("to", state.to.label); p.set("max", state.maxChanges);
       if (!state.allowRoad) p.set("road", "0");
+      if (state.onDay != null) p.set("on", isoOf(state.onDay));
     } else if (state.tab === "circuits" && state.plan) {
-      p.set("loop", state.variant); p.set("start", state.startPlace); p.set("date", isoOf(state.startDay));
+      p.set("loop", state.variant);
+      if (state.variant === OWN_ID) p.set("stops", ownToText(state.own)); else p.set("start", state.startPlace);
+      p.set("date", isoOf(state.startDay));
     }
     const q = p.toString();
     try { history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash); } catch (e) { /* ignore */ }
@@ -137,7 +146,7 @@ function start(raw) {
   async function share(btn) {
     syncURL();
     const msg = btn.parentElement.querySelector(".share-msg");
-    const c = CIRCUITS.find((x) => x.id === state.variant) || CIRCUITS[0];
+    const c = circuitStops().c;
     const text = state.tab === "circuits" ? `${c.name} on Vande Bharat trains, planned with IVB` : `${state.from.label} to ${state.to.label} on Vande Bharat trains, planned with IVB`;
     try {
       if (navigator.share) { await navigator.share({ title: "IVB: India on Vande Bharat", text, url: location.href }); return; }
@@ -254,6 +263,13 @@ function start(raw) {
   });
   $("road").checked = state.allowRoad;
   $("road").addEventListener("change", (e) => { state.allowRoad = e.target.checked; store.set("road", state.allowRoad); search(); });
+  // A date turns the connections into dated journeys: the actual trains, days and times
+  const onInput = $("on");
+  onInput.min = isoOf(today);
+  function showOn() { onInput.value = state.onDay != null ? isoOf(state.onDay) : ""; $("on-clear").hidden = state.onDay == null; }
+  showOn();
+  onInput.addEventListener("change", () => { state.onDay = onInput.value ? Math.max(today, fromISO(onInput.value)) : null; showOn(); search(); });
+  $("on-clear").addEventListener("click", () => { state.onDay = null; showOn(); search(); onInput.focus(); });
 
   /* ---------- Connections ---------- */
   function expand(ep) {
@@ -268,11 +284,20 @@ function start(raw) {
     state.jSel = 0;
     state.leg = null;
     if (!state.from || !state.to) { state.journeys = []; renderResults(); renderDest(); refreshMap(true); return; }
-    state.journeys = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: state.maxChanges, allowRoad: state.allowRoad, limit: 8 });
     state.wider = null;
-    if (!state.journeys.length && state.maxChanges < 6) {
-      const more = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: 6, allowRoad: state.allowRoad, limit: 1 });
-      state.wider = more.length ? more[0].changes : null;
+    if (state.onDay != null) {
+      const plan = (maxTrains, limit) => planJourneys(net, expand(state.from), expand(state.to), state.onDay, { maxTrains, allowRoad: state.allowRoad, limit });
+      state.journeys = plan(state.maxChanges >= 6 ? 10 : state.maxChanges + 1, 6);
+      if (!state.journeys.length && state.maxChanges < 6) {
+        const more = plan(10, 1);
+        state.wider = more.length ? more[0].changes : null;
+      }
+    } else {
+      state.journeys = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: state.maxChanges, allowRoad: state.allowRoad, limit: 8 });
+      if (!state.journeys.length && state.maxChanges < 6) {
+        const more = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: 6, allowRoad: state.allowRoad, limit: 1 });
+        state.wider = more.length ? more[0].changes : null;
+      }
     }
     renderResults();
     renderDest();
@@ -294,14 +319,17 @@ function start(raw) {
     }
     const js = state.journeys;
     if (!js.length) {
+      const within = state.onDay != null ? ` leaving within a week of ${fmtDay(state.onDay)}` : "";
       el.innerHTML = `<div class="res-head"><p class="kicker">Connections</p><h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2></div>` +
         `<p class="empty">${state.wider != null
-          ? `No Vande Bharat journey with ${state.maxChanges === 0 ? "no changes" : "up to " + state.maxChanges + (state.maxChanges === 1 ? " change" : " changes")}. The fewest it takes is ${state.wider} ${state.wider === 1 ? "change" : "changes"}: choose “Any” to see them.`
+          ? `No Vande Bharat journey with ${state.maxChanges === 0 ? "no changes" : "up to " + state.maxChanges + (state.maxChanges === 1 ? " change" : " changes")}${within}. The fewest it takes is ${state.wider} ${state.wider === 1 ? "change" : "changes"}: choose “Any” to see them.`
+          : state.onDay != null ? `No Vande Bharat journey${within}.`
           : state.allowRoad
             ? "There is no way to make this journey on Vande Bharat trains alone."
             : "There is no way to make this journey on Vande Bharat trains alone without a change of station by road. Allow one and IVB will look again."}</p>`;
       return;
     }
+    if (state.onDay != null) return renderDated(el, js);
     const fewest = js[0].trains;
     const head = `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
       `<h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2>` +
@@ -334,7 +362,51 @@ function start(raw) {
     }).join("");
     syncURL();
     el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
-      `<p class="res-more">Times and days come from the timetable sites named on each train, checked on the date shown; a night on the way assumes the next train runs that day. Distances share out each route's rail length between its halts.</p>`;
+      `<p class="res-more">Times and days come from the timetable sites named on each train, checked on the date shown; a night on the way assumes the next train runs that day. Pick a date above to see which days the trains actually run. Distances are measured along the track.</p>`;
+  }
+  // Dated journeys (a date is picked): the actual trains, with the day and time of each
+  function renderDated(el, js) {
+    const clock = (m) => `${String(Math.floor((m % 1440) / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    const dayAt = (m) => state.onDay + Math.floor(m / 1440);
+    const at = (m) => `${fmtDay(dayAt(m))}, ${clock(m)}`;
+    const until = (a, b) => (dayAt(a) === dayAt(b) ? clock(b) : at(b));
+    const span = (min) => { const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60); return d ? `${d} ${d === 1 ? "day" : "days"}${h ? ` ${h} h` : ""}` : fmtDur(min); };
+    const cityOf = (code) => (placeOf(code) ? placeOf(code).name : stName(code));
+    const later = js[0].dep >= 1440;
+    const head = `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
+      `<h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2>` +
+      `<p>${later ? `No Vande Bharat journey leaves on ${fmtDay(state.onDay)}; these are the next.` : `Leaving on ${fmtDay(state.onDay)}, soonest arrival first.`} Pick one to see its trains and the route on the map.</p>${shareBar()}</div>`;
+    const cards = js.map((j, k) => {
+      const open = k === state.jSel;
+      const rails = j.legs.filter((l) => l.kind === "rail");
+      const via = [...new Set(rails.slice(1).map((l) => cityOf(l.from)))];
+      const sub = [`${at(j.dep)} → ${until(j.dep, j.arr)}`, span(j.arr - j.dep), fmtKm(j.km)];
+      let body;
+      if (open) {
+        const parts = [];
+        let prev = null;
+        for (const l of j.legs) {
+          if (l.kind === "road") { parts.push(`<li class="jx">${esc(legText(l))}</li>`); continue; }
+          if (prev) {
+            const nights = dayAt(l.dep) - dayAt(prev.arr);
+            parts.push(`<li class="jx wait">${nights ? `${nights === 1 ? "A night" : `${nights} nights`} in ${esc(cityOf(l.from))}; the next train leaves ${esc(at(l.dep))}` : `${fmtDur(l.dep - prev.arr)} to change at ${esc(stName(l.from))}`}</li>`);
+          }
+          const meta = [`${at(l.dep)} → ${until(l.dep, l.arr)}`, `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`, fmtKm(l.km)].join(" · ");
+          const opens = l.start - ADVANCE_DAYS;
+          const book = opens >= today ? `Booking opens ${fmtDay(opens)} at 8:00 am` : "Booking is open";
+          parts.push(`<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(l.train.num)}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>` +
+            `<span class="prov">${esc(book)}. ${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span></li>`);
+          prev = l;
+        }
+        body = `<ul class="jlegs">${parts.join("")}</ul>`;
+      } else {
+        body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map((l) => l.train.num).join(" · "))}</p>`;
+      }
+      return `<li><div class="jcard${open ? " open" : ""}" role="button" tabindex="0" data-j="${k}" aria-pressed="${open}" aria-expanded="${open}"><div class="jsum"><b>${j.trains === 1 ? "Direct" : `${j.trains} trains`}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
+    }).join("");
+    syncURL();
+    el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
+      `<p class="res-more">Each journey leaves as late as it can for its arrival. Times come from the timetable sites named on each train, checked on the date shown. Booking opens ${ADVANCE_DAYS} days before a train leaves its first station, at 8:00 am India time. Distances are measured along the track.</p>`;
   }
   function placeCard(p, heading) {
     const now = monthOf(today);
@@ -351,7 +423,14 @@ function start(raw) {
   }
 
   /* ---------- Circuits ---------- */
+  let ownBuilt = null;
   function circuitStops() {
+    if (state.variant === OWN_ID) {
+      const key = ownToText(state.own);
+      if (!ownBuilt || ownBuilt.key !== key) ownBuilt = { key, ...buildCircuit(net, state.own) };
+      const c = { id: OWN_ID, name: "Your own circuit", blurb: "Choose the places and how many nights in each. IVB finds the Vande Bharats between them and brings you back to where you started.", stops: ownBuilt.stops };
+      return { c, stops: ownBuilt.stops, missing: ownBuilt.missing };
+    }
     const c = CIRCUITS.find((x) => x.id === state.variant) || CIRCUITS[0];
     let i = c.stops.findIndex((s) => s.place === state.startPlace);
     if (i < 0) i = 0;
@@ -428,10 +507,29 @@ function start(raw) {
     const when = dates.length === 1 ? `on ${fmtISO(dates[0])}` : `between ${fmtISO(dates[0])} and ${fmtISO(dates[dates.length - 1])}`;
     return `The times of these trains were checked ${esc(when)} against timetable sites. Each train's page under Trains names its sources.`;
   }
+  function ownEditor() {
+    const opts = ownPlaces(net).sort((a, b) => a.name.localeCompare(b.name)).map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
+    const rows = state.own.map((s, i) => {
+      const p = PLACES.get(s.place), last = state.own.length - 1;
+      const nights = Array.from({ length: MAX_NIGHTS + 1 }, (_, n) => `<option value="${n}"${n === s.nights ? " selected" : ""}>${n === 0 ? "Day stop" : `${n} ${n === 1 ? "night" : "nights"}`}</option>`).join("");
+      return `<li><span class="own-name">${esc(p.name)}</span>` +
+        (i === 0 ? `<span class="own-start">Start and end</span>` : `<select data-own="nights" data-i="${i}" aria-label="Nights in ${esc(p.name)}">${nights}</select>`) +
+        `<span class="own-btns"><button type="button" data-own="up" data-i="${i}" aria-label="Move ${esc(p.name)} earlier"${i === 0 ? " disabled" : ""}>↑</button>` +
+        `<button type="button" data-own="down" data-i="${i}" aria-label="Move ${esc(p.name)} later"${i === last ? " disabled" : ""}>↓</button>` +
+        `<button type="button" data-own="del" data-i="${i}" aria-label="Remove ${esc(p.name)}"${state.own.length <= 2 ? " disabled" : ""}>×</button></span></li>`;
+    }).join("");
+    return `<div class="own"><ol class="own-list">${rows}</ol>` +
+      `<label class="own-add" for="own-add">Add a place<select id="own-add"><option value="">Choose a place…</option>${opts}</select></label></div>`;
+  }
+  function ownChanged() {
+    store.set("own", ownToText(state.own));
+    computeCircuit(false); renderCircuits(); refreshMap(true);
+  }
   function renderCircuits() {
-    const { c } = circuitStops();
+    const { c, missing } = circuitStops();
+    const own = c.id === OWN_ID;
     const plan = state.plan;
-    const startPlace = PLACES.get(state.startPlace) || plan.stops[0].place;
+    const startPlace = own ? plan.stops[0].place : PLACES.get(state.startPlace) || plan.stops[0].place;
     let legIdx = 0;
     const startOptions = [...new Map(c.stops.map((s) => [s.place, PLACES.get(s.place)])).values()]
       .map((p) => `<option value="${p.id}"${p.id === state.startPlace ? " selected" : ""}>${esc(p.name)}</option>`).join("");
@@ -455,8 +553,9 @@ function start(raw) {
     views.circuits.innerHTML =
       `<div class="cv-head"><p class="kicker">Circuits</p><h2>${esc(c.name)}</h2><p class="cv-blurb">${esc(c.blurb)}</p>` +
       `<div class="cv-controls"><div class="variant" role="group" aria-label="Which loop">` +
-      CIRCUITS.map((x) => `<button type="button" data-variant="${x.id}" aria-pressed="${x.id === c.id}">${x.id === "loop" ? "Central India Loop" : "With the east"}</button>`).join("") +
-      `</div><div class="cv-row"><label for="cv-start">Start from<select id="cv-start">${startOptions}</select></label>` +
+      [...CIRCUITS.map((x) => [x.id, x.id === "loop" ? "Central India Loop" : "With the east"]), [OWN_ID, "Your own"]]
+        .map(([id, label]) => `<button type="button" data-variant="${id}" aria-pressed="${id === c.id}">${label}</button>`).join("") +
+      `</div>${own ? ownEditor() : ""}<div class="cv-row">${own ? "" : `<label for="cv-start">Start from<select id="cv-start">${startOptions}</select></label>`}` +
       `<label for="cv-date">Start date<input type="date" id="cv-date" value="${isoOf(state.startDay)}" min="${isoOf(today)}"></label></div></div>` +
       `<dl class="stats"><div><dt>Days</dt><dd>${plan.days}</dd></div><div><dt>Train rides</dt><dd>${plan.rides}</dd></div><div><dt>Stops</dt><dd>${nstops - 1}</dd></div><div><dt>States and UTs</dt><dd>${statesOf(plan)}</dd></div></dl>` +
       `<p class="cv-dates">Leave ${esc(startPlace.name)} on <b>${fmtDay(plan.start)} ${yearOf(plan.start)}</b>, back on <b>${fmtDay(plan.end)} ${yearOf(plan.end)}</b>.` +
@@ -473,11 +572,16 @@ function start(raw) {
       `<ol class="itin" aria-label="Stops in order">${items}</ol>` +
       `<p class="cv-end">Back in ${esc(startPlace.name)} on ${fmtDay(plan.end)}${plan.endTime != null ? " at " + String(Math.floor(plan.endTime / 60)).padStart(2, "0") + ":" + String(plan.endTime % 60).padStart(2, "0") : ""}.</p>` +
       (plan.warnings.length ? `<p class="cv-end">${esc(plan.warnings.join(" "))}</p>` : "") +
+      (missing && missing.length ? `<p class="cv-end">Vande Bharats cannot make ${esc(missing.join(", "))}.</p>` : "") +
       bookingSection(c, plan) +
       `<p class="cv-src">${circuitProvenance(plan)}</p>`;
     syncURL();
     drawSeasonChart($("season-chart"), state.scan, state.startDay, best.day);
-    $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
+    if (!own) $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
+    if (own) {
+      views.circuits.querySelectorAll("select[data-own]").forEach((sel) => sel.addEventListener("change", () => { state.own[+sel.dataset.i].nights = +sel.value; ownChanged(); }));
+      $("own-add").addEventListener("change", (e) => { if (!e.target.value) return; state.own.push({ place: e.target.value, nights: 1 }); ownChanged(); });
+    }
     $("cv-date").addEventListener("change", (e) => {
       if (!e.target.value) return;
       state.startDay = Math.max(today, fromISO(e.target.value));
@@ -753,6 +857,17 @@ function start(raw) {
       return;
     }
     if (t.dataset.variant) { state.variant = t.dataset.variant; store.set("variant", state.variant); computeCircuit(false); renderCircuits(); refreshMap(true); return; }
+    if (t.dataset.own) {
+      const i = +t.dataset.i, list = state.own;
+      if (t.dataset.own === "del" && list.length > 2) list.splice(i, 1);
+      else if (t.dataset.own === "up" && i > 0) [list[i - 1], list[i]] = [list[i], list[i - 1]];
+      else if (t.dataset.own === "down" && i < list.length - 1) [list[i + 1], list[i]] = [list[i], list[i + 1]];
+      else return;
+      ownChanged();
+      const again = views.circuits.querySelector(`button[data-own="${t.dataset.own}"][data-i="${t.dataset.own === "up" ? i - 1 : t.dataset.own === "down" ? i + 1 : Math.min(i, list.length - 1)}"]`);
+      if (again && !again.disabled) again.focus();
+      return;
+    }
     if (t.dataset.leg !== undefined && +t.dataset.leg >= 0) {
       const railIdx = +t.dataset.leg;
       const ov = currentOverlay();
@@ -1191,9 +1306,7 @@ function start(raw) {
   const savedTo = resolve(params.get("to") || store.get("to", "") || "Srinagar") || resolve("Srinagar");
   fromBox.set(savedFrom);
   toBox.set(savedTo);
-  state.journeys = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: state.maxChanges, allowRoad: state.allowRoad, limit: 8 });
-  renderResults();
-  renderDest();
+  search();
   if (window.d3) {
     try { map = initMap(); } catch (err) { console.error(err); }
   }

@@ -108,6 +108,12 @@
               <button type="button" role="radio" data-max="3" aria-checked="false">3</button>
               <button type="button" role="radio" data-max="6" aria-checked="true">Any</button>
             </div>
+            <div class="when">
+              <label class="seg-label" for="on">Leave on</label>
+              <input type="date" id="on" aria-describedby="on-hint">
+              <button type="button" class="when-clear" id="on-clear" hidden>Any day</button>
+              <span class="sr-only" id="on-hint">Pick a date to see the actual trains, with dates and times; leave it empty to see every way, whatever the day.</span>
+            </div>
             <label class="check" for="road"><input type="checkbox" id="road" checked>Allow a change of station by road</label>
           </div>
         </form>

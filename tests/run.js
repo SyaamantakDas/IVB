@@ -7,6 +7,8 @@ import { findJourneys, fewestTrains } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, toDay, weekday, fmtDay } from "../lib/schedule.js";
 import { bookingDates, bookingCalendar } from "../lib/booking.js";
 import { decode } from "../lib/polyline.js";
+import { planJourneys, MIN_CHANGE } from "../lib/planner.js";
+import { buildCircuit, ownPlaces, ownFromText, ownToText } from "../lib/own.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
@@ -142,6 +144,60 @@ for (const c of circuits) {
   ok(scan.length === 24 && scan.every((x) => x.score >= 0 && x.score <= 1), `${c.id}: season scan`);
   const best = scan.reduce((a, b) => (b.score > a.score ? b : a));
   console.log(`  best start ${fmtDay(best.day)} (${Math.round(best.score * 100)}%); scores: ` + scan.map((x) => fmtDay(x.day, false) + " " + Math.round(x.score * 100)).join(", "));
+}
+
+// ---------- Dated journeys ----------
+console.log("Dated journeys");
+{
+  const mon = toDay(2026, 11, 16);
+  // every journey's trains run on the days it uses them, and every change leaves time to make it
+  const sane = (j, label) => {
+    let prev = null, road = 0;
+    for (const l of j.legs) {
+      if (l.kind === "road") { road += l.km * 4; continue; }
+      ok(l.train.days.includes(DAYS[weekday(l.start)]), `${label}: ${l.train.num} does not leave its first station on ${fmtDay(l.start)}`);
+      ok(l.arr > l.dep, `${label}: ${l.train.num} arrives before it leaves`);
+      if (prev) ok(l.dep >= prev.arr + road + MIN_CHANGE, `${label}: too little time to change onto ${l.train.num}`);
+      prev = l; road = 0;
+    }
+  };
+  let js = planJourneys(net, city("chennai"), city("mysuru"), mon);
+  ok(js.length >= 2 && js[0].trains === 1 && js[0].legs[0].train.num === "20607" && js[0].dep < 1440, "Chennai to Mysuru on a Monday: the 20607 first");
+  ok(js.every((j, i) => !i || j.arr >= js[i - 1].arr), "dated journeys come soonest arrival first");
+  js = planJourneys(net, city("mumbai"), city("srinagar"), mon, { maxTrains: 10 });
+  ok(js.length > 0 && js[0].legs[0].from === "MMCT", "Mumbai to Srinagar: boards at Mumbai Central, not Borivali");
+  const ps = ownPlaces(net);
+  let n = 0;
+  for (let a = 0; a < ps.length; a++) for (let b = 0; b < ps.length; b += 3) {
+    if (a === b) continue;
+    const day = mon + ((a + b) % 7);
+    const jj = planJourneys(net, ps[a].codes, ps[b].codes, day, { maxTrains: 10, limit: 2 });
+    ok(jj.length > 0, `${ps[a].name} to ${ps[b].name} on ${fmtDay(day)}: some dated journey`);
+    jj.forEach((j) => sane(j, `${ps[a].name} to ${ps[b].name}`));
+    n++;
+  }
+  console.log(`  ${n} pairs of places, each on a different weekday: every one has a dated journey that works`);
+}
+
+// ---------- Your own circuit ----------
+console.log("Your own circuit");
+{
+  ok(ownToText(ownFromText(net, "delhi.2,agra.1,varanasi.9,nowhere.1")) === "delhi.2,agra.1,varanasi.7", "own: reads a list from a link, capped at 7 nights");
+  ok(ownFromText(net, "delhi.2") === null && ownFromText(net, "orchha.1,delhi.1") === null, "own: needs two places with a Vande Bharat station");
+  for (const text of ["delhi.2,agra.1,varanasi.2", "mumbai.2,goa.3,mangaluru.1,kochi.2,chennai.1", "kolkata.1,puri.2,siliguri.1,guwahati.2"]) {
+    const list = ownFromText(net, text), built = buildCircuit(net, list);
+    ok(built.missing.length === 0 && built.stops.length === list.length, `own ${text}: every hop on Vande Bharats`);
+    const plan = schedule(net, built.stops, start, events);
+    ok(plan.warnings.length === 0, `own ${text}: ${plan.warnings.join("; ")}`);
+    let prevTo = null;
+    for (const st of plan.stops) for (const l of st.legs) {
+      if (prevTo) ok(l.from === prevTo, `own ${text}: ${l.from} does not follow on from ${prevTo}`);
+      prevTo = l.to;
+      if (l.kind === "rail") ok(runsOn(l.train, l.from, weekday(l.day)), `own ${text}: ${l.train.num} does not run on ${fmtDay(l.day)}`);
+    }
+    ok(list.map((s) => s.place).every((p) => plan.stops.some((st) => st.place.id === p)), `own ${text}: visits every place`);
+    console.log(`  ${text}: ${plan.days} days, ${plan.rides} rides, ${plan.waits} nights waiting`);
+  }
 }
 
 // ---------- Booking dates ----------

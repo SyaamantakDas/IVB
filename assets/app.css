@@ -229,6 +229,10 @@ button, input, select { font: inherit; color: inherit; }
 .seg-label { margin-right: 4px; font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .seg button { min-width: 36px; height: 30px; padding: 0 9px; cursor: pointer; background: transparent; border: 1px solid var(--rule); border-radius: 15px; font-size: 13px; font-weight: 500; color: var(--muted); }
 .seg button[aria-checked="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.when { display: inline-flex; align-items: center; gap: 6px; }
+.when input { height: 30px; box-sizing: border-box; padding: 0 8px; font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.when-clear { height: 30px; padding: 0 10px; cursor: pointer; background: transparent; border: 1px solid var(--rule); border-radius: 15px; font-size: 13px; color: var(--muted); }
 .check { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; cursor: pointer; }
 .check input { width: 16px; height: 16px; margin: 0; accent-color: var(--saffron); }
 
@@ -282,8 +286,20 @@ button, input, select { font: inherit; color: inherit; }
 .cv-head h2 { margin: 0; font-family: var(--f-display); font-weight: 600; font-size: 32px; line-height: .9; letter-spacing: .01em; }
 .cv-blurb { margin: 0; font-size: 14px; color: var(--muted); }
 .cv-controls { display: grid; gap: 10px; }
-.variant { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
-.variant button { height: 36px; cursor: pointer; background: transparent; border: 0; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.own { display: grid; gap: 8px; }
+.own-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; counter-reset: own; }
+.own-list li { counter-increment: own; display: grid; grid-template-columns: 22px 1fr auto auto; align-items: center; gap: 8px; padding: 5px 6px 5px 8px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+.own-list li::before { content: counter(own); font-size: 12px; font-weight: 700; color: var(--saffron-ink); }
+.own-name { font-weight: 600; font-size: 14px; }
+.own-start { font-size: 12.5px; color: var(--muted); }
+.own-list select, .own-add select { height: 30px; font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.own-btns { display: inline-flex; gap: 2px; }
+.own-btns button { width: 30px; height: 30px; cursor: pointer; background: transparent; border: 1px solid transparent; border-radius: 6px; font-size: 15px; color: var(--muted); }
+.own-btns button:hover:not(:disabled) { border-color: var(--rule); color: var(--ink); }
+.own-btns button:disabled { opacity: .3; cursor: default; }
+.own-add { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.variant { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.variant button { min-height: 36px; padding: 4px 6px; cursor: pointer; background: transparent; border: 0; font-size: 13.5px; font-weight: 600; color: var(--muted); }
 .variant button + button { border-left: 1px solid var(--rule); }
 .variant button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .cv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
