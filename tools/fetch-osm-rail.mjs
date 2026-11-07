@@ -5,6 +5,8 @@
 // It keeps open lines and the crossovers that join them, and leaves out sidings, yards, spurs and
 // industrial, military and heritage lines. It keeps only the tags that tools/build-shapes.mjs reads:
 // gauge (Vande Bharats run on broad gauge only), usage and the line's name.
+// The tiles are plain boxes, so they take in lines over the border too; build-shapes.mjs drops those,
+// because a query clipped to India's outline is too slow for the public Overpass servers.
 import { writeFileSync, mkdirSync } from "node:fs";
 
 const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
@@ -39,7 +41,7 @@ let tiles = 0;
 for (let s = 6; s < 37; s += STEP) {
   for (let w = 68; w < 98; w += STEP) {
     const bbox = `${s},${w},${s + STEP},${w + STEP}`;
-    const q = `[out:json][timeout:600];area["ISO3166-1"="IN"][admin_level=2]->.in;way["railway"="rail"]["service"!~"^(siding|yard|spur)$"]["usage"!~"^(industrial|military|tourism)$"](area.in)(${bbox});out geom;`;
+    const q = `[out:json][timeout:300];way["railway"="rail"]["service"!~"^(siding|yard|spur)$"]["usage"!~"^(industrial|military|tourism)$"](${bbox});out geom;`;
     const d = await query(q);
     let n = 0;
     for (const el of d.elements || []) {
