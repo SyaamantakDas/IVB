@@ -34,7 +34,10 @@ const gtfsTime = (t) => {
 };
 const routeId = (n) => "VB-" + n.replace(/\s*·\s*/g, "-").replace(/\//g, "-");
 
-const start = timetables.checked;
+// The calendar starts on the day the timetables were last checked, or on the build day if that is earlier
+// (the check date is India's; the build may still be on the previous day in UTC)
+const today = new Date().toISOString().slice(0, 10);
+const start = timetables.checked < today ? timetables.checked : today;
 const end = addDays(start, 364);
 
 // --- agency, routes
