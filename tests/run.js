@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { buildNetwork, runsOn, DAYS } from "../lib/network.js";
 import { findJourneys, fewestTrains } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, toDay, weekday, fmtDay } from "../lib/schedule.js";
+import { bookingDates, bookingCalendar } from "../lib/booking.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
@@ -108,6 +109,28 @@ for (const c of circuits) {
   ok(scan.length === 24 && scan.every((x) => x.score >= 0 && x.score <= 1), `${c.id}: season scan`);
   const best = scan.reduce((a, b) => (b.score > a.score ? b : a));
   console.log(`  best start ${fmtDay(best.day)} (${Math.round(best.score * 100)}%); scores: ` + scan.map((x) => fmtDay(x.day, false) + " " + Math.round(x.score * 100)).join(", "));
+}
+
+// ---------- Booking dates ----------
+console.log("Booking");
+{
+  const c = circuits[0];
+  const plan = schedule(net, c.stops, start, events);
+  const items = bookingDates(plan);
+  ok(items.length === plan.rides, `booking: one date per ride (${items.length} vs ${plan.rides})`);
+  for (const it of items) {
+    ok(it.opens === it.trainStart - 60 && it.trainStart <= it.day && it.day - it.trainStart <= 1, `booking: ${it.num} opens 60 days before the train leaves its first station`);
+  }
+  // a ride boarded after midnight counts from the day before
+  const t = net.TRAINS.get("27575");
+  const fake = { stops: [{ legs: [{ kind: "rail", train: t, from: "AUB", to: "KYQ", day: start }] }] };
+  const [b] = bookingDates(fake);
+  ok(b && b.trainStart === start - 1 && b.opens === start - 61, "booking: boarding 27575 at Aluabari Road after midnight opens 61 days before");
+  const ics = bookingCalendar(items, { name: c.name, stationName: (code) => net.ST.get(code).name });
+  ok((ics.match(/BEGIN:VEVENT/g) || []).length === items.length, "calendar: one event per ride");
+  ok(ics.split("\r\n").every((l) => new TextEncoder().encode(l).length <= 75), "calendar: lines folded at 75 octets");
+  ok(/DTSTART:\d{8}T023000Z/.test(ics), "calendar: reminders at 8:00 India time");
+  console.log(`  ${c.name}: ${items.length} rides go on sale between ${fmtDay(Math.min(...items.map((x) => x.opens)))} and ${fmtDay(Math.max(...items.map((x) => x.opens)))}`);
 }
 
 console.log(`\n${passes} checks passed, ${failures} failed`);

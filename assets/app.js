@@ -2,6 +2,7 @@
 import { buildNetwork, DAYS, runsOn } from "../lib/network.js";
 import { findJourneys } from "../lib/finder.js";
 import { schedule, rotate, seasonScan, seasonScore, toDay, fromISO, isoOf, fmtDay, monthOf, yearOf, weekday } from "../lib/schedule.js";
+import { bookingDates, bookingCalendar } from "../lib/booking.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -356,6 +357,31 @@ function start(raw) {
     }
     return set.size;
   }
+  // When each train of the trip goes on sale, with a calendar file of reminders
+  function bookingSection(c, plan) {
+    const items = bookingDates(plan);
+    if (!items.length) return "";
+    const opens = items.map((x) => x.opens), first = Math.min(...opens), last = Math.max(...opens);
+    const upcoming = items.filter((x) => x.opens > today).length, onSale = items.length - upcoming;
+    const when = (d) => `${fmtDay(d)} ${yearOf(d)}`;
+    const span = first === last ? `on <b>${when(first)}</b>` : `between <b>${when(first)}</b> and <b>${when(last)}</b>`;
+    const rows = items.map((x) => `<tr><td>${x.num}</td><td>${esc(stName(x.from))} → ${esc(stName(x.to))}</td><td>${fmtDay(x.day)}</td><td>${x.opens <= today ? "on sale now" : esc(fmtDay(x.opens)) + ", 8 am"}</td></tr>`).join("");
+    return `<section class="season booking" aria-labelledby="book-h"><h3 id="book-h">When to book</h3>` +
+      `<p>Tickets go on sale 60 days before a train leaves its first station, at 8 am. This trip's ${items.length} train ${items.length === 1 ? "ride goes" : "rides go"} on sale ${span}${onSale ? `; ${onSale} ${onSale === 1 ? "is" : "are"} on sale already` : ""}. On the first day of sale only Aadhaar-verified IRCTC accounts can book, so verify yours beforehand.</p>` +
+      (upcoming ? `<div class="season-actions"><button class="btn" type="button" data-act="ics">Add ${upcoming === 1 ? "the booking date" : `the ${upcoming} booking dates`} to your calendar</button></div>` : "") +
+      `<details><summary>Show when each ride goes on sale</summary><table><thead><tr><th>Train</th><th>Ride</th><th>Travel</th><th>On sale</th></tr></thead><tbody>${rows}</tbody></table></details>` +
+      `<p>Rules as of 2026; check IRCTC if in doubt.</p></section>`;
+  }
+  function downloadBookingCalendar() {
+    const { c } = circuitStops();
+    const items = bookingDates(state.plan).filter((x) => x.opens > today);
+    const ics = bookingCalendar(items, { name: c.name, stationName: stName, title: `IVB: when to book, ${c.name}` });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    a.download = `ivb-booking-dates-${isoOf(state.plan.start)}.ics`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   // When the circuit's trains were last checked, and that each train names its sources
   function circuitProvenance(plan) {
     const dates = [...new Set(plan.stops.flatMap((s) => s.legs).filter((l) => l.kind === "rail" && l.train && l.train.checked).map((l) => l.train.checked))].sort();
@@ -408,6 +434,7 @@ function start(raw) {
       `<ol class="itin" aria-label="Stops in order">${items}</ol>` +
       `<p class="cv-end">Back in ${esc(startPlace.name)} on ${fmtDay(plan.end)}${plan.endTime != null ? " at " + String(Math.floor(plan.endTime / 60)).padStart(2, "0") + ":" + String(plan.endTime % 60).padStart(2, "0") : ""}.</p>` +
       (plan.warnings.length ? `<p class="cv-end">${esc(plan.warnings.join(" "))}</p>` : "") +
+      bookingSection(c, plan) +
       `<p class="cv-src">${circuitProvenance(plan)}</p>`;
     drawSeasonChart($("season-chart"), state.scan, state.startDay, best.day);
     $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
@@ -675,6 +702,7 @@ function start(raw) {
     if (t.dataset.tab) { setTab(t.dataset.tab); return; }
     if (t.dataset.act === "back") return goBack();
     if (t.dataset.act === "tomap") return mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    if (t.dataset.act === "ics") return downloadBookingCalendar();
     if (t.dataset.act === "use-best") {
       state.startDay = state.scan.reduce((a, b) => (b.score > a.score ? b : a)).day;
       store.set("startDay", state.startDay);
