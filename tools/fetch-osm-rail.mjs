@@ -34,7 +34,7 @@ let tiles = 0;
 for (let s = 6; s < 37; s += STEP) {
   for (let w = 68; w < 98; w += STEP) {
     const bbox = `${s},${w},${s + STEP},${w + STEP}`;
-    const q = `[out:json][timeout:600];area["ISO3166-1"="IN"][admin_level=2]->.in;way["railway"~"^(rail|construction)$"][!"service"](area.in)(${bbox});out skel geom;`;
+    const q = `[out:json][timeout:600];area["ISO3166-1"="IN"][admin_level=2]->.in;way["railway"="rail"][!"service"]["usage"!~"^(industrial|military|tourism)$"](area.in)(${bbox});out skel geom;`;
     const d = await query(q);
     let n = 0;
     for (const el of d.elements || []) if (el.type === "way" && !ways.has(el.id)) { ways.set(el.id, { id: el.id, nodes: el.nodes, geometry: el.geometry.map((p) => [+p.lat.toFixed(6), +p.lon.toFixed(6)]) }); n++; }
