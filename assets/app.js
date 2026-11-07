@@ -20,6 +20,36 @@ function daysText(days) {
   return days.join(", ") + " only";
 }
 const fmtKm = (km) => km.toLocaleString("en-IN") + " km";
+// Where a train's times come from: the site names IVB checked them against, and when
+const SOURCE_NAMES = {
+  "confirmtkt.com": "ConfirmTkt", "erail.in": "erail", "railmitra.com": "RailMitra", "etrain.info": "etrain",
+  "totaltraininfo.com": "Total Train Info", "wikipedia.org": "Wikipedia", "indianrailways.gov.in": "Railway Board",
+  "cleartrip.com": "Cleartrip", "deshgujarat.com": "DeshGujarat", "odishabytes.com": "OdishaBytes",
+};
+function sourceName(url) {
+  let host = "";
+  try { host = new URL(url).hostname.replace(/^(www|m|amp|en)\./, ""); } catch (e) { return "source"; }
+  if (host.includes("wikipedia") || host.startsWith("wiki.") || host.includes("kiwix") || host.includes("freedombox")) return "Wikipedia";
+  return SOURCE_NAMES[host] || host;
+}
+function fmtISO(iso) {
+  const [y, m, d] = String(iso || "").split("-").map(Number);
+  return y ? `${d} ${MONTHS[m - 1]} ${y}` : "";
+}
+// "Checked 8 Nov 2026 against ConfirmTkt and RailMitra", with each source linked
+function provenance(t) {
+  const urls = (t && t.src) || [];
+  if (!urls.length) return "";
+  const seen = new Set(), links = [];
+  for (const u of urls) {
+    const n = sourceName(u);
+    if (seen.has(n)) continue;
+    seen.add(n);
+    links.push(`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}</a>`);
+  }
+  const list = links.length > 1 ? links.slice(0, -1).join(", ") + " and " + links[links.length - 1] : links[0];
+  return `${t.checked ? `Checked ${esc(fmtISO(t.checked))}` : "Checked"} against ${list}`;
+}
 const fmtDur = (min) => `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`;
 
 async function boot() {
@@ -254,7 +284,8 @@ function start(raw) {
           if (l.kind === "road") { parts.push(`<li class="jx">${esc(legText(l))}</li>`); return; }
           if (l.change) parts.push(`<li class="jx wait">${l.change.sameDay ? `${fmtDur(l.change.min)} to change at ${esc(stName(l.from))}` : `Night in ${esc(cityOf(l.from))}${l.dep ? `; the next train leaves at ${l.dep.text}` : ""}`}</li>`);
           const meta = [l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}${l.arr.day > (l.dep.day || 0) ? " next day" : ""}` : "", l.days ? daysText(l.days) : "timetable not in IVB yet", `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`, fmtKm(l.km)].filter(Boolean).join(" · ");
-          parts.push(`<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(trainNum(l))}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span></li>`);
+          const prov = l.train ? `<span class="prov">${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span>` : "";
+          parts.push(`<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(trainNum(l))}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>${prov}</li>`);
         });
         body = `<ul class="jlegs">${parts.join("")}</ul>`;
       } else {
@@ -263,7 +294,7 @@ function start(raw) {
       return `<li><div class="jcard${open ? " open" : ""}" role="button" tabindex="0" data-j="${k}" aria-pressed="${open}" aria-expanded="${open}"><div class="jsum"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
     }).join("");
     el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
-      `<p class="res-more">Times and days come from IVB's checked timetables where it has them; a night on the way assumes the next train runs that day. Distances share out each route's rail length between its halts.</p>`;
+      `<p class="res-more">Times and days come from the timetable sites named on each train, checked on the date shown; a night on the way assumes the next train runs that day. Distances share out each route's rail length between its halts.</p>`;
   }
   function placeCard(p, heading) {
     const now = monthOf(today);
@@ -325,6 +356,13 @@ function start(raw) {
     }
     return set.size;
   }
+  // When the circuit's trains were last checked, and that each train names its sources
+  function circuitProvenance(plan) {
+    const dates = [...new Set(plan.stops.flatMap((s) => s.legs).filter((l) => l.kind === "rail" && l.train && l.train.checked).map((l) => l.train.checked))].sort();
+    if (!dates.length) return "";
+    const when = dates.length === 1 ? `on ${fmtISO(dates[0])}` : `between ${fmtISO(dates[0])} and ${fmtISO(dates[dates.length - 1])}`;
+    return `The times of these trains were checked ${esc(when)} against timetable sites. Each train's page under Trains names its sources.`;
+  }
   function renderCircuits() {
     const { c } = circuitStops();
     const plan = state.plan;
@@ -369,7 +407,8 @@ function start(raw) {
       `</tbody></table></details></section>` +
       `<ol class="itin" aria-label="Stops in order">${items}</ol>` +
       `<p class="cv-end">Back in ${esc(startPlace.name)} on ${fmtDay(plan.end)}${plan.endTime != null ? " at " + String(Math.floor(plan.endTime / 60)).padStart(2, "0") + ":" + String(plan.endTime % 60).padStart(2, "0") : ""}.</p>` +
-      (plan.warnings.length ? `<p class="cv-end">${esc(plan.warnings.join(" "))}</p>` : "");
+      (plan.warnings.length ? `<p class="cv-end">${esc(plan.warnings.join(" "))}</p>` : "") +
+      `<p class="cv-src">${circuitProvenance(plan)}</p>`;
     drawSeasonChart($("season-chart"), state.scan, state.startDay, best.day);
     $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
     $("cv-date").addEventListener("change", (e) => {
@@ -474,7 +513,7 @@ function start(raw) {
       `<div class="rv-head"><p class="rv-num${r.type === "sleeper" ? " sl" : ""}">${r.nums.map((x) => `<span>${x}</span>`).join("")}</p><h2>${esc(r.label)}</h2>` +
       `<p class="rv-meta"><span class="pill${r.type === "sleeper" ? " sl" : ""}">${r.type === "sleeper" ? "Sleeper" : "Chair car"}</span><span>${n} stations · ${n - 2} ${n - 2 === 1 ? "halt" : "halts"} · ${fmtKm(r.km)}</span></p>` +
       (r.note ? `<p class="rv-note">${esc(r.note)}</p>` : "") +
-      (timed.length ? `<p class="rv-tt">${timed.map((t) => `<b>${t.num}</b> ${esc(stName(t.from))} → ${esc(stName(t.to))}, ${esc(daysText(t.days))}${t.note ? ". " + esc(t.note) : ""} (<a href="${esc(t.src[0])}" target="_blank" rel="noopener">source</a>)`).join("<br>")}</p>` : `<p class="rv-tt">IVB does not have this train's timetable yet.</p>`) +
+      (timed.length ? `<ul class="rv-tt">${timed.map((t) => `<li><b>${t.num}</b> ${esc(stName(t.from))} → ${esc(stName(t.to))}, ${esc(daysText(t.days))}.${t.note ? " " + esc(t.note) : ""} <span class="prov">${provenance(t)}.</span></li>`).join("")}</ul>` : `<p class="rv-tt">IVB does not have this train's timetable yet.</p>`) +
       `</div><ol class="strip" aria-label="Stops in order">${r.stops.map((c, i) => {
         const s = ST.get(c), term = i === 0 || i === n - 1, unc = r.unc.has(c);
         const times = [tCell(fwd, c), tCell(rev, c)].filter(Boolean).join(" / ");
@@ -629,7 +668,8 @@ function start(raw) {
   });
   panel.addEventListener("click", (e) => {
     const card = e.target.closest(".jcard");
-    if (card) { pickJourney(card); return; }
+    if (card && !e.target.closest("a")) { pickJourney(card); return; } // a source link opens; it does not pick the card
+    if (card) return;
     const t = e.target.closest("button");
     if (!t || !panel.contains(t)) return;
     if (t.dataset.tab) { setTab(t.dataset.tab); return; }

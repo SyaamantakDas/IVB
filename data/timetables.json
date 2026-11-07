@@ -496,7 +496,8 @@
         "MAO": ["13:10", null]
       },
       "src": ["https://www.confirmtkt.com/train-schedule/20646"],
-      "checked": "2026-11-06"
+      "checked": "2026-11-06",
+      "note": "Konkan Railway runs a slower monsoon timetable from about 10 June to 31 October."
     },
     "22230": {
       "route": "22229/22230",
@@ -1113,7 +1114,8 @@
         "https://www.confirmtkt.com/train-schedule/20645",
         "https://etrain.info/train/Maq-Vandebharat-20645/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-08",
+      "note": "Konkan Railway runs a slower monsoon timetable from about 10 June to 31 October."
     },
     "20661": {
       "route": "20661/20662",
@@ -1135,7 +1137,7 @@
         "https://en.wikipedia.org/wiki/KSR_Bengaluru%E2%80%93Dharwad_Vande_Bharat_Express"
       ],
       "checked": "2026-11-08",
-      "note": "Runs every day except Tuesday, like 20662; two timetable sites wrongly show it daily."
+      "note": "Two timetable sites show it daily; Wikipedia and the return train, 20662, say it does not run on Tuesdays."
     },
     "20662": {
       "route": "20661/20662",
@@ -1644,7 +1646,7 @@
         "https://www.totaltraininfo.com/train/20834/schedule"
       ],
       "checked": "2026-11-08",
-      "note": "Runs on the same days as 20833, which forms the morning half of the same round trip."
+      "note": "Timetable sites disagree on its day off; IVB follows its morning half, 20833, which does not run on Tuesdays."
     },
     "20835": {
       "route": "20835/20836",
@@ -2107,7 +2109,8 @@
         "https://www.railmitra.com/train-schedule/22229",
         "https://etrain.info/train/Mao-Vande-Bharat-22229/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-08",
+      "note": "Konkan Railway runs a slower monsoon timetable from about 10 June to 31 October."
     },
     "22231": {
       "route": "22231/22232",
@@ -2386,7 +2389,7 @@
         "https://kaweah.freedombox.rocks/kiwix/wikipedia_en_all_maxi_2023-10/Patna_-_Ranchi_Vande_Bharat_Express"
       ],
       "checked": "2026-11-08",
-      "note": "Runs every day except Tuesday, like 22350; two timetable sites wrongly show it daily."
+      "note": "Two timetable sites show it daily; Wikipedia and the return train, 22350, say it does not run on Tuesdays."
     },
     "22350": {
       "route": "22349/22350",
@@ -2554,7 +2557,7 @@
         "https://www.totaltraininfo.com/train/22447/schedule"
       ],
       "checked": "2026-11-08",
-      "note": "Timetable sites disagree on this train's day off; IVB follows the most recent."
+      "note": "Timetable sites disagree on the day off, Tuesday or Friday; IVB follows ConfirmTkt, the most recent, which gives Tuesday."
     },
     "22448": {
       "route": "22447/22448",
@@ -2575,7 +2578,7 @@
         "https://www.totaltraininfo.com/train/22448/schedule"
       ],
       "checked": "2026-11-08",
-      "note": "Timetable sites disagree on this train's day off; IVB follows the most recent."
+      "note": "Timetable sites disagree on the day off, Tuesday or Friday; IVB follows ConfirmTkt, the most recent, which gives Tuesday."
     },
     "22457": {
       "route": "22457/22458",
@@ -2761,7 +2764,7 @@
         "https://en.wikipedia.org/wiki/Varanasi%E2%80%93Deoghar_Vande_Bharat_Express"
       ],
       "checked": "2026-11-08",
-      "note": "Runs every day except Tuesday, like 22499; two timetable sites wrongly show it daily."
+      "note": "Two timetable sites show it daily; Wikipedia and the return train, 22499, say it does not run on Tuesdays."
     },
     "22545": {
       "route": "22545/22546",
@@ -3007,7 +3010,7 @@
         "https://en.wikipedia.org/wiki/Jogbani%E2%80%93Danapur_Vande_Bharat_Express"
       ],
       "checked": "2026-11-08",
-      "note": "Runs every day except Wednesday; one timetable site wrongly shows it daily."
+      "note": "One timetable site shows it daily; Wikipedia says it does not run on Wednesdays."
     },
     "26302": {
       "route": "26301/26302",
