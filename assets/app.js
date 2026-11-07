@@ -113,6 +113,43 @@ function start(raw) {
     variant: store.get("variant", "loop"), startPlace: store.get("startPlace", "mumbai"), startDay: null, plan: null, scan: null,
     leg: null, legHover: null,
   };
+  // A shared link carries the plan in its query: ?from=Mumbai&to=Goa&max=2, or ?loop=loop&start=mumbai&date=2027-10-15
+  const params = new URLSearchParams(location.search);
+  if (/^[0-6]$/.test(params.get("max") || "")) state.maxChanges = +params.get("max");
+  if (params.has("road")) state.allowRoad = params.get("road") !== "0";
+  if (CIRCUITS.some((c) => c.id === params.get("loop"))) state.variant = params.get("loop");
+  if (PLACES.has(params.get("start"))) state.startPlace = params.get("start");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("date") || "")) state.startDay = Math.max(fromISO(params.get("date")), today);
+  // Keep the address bar in step with the plan, so it can be copied or shared at any time
+  function syncURL() {
+    const p = new URLSearchParams();
+    if (state.tab === "connections" && state.from && state.to) {
+      p.set("from", state.from.label); p.set("to", state.to.label); p.set("max", state.maxChanges);
+      if (!state.allowRoad) p.set("road", "0");
+    } else if (state.tab === "circuits" && state.plan) {
+      p.set("loop", state.variant); p.set("start", state.startPlace); p.set("date", isoOf(state.startDay));
+    }
+    const q = p.toString();
+    try { history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash); } catch (e) { /* ignore */ }
+  }
+  const shareBar = () => `<div class="sharebar"><button class="btn" type="button" data-act="share">Share</button><button class="btn" type="button" data-act="print">Print</button><span class="share-msg" role="status" aria-live="polite"></span></div>`;
+  async function share(btn) {
+    syncURL();
+    const msg = btn.parentElement.querySelector(".share-msg");
+    const c = CIRCUITS.find((x) => x.id === state.variant) || CIRCUITS[0];
+    const text = state.tab === "circuits" ? `${c.name} on Vande Bharat trains, planned with IVB` : `${state.from.label} to ${state.to.label} on Vande Bharat trains, planned with IVB`;
+    try {
+      if (navigator.share) { await navigator.share({ title: "IVB: India on Vande Bharat", text, url: location.href }); return; }
+      await navigator.clipboard.writeText(location.href);
+      if (msg) msg.textContent = "Link copied";
+    } catch (e) {
+      if (msg && e.name !== "AbortError") msg.textContent = "Copy this link: " + location.href;
+    }
+  }
+  function printPlan() {
+    panel.querySelectorAll("details").forEach((d) => (d.open = true));
+    window.print();
+  }
 
   const panel = $("panel"), mapSection = $("mapsection"), mapwrap = $("mapwrap"), tip = $("tip");
   const views = { connections: $("v-connections"), circuits: $("v-circuits"), trains: $("v-trains"), route: $("v-route"), station: $("v-station") };
@@ -267,7 +304,7 @@ function start(raw) {
     const fewest = js[0].trains;
     const head = `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
       `<h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2>` +
-      `<p>${fewest === 1 ? "There is a direct train." : `The fewest is ${fewest} trains.`} Pick one to see its trains and the route on the map.</p></div>`;
+      `<p>${fewest === 1 ? "There is a direct train." : `The fewest is ${fewest} trains.`} Pick one to see its trains and the route on the map.</p>${shareBar()}</div>`;
     const cityOf = (code) => (placeOf(code) ? placeOf(code).name : stName(code));
     const cards = js.map((j, k) => {
       const open = k === state.jSel;
@@ -294,6 +331,7 @@ function start(raw) {
       }
       return `<li><div class="jcard${open ? " open" : ""}" role="button" tabindex="0" data-j="${k}" aria-pressed="${open}" aria-expanded="${open}"><div class="jsum"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
     }).join("");
+    syncURL();
     el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
       `<p class="res-more">Times and days come from the timetable sites named on each train, checked on the date shown; a night on the way assumes the next train runs that day. Distances share out each route's rail length between its halts.</p>`;
   }
@@ -421,7 +459,7 @@ function start(raw) {
       `<label for="cv-date">Start date<input type="date" id="cv-date" value="${isoOf(state.startDay)}" min="${isoOf(today)}"></label></div></div>` +
       `<dl class="stats"><div><dt>Days</dt><dd>${plan.days}</dd></div><div><dt>Train rides</dt><dd>${plan.rides}</dd></div><div><dt>Stops</dt><dd>${nstops - 1}</dd></div><div><dt>States and UTs</dt><dd>${statesOf(plan)}</dd></div></dl>` +
       `<p class="cv-dates">Leave ${esc(startPlace.name)} on <b>${fmtDay(plan.start)} ${yearOf(plan.start)}</b>, back on <b>${fmtDay(plan.end)} ${yearOf(plan.end)}</b>.` +
-      (plan.waits ? ` That includes ${plan.waits} extra ${plan.waits === 1 ? "night" : "nights"} waiting for trains that skip a day.` : "") + `</p></div>` +
+      (plan.waits ? ` That includes ${plan.waits} extra ${plan.waits === 1 ? "night" : "nights"} waiting for trains that skip a day.` : "") + `</p>${shareBar()}</div>` +
       `<section class="season" aria-labelledby="season-h"><h3 id="season-h">When to go</h3>` +
       `<p>Share of your nights spent in each place's good months, for a start on the 1st or 15th of each month.</p>` +
       `<div class="chart" id="season-chart"></div>` +
@@ -436,6 +474,7 @@ function start(raw) {
       (plan.warnings.length ? `<p class="cv-end">${esc(plan.warnings.join(" "))}</p>` : "") +
       bookingSection(c, plan) +
       `<p class="cv-src">${circuitProvenance(plan)}</p>`;
+    syncURL();
     drawSeasonChart($("season-chart"), state.scan, state.startDay, best.day);
     $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
     $("cv-date").addEventListener("change", (e) => {
@@ -577,6 +616,7 @@ function start(raw) {
     if (tab === "circuits" && !views.circuits.innerHTML) renderCircuits();
     showView(tab);
     if (!opts.keepHash && location.hash.slice(1) !== tab) { try { history.replaceState(null, "", "#" + tab); } catch (e) { /* ignore */ } }
+    syncURL();
     refreshMap(true);
   }
   function pushHistory() { if (state.sel) state.history.push(state.sel); }
@@ -703,6 +743,8 @@ function start(raw) {
     if (t.dataset.act === "back") return goBack();
     if (t.dataset.act === "tomap") return mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     if (t.dataset.act === "ics") return downloadBookingCalendar();
+    if (t.dataset.act === "share") return share(t);
+    if (t.dataset.act === "print") return printPlan();
     if (t.dataset.act === "use-best") {
       state.startDay = state.scan.reduce((a, b) => (b.score > a.score ? b : a)).day;
       store.set("startDay", state.startDay);
@@ -1111,8 +1153,8 @@ function start(raw) {
   /* ---------- Boot ---------- */
   computeCircuit(false);
   renderList();
-  const savedFrom = resolve(store.get("from", "") || "Mumbai") || resolve("Mumbai");
-  const savedTo = resolve(store.get("to", "") || "Srinagar") || resolve("Srinagar");
+  const savedFrom = resolve(params.get("from") || store.get("from", "") || "Mumbai") || resolve("Mumbai");
+  const savedTo = resolve(params.get("to") || store.get("to", "") || "Srinagar") || resolve("Srinagar");
   fromBox.set(savedFrom);
   toBox.set(savedTo);
   state.journeys = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: state.maxChanges, allowRoad: state.allowRoad, limit: 8 });
