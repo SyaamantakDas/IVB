@@ -10,6 +10,7 @@ export default [
       "vendor/",
       "gtfs/",
       "pages/",
+      "site/",
       "osm/",
       "android/",
       "train/",
@@ -45,7 +46,7 @@ export default [
   },
   {
     // the browser checks pass functions to page.evaluate, which run in the page
-    files: ["tests/ui.mjs"],
+    files: ["tests/ui.mjs", "tests/update.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
