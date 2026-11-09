@@ -48,7 +48,7 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-Run the checks (Node 18 or later, no packages needed):
+Run the checks (Node 20 or later). These two need no packages:
 
 ```sh
 node tests/run.js          # data and logic
@@ -57,15 +57,31 @@ node tools/check-size.mjs  # file sizes against their budgets
 
 The tests check that every route, timetable, destination and circuit is consistent, that the connection finder and the dated planner find known journeys, that every circuit only uses trains on days they run, and that each track line starts and ends at its stations.
 
-Two more checks run on every change in GitHub Actions, and locally if you have the packages:
+The rest run on every change in GitHub Actions, with the exact versions in `package-lock.json`. To run them locally:
 
 ```sh
-npx -p typescript tsc -p jsconfig.json                      # the library's types (JSDoc, lib/types.js)
-npm i --no-save playwright axe-core && npx playwright install chromium
-node tests/ui.mjs                                           # the site in a browser, with axe-core accessibility checks
+npm ci                                   # ESLint, Prettier, TypeScript, Playwright and axe-core
+npx eslint .                             # mistakes in the code
+npx prettier --check .                   # its layout; npx prettier --write . fixes it
+npx tsc -p jsconfig.json                 # the library's types (JSDoc, lib/types.js)
+npx playwright install chromium
+node tools/build-gtfs.mjs gtfs && node tools/build-pages.mjs pages   # so the browser checks cover the feed and pages too
+node tests/ui.mjs                        # the site in a browser, with axe-core accessibility checks
+node tests/ui.mjs --live                 # the same on the published site, which also checks every address in its sitemap
 ```
 
 The site sets a strict content security policy: it loads nothing from other servers (the fonts are in `assets/fonts`), runs no inline script and sends no data anywhere.
+
+## What runs by itself
+
+| Workflow | When | What it does |
+|---|---|---|
+| **Test and publish** | every push and pull request | All the checks above, then the GTFS feed (checked with MobilityData's validator) and the pages; on `main` it publishes the site |
+| **Code scanning** | every change, and Tuesdays | GitHub's CodeQL reads the JavaScript and the workflows for security problems; findings appear under **Security** |
+| **Check the live site** | Mondays, and by hand | The browser checks against the published site, every address in its sitemap, the GTFS feed, that the site runs the code on `main`, and that the timetables were checked in the last 90 days (a warning) or 330 days (a failure, before the feed's calendar runs out) |
+| **Dependabot** | weekly and monthly | Pull requests to update the workflows' actions and the checking tools |
+
+Every action a workflow uses is pinned to an exact commit, so a changed release cannot slip in unseen; Dependabot proposes the updates. The weekly timetable check is described in [DATA.md](DATA.md#the-weekly-check).
 
 ## Put it on GitHub Pages
 
@@ -96,7 +112,8 @@ The site will be at `https://<you>.github.io/ivb/`. On a phone, open it and choo
 | `vendor/d3.ivb.min.js` | The parts of D3 the map uses (ISC licence); `tools/build-d3.sh` rebuilds it |
 | `sw.js`, `manifest.webmanifest` | Offline use and installing on a phone |
 | `tests/run.js` | Data and logic checks |
-| `tests/ui.mjs` | Browser checks, including accessibility |
+| `tests/ui.mjs` | Browser checks, including accessibility; `--live` checks the published site |
+| `docs/design.md` | How the connection finder, the dated planner, the circuit scheduler and the track tracer work |
 
 ## Keeping it current
 
