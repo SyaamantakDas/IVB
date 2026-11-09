@@ -76,7 +76,7 @@ The site will be at `https://<you>.github.io/ivb/`. On a phone, open it and choo
 | `lib/polyline.js` | Reads and writes the track lines in `data/shapes.json` |
 | `tools/` | The GTFS build, the track tracer and the data layout check; see [DATA.md](DATA.md) |
 | `data/` | All the data, as plain JSON; see [DATA.md](DATA.md) |
-| `vendor/d3.min.js` | D3 7.9.0 for the map (ISC licence) |
+| `vendor/d3.ivb.min.js` | The parts of D3 the map uses (ISC licence); `tools/build-d3.sh` rebuilds it |
 | `sw.js`, `manifest.webmanifest` | Offline use and installing on a phone |
 | `tests/run.js` | Data and logic checks |
 
