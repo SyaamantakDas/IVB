@@ -1,10 +1,14 @@
 // Browser checks: the site as a visitor uses it, in Chromium, under its own content security policy.
-// Run with: node tests/ui.mjs   (needs Playwright with Chromium; axe-core too, for the accessibility checks)
+//   node tests/ui.mjs                   the working copy, served from this folder, with the pages and GTFS feed
+//                                       that tools/build-pages.mjs and tools/build-gtfs.mjs built, if they are there
+//   node tests/ui.mjs --live [address]  the published site (https://syaamantakdas.github.io/IVB/ unless given);
+//                                       also checks that it runs the code on main and that its timetables are fresh
+// Needs Playwright with Chromium, and axe-core for the accessibility checks (npm ci installs both).
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { dirname, join, extname, normalize } from "node:path";
+import { dirname, join, extname, resolve, sep } from "node:path";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -15,7 +19,12 @@ try {
   /* accessibility checks skipped */
 }
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const SITE = "https://syaamantakdas.github.io/IVB/"; // where the sitemap says the pages are
+const liveAt = process.argv.indexOf("--live");
+const LIVE = liveAt > 0;
+let base = LIVE ? (process.argv[liveAt + 1] || SITE).replace(/\/?$/, "/") : "";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -30,23 +39,30 @@ const TYPES = {
   ".xml": "application/xml",
   ".zip": "application/zip",
 };
-const server = createServer(async (req, res) => {
-  let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
-  if (path.endsWith("/")) path += "index.html";
-  const file = normalize(join(root, path));
-  if (!file.startsWith(root)) {
-    res.writeHead(403).end();
-    return;
-  }
-  try {
-    const body = await readFile(file);
-    res.writeHead(200, { "Content-Type": TYPES[extname(file)] || "application/octet-stream" }).end(body);
-  } catch {
+let server = null;
+if (!LIVE) {
+  // the working copy, then the generated pages in pages/, as the deploy job lays them over it
+  const dirs = [root, join(root, "pages")];
+  server = createServer(async (req, res) => {
+    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (path.endsWith("/")) path += "index.html";
+    for (const dir of dirs) {
+      const file = resolve(dir, "." + path);
+      if (!file.startsWith(dir + sep)) break;
+      try {
+        const body = await readFile(file);
+        res.writeHead(200, { "Content-Type": TYPES[extname(file)] || "application/octet-stream" }).end(body);
+        return;
+      } catch {
+        /* not here: try the next folder */
+      }
+    }
     res.writeHead(404).end("not found");
-  }
-});
-await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const base = `http://127.0.0.1:${server.address().port}/`;
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  base = `http://127.0.0.1:${server.address().port}/`;
+}
+console.log(`Checking ${LIVE ? "the published site" : "the working copy"} at ${base}`);
 
 let failures = 0,
   passes = 0;
@@ -57,6 +73,34 @@ const ok = (cond, msg) => {
     console.log("  FAIL", msg);
   }
 };
+const warn = (msg) => console.log(process.env.GITHUB_ACTIONS ? `::warning::${msg}` : `  WARN ${msg}`);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// a Monday at least this many days ahead, as YYYY-MM-DD
+const monday = (days) => {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7));
+  return d.toISOString().slice(0, 10);
+};
+// fetch, trying again when the server is busy or the network drops
+async function get(url, method = "GET") {
+  let last = "no answer";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "User-Agent": "IVB-site-check/1.0 (+https://github.com/SyaamantakDas/IVB)" },
+      });
+      if (res.status < 500 && res.status !== 429) return res;
+      last = res.status;
+    } catch (e) {
+      last = e.message;
+    }
+    await sleep(3000 * (attempt + 1));
+  }
+  return { ok: false, status: last };
+}
+
 const browser = await chromium.launch();
 const problems = [];
 async function open(path, opts = {}) {
@@ -69,6 +113,15 @@ async function open(path, opts = {}) {
   await page.goto(base + path);
   return page;
 }
+// axe-core's findings on an open page (it needs the page's own content security policy bypassed to load)
+const axe = async (p) => {
+  await p.addScriptTag({ path: AXE });
+  return p.evaluate(async () =>
+    (await window.axe.run(document, { resultTypes: ["violations"] })).violations.map(
+      (x) => `${x.id} (${x.nodes.length})`,
+    ),
+  );
+};
 const trackLoaded = (p) =>
   p.waitForFunction(() => /track/.test(document.getElementById("lg-note").textContent), null, { timeout: 15000 });
 
@@ -107,9 +160,7 @@ console.log("Connections");
 
 console.log("Dated journeys");
 {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); // next Monday
-  const iso = d.toISOString().slice(0, 10);
+  const iso = monday(1);
   const p = await open(`index.html?from=Chennai&to=Mysuru&on=${iso}`);
   await p.waitForSelector(".jcard");
   ok(
@@ -126,7 +177,8 @@ console.log("Dated journeys");
 
 console.log("Your own circuit");
 {
-  const p = await open("index.html?loop=own&stops=delhi.2,agra.1,varanasi.2&date=2027-01-11#circuits");
+  // far enough ahead that no ride is on sale yet (tickets go on sale 60 days ahead), so there are dates to remind of
+  const p = await open(`index.html?loop=own&stops=delhi.2,agra.1,varanasi.2&date=${monday(70)}#circuits`);
   await p.waitForSelector(".own-list");
   ok((await p.$$(".own-list li")).length === 3, "the link sets the places");
   await p.selectOption("#own-add", "goa");
@@ -175,20 +227,97 @@ if (AXE) {
     for (const colorScheme of ["light", "dark"]) {
       const p = await open(path, { bypassCSP: true, colorScheme });
       await p.waitForSelector(wait);
-      await p.addScriptTag({ path: AXE });
-      const v = await p.evaluate(async () =>
-        (await window.axe.run(document, { resultTypes: ["violations"] })).violations.map(
-          (x) => `${x.id} (${x.nodes.length})`,
-        ),
-      );
+      const v = await axe(p);
       ok(v.length === 0, `${path} in ${colorScheme}: ${v.join(", ")}`);
       await p.context().close();
     }
   }
 }
 
+console.log("Sitemap and generated pages");
+const sitemap = await get(base + "sitemap.xml");
+if (!sitemap.ok && !LIVE) console.log("  skipped: none built (node tools/build-pages.mjs pages)");
+else {
+  ok(sitemap.ok, `the sitemap answers (${sitemap.status})`);
+  const locs = sitemap.ok ? [...(await sitemap.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]) : [];
+  ok(locs.length >= 1000, `the sitemap lists every page (${locs.length})`);
+  ok(
+    locs.every((u) => u.startsWith(SITE)),
+    "every address in the sitemap is on the site",
+  );
+  const rel = (u) => u.slice(SITE.length);
+  // every address answers: a few at a time, with HEAD, so as to be gentle with the server
+  const bad = [];
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: 6 }, async () => {
+      while (next < locs.length) {
+        const u = locs[next++];
+        const res = await get(base + rel(u), "HEAD");
+        if (!res.ok) bad.push(`${rel(u) || "/"} (${res.status})`);
+      }
+    }),
+  );
+  ok(
+    bad.length === 0,
+    `every address in the sitemap answers: ${bad.slice(0, 10).join(", ")}${bad.length > 10 ? ` and ${bad.length - 10} more` : ""}`,
+  );
+  // one page of each kind: it has its heading and no errors under its policy (no scripts at all), and passes axe
+  const kinds = ["train/", "station/", "place/", "go/", "loop/", "browse/", "privacy/"];
+  const samples = kinds.map((k) => locs.map(rel).find((p) => p.startsWith(k))).filter(Boolean);
+  ok(samples.length === kinds.length, `the sitemap has a page of every kind (${samples.join(", ")})`);
+  for (const path of samples) {
+    const p = await open(path);
+    ok((await p.$$("h1")).length === 1, `${path} has one main heading`);
+    await p.context().close();
+    if (!AXE) continue;
+    for (const colorScheme of ["light", "dark"]) {
+      const q = await open(path, { bypassCSP: true, colorScheme });
+      const v = await axe(q);
+      ok(v.length === 0, `${path} in ${colorScheme}: ${v.join(", ")}`);
+      await q.context().close();
+    }
+  }
+}
+
+console.log("GTFS feed");
+const zip = await get(base + "gtfs/ivb-gtfs.zip");
+if (!zip.ok && !LIVE) console.log("  skipped: none built (node tools/build-gtfs.mjs gtfs)");
+else {
+  const buf = zip.ok ? Buffer.from(await zip.arrayBuffer()) : Buffer.alloc(0);
+  ok(buf.length > 10000 && buf.readUInt32LE(0) === 0x04034b50, `the feed downloads as a zip (${zip.status})`);
+  const missing = ["agency", "stops", "routes", "trips", "stop_times", "calendar", "shapes", "feed_info"]
+    .map((f) => f + ".txt")
+    .filter((f) => !buf.includes(f));
+  ok(missing.length === 0, `the feed has every file: ${missing.join(", ")} missing`);
+}
+
+if (LIVE) {
+  console.log("The published site");
+  // the deploy job lays the generated pages over a checkout of main, so these should match this checkout
+  const files = ["index.html", "sw.js", "assets/app.js", "assets/app.css", "data/routes.json", "data/timetables.json"];
+  const differ = [];
+  let timetables = null;
+  for (const f of files) {
+    const res = await get(base + f);
+    const body = res.ok ? Buffer.from(await res.arrayBuffer()) : null;
+    if (!body || !body.equals(await readFile(join(root, f)))) differ.push(`${f} (${res.status})`);
+    if (body && f === "data/timetables.json") timetables = JSON.parse(body.toString());
+  }
+  ok(
+    differ.length === 0,
+    `the site runs the code on main; these differ: ${differ.join(", ")}. Did the last deploy fail?`,
+  );
+  // the GTFS feed's calendar runs for 364 days from the day the timetables were checked
+  const checked = timetables?.checked;
+  const age = checked ? Math.floor((Date.now() - Date.parse(checked)) / 864e5) : Infinity;
+  ok(age < 330, `the timetables were checked less than 330 days ago (${checked}), before the GTFS feed runs out`);
+  if (age >= 90 && age < 330)
+    warn(`The timetables were last checked on ${checked}, ${age} days ago: time to check them again.`);
+}
+
 ok(problems.length === 0, `no errors in the console: ${problems.join(" | ")}`);
 await browser.close();
-server.close();
+server?.close();
 console.log(`\n${passes} checks passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);

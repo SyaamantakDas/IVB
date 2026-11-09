@@ -42,10 +42,6 @@ jobs:
         run: npx tsc -p jsconfig.json
       - name: Check file sizes against their budgets
         run: node tools/check-size.mjs
-      - name: Test the site in a browser, with accessibility checks
-        run: |
-          npx playwright install --with-deps chromium
-          node tests/ui.mjs
       - name: Build the GTFS feed
         run: node tools/build-gtfs.mjs gtfs
       - name: Validate it with MobilityData's GTFS Validator
@@ -63,6 +59,10 @@ jobs:
         with:
           name: pages
           path: pages/
+      - name: Test the site in a browser, generated pages and feed included, with accessibility checks
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/ui.mjs
 
   deploy:
     if: github.event_name != 'pull_request'
