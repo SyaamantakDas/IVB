@@ -45,10 +45,21 @@ python3 -m http.server 8000
 Run the checks (Node 18 or later, no packages needed):
 
 ```sh
-node tests/run.js
+node tests/run.js          # data and logic
+node tools/check-size.mjs  # file sizes against their budgets
 ```
 
-The tests check that every route, timetable, destination and circuit is consistent, that the connection finder finds known journeys, and that both circuits only use trains on days they run.
+The tests check that every route, timetable, destination and circuit is consistent, that the connection finder and the dated planner find known journeys, that every circuit only uses trains on days they run, and that each track line starts and ends at its stations.
+
+Two more checks run on every change in GitHub Actions, and locally if you have the packages:
+
+```sh
+npx -p typescript tsc -p jsconfig.json                      # the library's types (JSDoc, lib/types.js)
+npm i --no-save playwright axe-core && npx playwright install chromium
+node tests/ui.mjs                                           # the site in a browser, with axe-core accessibility checks
+```
+
+The site sets a strict content security policy: it loads nothing from other servers (the fonts are in `assets/fonts`), runs no inline script and sends no data anywhere.
 
 ## Put it on GitHub Pages
 
@@ -79,6 +90,7 @@ The site will be at `https://<you>.github.io/ivb/`. On a phone, open it and choo
 | `vendor/d3.ivb.min.js` | The parts of D3 the map uses (ISC licence); `tools/build-d3.sh` rebuilds it |
 | `sw.js`, `manifest.webmanifest` | Offline use and installing on a phone |
 | `tests/run.js` | Data and logic checks |
+| `tests/ui.mjs` | Browser checks, including accessibility |
 
 ## Keeping it current
 

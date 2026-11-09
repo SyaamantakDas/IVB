@@ -1,0 +1,27 @@
+name: Something about a train is wrong
+description: A time, day off, halt or route that IVB shows wrongly, or a new or withdrawn train
+title: "Train "
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you. A link to where you saw the right information (NTES, IRCTC, a Railway Board circular or a news report) helps most.
+  - type: input
+    id: train
+    attributes:
+      label: Train number
+      placeholder: "22435"
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong
+      description: What IVB shows, and what it should be.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Where you saw the right information
+      placeholder: https://enquiry.indianrail.gov.in/

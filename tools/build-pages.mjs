@@ -46,6 +46,7 @@ function page(path, { title, description, h1, kicker, body, image, jsonld }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${url}">
@@ -58,9 +59,7 @@ function page(path, { title, description, h1, kicker, body, image, jsonld }) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#13213B">
 <link rel="icon" href="${up}assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Teko:wght@500;600&display=swap">
+<link rel="preload" href="${up}assets/fonts/hind-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${up}assets/pages.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
 <body>
@@ -113,7 +112,7 @@ for (const t of trainsSorted) {
 <table><caption>Timetable</caption><thead><tr><th>Station</th><th>Arrives</th><th>Leaves</th><th>Day</th><th>Distance</th></tr></thead><tbody>${rows}</tbody></table>
 ${t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
 ${back ? `<p>The return train is ${link(path, trainPath(back.num), back.num)}, ${esc(ST.get(back.from).name)} to ${esc(ST.get(back.to).name)}.</p>` : ""}
-<p class="src">Checked ${longDate(t.checked)} against ${srcs.length > 1 ? srcs.slice(0, -1).join(", ") + " and " + srcs[srcs.length - 1] : srcs[0]}. Distances are measured along the track.</p>`,
+<p class="src">Checked ${longDate(t.checked)} against ${srcs.length > 1 ? srcs.slice(0, -1).join(", ") + " and " + srcs[srcs.length - 1] : srcs[0]}. Distances are measured along the track. Something wrong? <a href="https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&amp;title=${encodeURIComponent(`Train ${t.num}: `)}&amp;train=${t.num}">Report a problem</a>.</p>`,
     jsonld: {
       "@context": "https://schema.org", "@type": "TrainTrip", name, trainNumber: t.num, trainName: kind(r),
       departureStation: { "@type": "TrainStation", name: ST.get(first).name }, arrivalStation: { "@type": "TrainStation", name: ST.get(last).name },

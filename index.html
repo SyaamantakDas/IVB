@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>IVB: India on Vande Bharat</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="See India on India’s finest trains. Find every Vande Bharat-only connection between two stations, and plan circuits of India by Vande Bharat with dates, what to see and the best season.">
@@ -23,9 +24,8 @@
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest" data-pwa>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Teko:wght@500;600&display=swap">
+<link rel="preload" href="assets/fonts/hind-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/teko-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
@@ -33,10 +33,10 @@
   <header class="masthead">
     <a class="brand" href="#connections" aria-label="IVB, India on Vande Bharat: home">
       <svg class="logo" viewBox="-2 -7 275.77 115" role="img" aria-label="I love B: IVB, India on Vande Bharat"><defs><linearGradient id="ivblogos" gradientUnits="userSpaceOnUse" x1="55.78" y1="-5" x2="172.1" y2="106"><stop offset="0" stop-color="#F28A33"/><stop offset="0.55" stop-color="#DF6A12"/><stop offset="1" stop-color="#C75A0C"/></linearGradient><mask id="ivblogom" maskUnits="userSpaceOnUse" x="-4000" y="-4000" width="8000" height="8000"><rect x="-4000" y="-4000" width="8000" height="8000" fill="#fff"/><path d="M123.94 68.18L122.89 69.25L121.93 70.33L121.03 71.43L120.2 72.55L119.44 73.68L118.75 74.83L118.11 75.99L117.54 77.16L117.01 78.35L116.54 79.56L116.12 80.77L115.75 82L115.42 83.25L115.14 84.5L114.89 85.77L114.68 87.05L114.5 88.34L114.35 89.64L114.23 90.95L114.13 92.27L114.06 93.61L114 94.95L113.97 96.3L113.94 97.66L113.93 99.03L113.93 100.41L113.93 101.8L113.93 103.19L113.94 104.59L113.94 106" fill="none" stroke="#000" stroke-width="4.4" stroke-linecap="round"/></mask></defs><path d="M0 100V85.92L10.37 83.72V16.35L0 14.15V-0H44.78V14.15L34.41 16.35V83.72L44.78 85.92V100Z" class="logo-ink"/><path d="M113.94 91.99L74.17 52.99A28 28 0 1 1 113.94 13.57A28 28 0 1 1 153.71 52.99Z" fill="none" stroke="url(#ivblogos)" stroke-width="20" stroke-linejoin="miter" stroke-miterlimit="6" mask="url(#ivblogom)"/><path d="M136.76 55.6L123.94 68.18L122.89 69.25L121.93 70.33L121.03 71.43L120.2 72.55L119.44 73.68L118.75 74.83L118.11 75.99L117.54 77.16L117.01 78.35L116.54 79.56L116.12 80.77L115.75 82L115.42 83.25L115.14 84.5L114.89 85.77L114.68 87.05L114.5 88.34L114.35 89.64L114.23 90.95L114.13 92.27L114.06 93.61L114 94.95L113.97 96.3L113.94 97.66L113.93 99.03L113.93 100.41L113.93 101.8L113.93 103.19L113.94 104.59L113.94 106L150.77 69.88Z" fill="url(#ivblogos)"/><path d="M118.97 76.69L118.56 77.8L118.21 78.84L117.91 79.84L117.65 80.79L117.42 81.71L117.23 82.6L117.06 83.47L116.91 84.32L116.78 85.14L116.67 85.96L116.57 86.75L116.48 87.54L116.41 88.31L116.34 89.07L116.29 89.83L116.24 90.58L132.43 74.7L126.83 68.99Z" fill="#13213B" stroke="#13213B" stroke-width="2.8" stroke-linejoin="round"/><path d="M120.45 77.71L126.35 71.93" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="1.12" stroke-linecap="round"/><path d="M131.68 64.23L147.1 49.11L150.46 52.53L135.04 67.65Z" fill="#13213B" stroke="#13213B" stroke-width="2.8" stroke-linejoin="round"/><circle cx="119.99" cy="94.46" r="1.5" fill="#FFFFFF"/><g transform="translate(183.1 0)"><path d="M0 100V85.92L10.37 83.72V16.35L0 14.15V-0H10.37H45.26Q64.15 -0 74.73 6.94Q85.3 13.87 85.3 27.61Q85.3 34.68 81.94 40.28Q78.57 45.88 71.57 48.76Q77.54 50.07 81.32 53.19Q85.1 56.32 86.88 60.75Q88.67 65.18 88.67 70.33Q88.67 85.03 78.85 92.51Q69.02 100 50.34 100ZM34.48 81.66H50.34Q57.49 81.66 61.09 78.85Q64.7 76.03 64.7 70.26Q64.7 63.8 61.57 60.61Q58.45 57.42 51.51 57.42H34.48ZM34.48 41.48H44.23Q52.75 41.48 56.97 38.77Q61.2 36.06 61.2 30.36Q61.2 24.11 57.25 21.26Q53.3 18.41 45.26 18.41H34.48Z" class="logo-ink"/></g></svg>
-      <span class="brand-text">
-        <span class="brand-name">India on Vande Bharat</span>
+      <div class="brand-text">
+        <h1 class="brand-name">India on Vande Bharat</h1>
         <span class="brand-dek">See India on India’s finest trains</span>
-      </span>
+      </div>
     </a>
     <dl class="tally" aria-label="Network summary">
       <div><dt>Train pairs</dt><dd id="n-pairs">–</dd></div>
@@ -154,15 +154,15 @@
 
       <footer class="notes">
         <div>
-          <h3>About IVB</h3>
+          <h2>About IVB</h2>
           <p>IVB is an unofficial planner and is not connected with Indian Railways or IRCTC. It covers the Vande Bharat network as it ran on 8 November 2026, including the three Vande Bharat Sleepers. Timetables were last checked on <span id="checked-date">8 November 2026</span> against the sources named on each train, and days off differ between sources for a few trains. Check NTES or IRCTC before you book.</p>
         </div>
         <div>
-          <h3>How it works</h3>
+          <h2>How it works</h2>
           <p>Connections search every route for journeys on Vande Bharats alone, allowing a change of station by road within a city. Circuits are laid out day by day around each train's day off. The season chart scores each start date by how many nights fall in each place's best months. Lines on the map and distances follow the track as mapped by <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>; the track data is © OpenStreetMap contributors, under the ODbL.</p>
         </div>
         <div>
-          <h3>Data</h3>
+          <h2>Data</h2>
           <p>Routes and halts from Railway Board circulars, Wikipedia and railway timetable sites; station positions and the map from DataMeet and the Survey of India outline. The code (MIT licence) and data (ODbL) are open, so corrections can be sent as changes to the data files. The timetables are also published as a <a href="gtfs/ivb-gtfs.zip">GTFS feed</a> for other apps to use, and every train, station and place has its own page: <a href="browse/">browse them all</a>.</p>
           <p>© 2026 Syaamantak Das</p>
         </div>

@@ -52,7 +52,12 @@ function provenance(t) {
     links.push(`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}</a>`);
   }
   const list = links.length > 1 ? links.slice(0, -1).join(", ") + " and " + links[links.length - 1] : links[0];
-  return `${t.checked ? `Checked ${esc(fmtISO(t.checked))}` : "Checked"} against ${list}`;
+  return `${t.checked ? `Checked ${esc(fmtISO(t.checked))}` : "Checked"} against ${list} (${reportLink(t.num)})`;
+}
+// An issue form on GitHub, with the train filled in
+function reportLink(num) {
+  const url = `https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&title=${encodeURIComponent(`Train ${num}: `)}&train=${encodeURIComponent(num)}`;
+  return `<a href="${url}" target="_blank" rel="noopener">report a problem</a>`;
 }
 const fmtDur = (min) => (min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`);
 
@@ -358,7 +363,7 @@ function start(raw) {
       } else {
         body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map(trainNum).join(" · "))}</p>`;
       }
-      return `<li><div class="jcard${open ? " open" : ""}" role="button" tabindex="0" data-j="${k}" aria-pressed="${open}" aria-expanded="${open}"><div class="jsum"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
+      return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
     }).join("");
     syncURL();
     el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
@@ -402,7 +407,7 @@ function start(raw) {
       } else {
         body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map((l) => l.train.num).join(" · "))}</p>`;
       }
-      return `<li><div class="jcard${open ? " open" : ""}" role="button" tabindex="0" data-j="${k}" aria-pressed="${open}" aria-expanded="${open}"><div class="jsum"><b>${j.trains === 1 ? "Direct" : `${j.trains} trains`}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
+      return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${j.trains === 1 ? "Direct" : `${j.trains} trains`}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
     }).join("");
     syncURL();
     el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
@@ -829,14 +834,14 @@ function start(raw) {
   function pickJourney(card) {
     state.jSel = +card.dataset.j; state.leg = null;
     renderResults();
-    const again = panel.querySelector(`.jcard[data-j="${state.jSel}"]`);
+    const again = panel.querySelector(`.jcard[data-j="${state.jSel}"] .jsum`);
     if (again) again.focus({ preventScroll: true });
     refreshMap(true);
     if (getComputedStyle(panel).overflowY === "visible") mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }
   panel.addEventListener("keydown", (e) => {
-    const card = e.target.closest && e.target.closest(".jcard");
-    if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickJourney(card); }
+    const sum = e.target.closest && e.target.closest(".jsum[role=button]");
+    if (sum && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickJourney(sum.closest(".jcard")); }
   });
   panel.addEventListener("click", (e) => {
     const card = e.target.closest(".jcard");

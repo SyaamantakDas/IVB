@@ -19,16 +19,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
-      - uses: actions/setup-java@v4
+          node-version: 24
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
       - run: node tools/format-data.mjs --check
       - run: node tests/run.js
+      - name: Check the library's types
+        run: npx -y -p typescript@5.6.3 tsc -p jsconfig.json
+      - name: Check file sizes against their budgets
+        run: node tools/check-size.mjs
+      - name: Test the site in a browser, with accessibility checks
+        run: |
+          npm i --no-save --no-package-lock playwright@1.56.0 axe-core@4.10.2
+          npx playwright install --with-deps chromium
+          node tests/ui.mjs
       - name: Build the GTFS feed
         run: node tools/build-gtfs.mjs gtfs
       - name: Validate it with MobilityData's GTFS Validator
@@ -36,13 +45,13 @@ jobs:
           curl -sSfL -o gtfs-validator.jar https://github.com/MobilityData/gtfs-validator/releases/download/v7.1.0/gtfs-validator-7.1.0-cli.jar
           java -jar gtfs-validator.jar -i gtfs/ivb-gtfs.zip -o gtfs/report -c in
           node tools/check-gtfs-report.mjs gtfs/report/report.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: gtfs
           path: gtfs/
       - name: Build a page for every train, station, place, journey and circuit
         run: node tools/build-pages.mjs pages
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: pages
           path: pages/
@@ -55,18 +64,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: gtfs
           path: gtfs/
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: pages
           path: .
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: .
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
