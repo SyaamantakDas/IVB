@@ -71,7 +71,9 @@ self.addEventListener("fetch", (e) => {
   // a page is kept under its address without the query (the app reads its query itself); a file under its full
   // address, version tag included
   const key = page ? url : req.url;
-  const fresh = fetch(req, { cache: "no-cache" });
+  // a page is fetched by its address: some browsers refuse to send a page's own request again with other options;
+  // and inside an async function, a request the browser refuses becomes a failure to fall back from, not an error
+  const fresh = (async () => fetch(page ? req.url : req, { cache: "no-cache" }))();
   // keep the app's files, and the pages visited, for offline use
   e.waitUntil(
     fresh

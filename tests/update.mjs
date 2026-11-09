@@ -113,9 +113,13 @@ try {
   ok(seen[0] === "new/new/new", `in fact on the first reload: ${seen[0]}`);
 
   await ctx.setOffline(true);
-  await page.reload();
-  await settle();
-  ok((await version()).join() === "new,new,new", `offline, the site still opens, whole: ${await version()}`);
+  const opened = await page
+    .reload()
+    .then(() => settle())
+    .then(() => true)
+    .catch((e) => String(e.message).split("\n")[0]);
+  ok(opened === true, `offline, the site still opens: ${opened}`);
+  if (opened === true) ok((await version()).join() === "new,new,new", `offline, whole: ${await version()}`);
 } catch (e) {
   ok(false, String(e.message).split("\n")[0]);
 }

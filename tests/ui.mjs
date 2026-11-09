@@ -115,17 +115,21 @@ async function get(url, method = "GET") {
 const browser = await engine.launch();
 const problems = [];
 let current = null; // the page a check is looking at, for a screenshot if it fails
-async function open(path, opts = {}) {
-  if (BROWSER === "firefox") delete opts.isMobile; // Firefox has no mobile mode; the size and touch still apply
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true, ...opts });
-  const page = await ctx.newPage();
-  current = page;
+// errors in a page's console count against the site
+function listen(page, path) {
   page.on("console", (m) => {
     // WebKit reports the style Playwright adds to take a screenshot, which the site's policy refuses: not the site's
     const shooting = SHOTS && BROWSER === "webkit" && /^Refused to apply a stylesheet/.test(m.text());
     if (m.type() === "error" && !shooting) problems.push(`${path}: ${m.text()}`);
   });
   page.on("pageerror", (e) => problems.push(`${path}: ${e.message}`));
+}
+async function open(path, opts = {}) {
+  if (BROWSER === "firefox") delete opts.isMobile; // Firefox has no mobile mode; the size and touch still apply
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true, ...opts });
+  const page = await ctx.newPage();
+  current = page;
+  listen(page, path);
   await page.goto(base + path);
   return page;
 }
@@ -298,8 +302,7 @@ await section("Light or dark", async () => {
   // the plain pages follow the choice, and a choice made on one page reaches the others
   if (LIVE || (await get(base + "privacy/")).ok) {
     const q = await p.context().newPage();
-    q.on("console", (m) => m.type() === "error" && problems.push(`privacy/: ${m.text()}`));
-    q.on("pageerror", (e) => problems.push(`privacy/: ${e.message}`));
+    listen(q, "privacy/");
     await pick(p, "light");
     await q.goto(base + "privacy/");
     await ready(q);
