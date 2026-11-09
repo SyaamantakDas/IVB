@@ -37,6 +37,8 @@ jobs:
       - name: Bubblewrap
         run: |
           npm i -g @bubblewrap/cli@1.27.0
+          # Bubblewrap looks for the SDK's command-line tools in bin/ or tools/ at the SDK's root
+          [ -e "$ANDROID_HOME/bin" ] || [ -e "$ANDROID_HOME/tools" ] || sudo ln -s "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
           mkdir -p ~/.bubblewrap
           printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_HOME" > ~/.bubblewrap/config.json
       - name: Set the version
