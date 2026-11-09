@@ -37,7 +37,7 @@
   {"n": "20641/20642", "l": "Coimbatore – Bengaluru Cantt", "t": "cc", "s": ["CBE", "TUP", "ED", "SA", "DPJ", "HSRA", "BNC"], "note": "", "u": [], "km": 372, "k": [0, 48, 98, 158, 225, 317, 372]},
   {"n": "20645/20646", "l": "Mangaluru – Madgaon", "t": "cc", "s": ["MAQ", "UD", "KAWR", "MAO"], "note": "", "u": [], "km": 319, "k": [0, 68, 259, 319]},
   {"n": "20705/20706", "l": "Hazur Sahib Nanded – Mumbai CSMT", "t": "cc", "s": ["NED", "PBN", "J", "CPSN", "MMR", "NK", "KYN", "TNA", "DR", "CSMT"], "note": "", "u": [], "km": 604, "k": [0, 59, 173, 236, 348, 421, 554, 572, 596, 604]},
-  {"n": "22477/22478", "l": "Shri Mata Vaishno Devi Katra – New Delhi", "t": "cc", "s": ["SVDK", "MCTM", "JAT", "KTHU", "LDH", "UMB", "NDLS"], "note": "", "u": [], "km": 655, "k": [0, 25, 78, 154, 342, 456, 655]},
+  {"n": "22477/22478", "l": "Shri Mata Vaishno Devi Katra – New Delhi", "t": "cc", "s": ["SVDK", "MCTM", "JAT", "MSKT", "LDH", "UMB", "NDLS"], "note": "", "u": [], "km": 655, "k": [0, 25, 78, 154, 342, 456, 655]},
   {"n": "22425/22426", "l": "Anand Vihar – Ayodhya Cantt", "t": "cc", "s": ["ANVT", "KRJ", "ALJN", "CNB", "LKO", "AYC"], "note": "", "u": [], "km": 628, "k": [0, 75, 119, 428, 500, 628]},
   {"n": "22487/22488", "l": "Amritsar – Delhi", "t": "cc", "s": ["ASR", "BEAS", "JRC", "PGW", "LDH", "UMB", "DLI"], "note": "", "u": [], "km": 449, "k": [0, 43, 84, 101, 137, 250, 449]},
   {"n": "22961/22962", "l": "Ahmedabad – Mumbai Central", "t": "cc", "s": ["ADI", "BRC", "ST", "VAPI", "BVI", "MMCT"], "note": "", "u": [], "km": 494, "k": [0, 100, 230, 325, 464, 494]},
