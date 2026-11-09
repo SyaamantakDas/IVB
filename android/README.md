@@ -40,5 +40,5 @@ The Android app is a Trusted Web Activity: it opens https://syaamantakdas.github
 ## Notes
 
 - Google Play needs a developer account in your name (a one-time fee, and identity checks) and, for a new personal account, a closed test with testers before the app can go to production. *Check* Play Console's current requirements when you start.
-- The app targets Android 16 (API level 36), the level Bubblewrap 1.27 uses.
+- The app runs on Android 7.0 and later (API level 24, the least its browser helper library supports) and targets Android 16 (API level 36), the level Bubblewrap 1.27 uses.
 - To change the app's name, colours or shortcuts, edit `twa-manifest.json` and build again; the website's own changes reach the app without a new release.
