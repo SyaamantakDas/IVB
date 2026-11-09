@@ -1,15 +1,76 @@
 {
+  "id": "./",
   "name": "IVB: India on Vande Bharat",
   "short_name": "IVB",
   "description": "See India on India’s finest trains: plan journeys and circuits on Vande Bharat trains alone.",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "travel",
+    "navigation"
+  ],
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#EDF1F6",
   "theme_color": "#13213B",
   "icons": [
-    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Connections",
+      "short_name": "Connections",
+      "description": "Journeys between two places on Vande Bharats alone",
+      "url": "./#connections",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Circuits",
+      "short_name": "Circuits",
+      "description": "Round trips laid out around each train's day off",
+      "url": "./#circuits",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Trains",
+      "short_name": "Trains",
+      "description": "Every Vande Bharat, with its times and days",
+      "url": "./#trains",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

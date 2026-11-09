@@ -33,6 +33,10 @@ To build it yourself: `node tools/build-gtfs.mjs` writes the feed to `gtfs/`.
 
 Besides the app, the site has a plain page for every train (`train/22435/`), station (`station/ndls/`), place (`place/varanasi/`), journey between two places (`go/delhi-to-varanasi/`) and circuit (`loop/loop/`), with an index at [browse/](https://syaamantakdas.github.io/IVB/browse/) and a [sitemap](https://syaamantakdas.github.io/IVB/sitemap.xml). They work without JavaScript, so search engines and slow phones can read them. `tools/build-pages.mjs` builds them on every change; they are not kept in the repository. To have Google index them, add the site to [Google Search Console](https://search.google.com/search-console) and submit the sitemap (a `robots.txt` only counts at the root of a domain, so this project site cannot use one).
 
+## The Android app
+
+IVB is also packaged for Google Play as a Trusted Web Activity: the app opens the site full screen, so it always shows the current version. [android/README.md](android/README.md) explains the one-time setup and each release; the **Build the Android app** workflow builds it.
+
 ## Run it locally
 
 The site loads its data with `fetch`, so open it through a web server rather than straight from disk:

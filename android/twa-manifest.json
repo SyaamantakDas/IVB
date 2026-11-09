@@ -1,0 +1,66 @@
+{
+  "packageId": "io.github.syaamantakdas.ivb",
+  "host": "syaamantakdas.github.io",
+  "name": "IVB: India on Vande Bharat",
+  "launcherName": "IVB",
+  "display": "standalone",
+  "themeColor": "#13213B",
+  "themeColorDark": "#0A111D",
+  "navigationColor": "#13213B",
+  "navigationColorDark": "#0A111D",
+  "navigationDividerColor": "#13213B",
+  "navigationDividerColorDark": "#0A111D",
+  "backgroundColor": "#EDF1F6",
+  "enableNotifications": false,
+  "startUrl": "/IVB/",
+  "iconUrl": "https://syaamantakdas.github.io/IVB/assets/icon-512.png",
+  "maskableIconUrl": "https://syaamantakdas.github.io/IVB/assets/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./ivb-upload.keystore",
+    "alias": "ivb"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Connections",
+      "shortName": "Connections",
+      "url": "https://syaamantakdas.github.io/IVB/#connections",
+      "chosenIconUrl": "https://syaamantakdas.github.io/IVB/assets/icon-192.png"
+    },
+    {
+      "name": "Circuits",
+      "shortName": "Circuits",
+      "url": "https://syaamantakdas.github.io/IVB/#circuits",
+      "chosenIconUrl": "https://syaamantakdas.github.io/IVB/assets/icon-192.png"
+    },
+    {
+      "name": "Trains",
+      "shortName": "Trains",
+      "url": "https://syaamantakdas.github.io/IVB/#trains",
+      "chosenIconUrl": "https://syaamantakdas.github.io/IVB/assets/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://syaamantakdas.github.io/IVB/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://syaamantakdas.github.io/IVB/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

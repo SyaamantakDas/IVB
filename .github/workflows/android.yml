@@ -1,0 +1,86 @@
+name: Build the Android app
+
+# Run by hand (Actions tab, "Run workflow") to build IVB's Android app: a Trusted Web Activity that opens the site
+# full screen, made with Bubblewrap from android/twa-manifest.json. It produces the app bundle (.aab) to upload to
+# Google Play and an .apk to install on a phone for testing. See android/README.md.
+#
+# With the upload key in the repository's secrets (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+# ANDROID_KEY_PASSWORD), the build is signed for Play. Without them it is signed with a throwaway key: fine for
+# trying the .apk on a phone, not for Play.
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: Version name shown to people (1.0.0, 1.0.1 …)
+        default: "1.0.0"
+      versionCode:
+        description: Version code, one more than the last upload to Play (1, 2, 3 …)
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Android SDK packages Bubblewrap needs
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.1.0" "platforms;android-36" > /dev/null
+      - name: Bubblewrap
+        run: |
+          npm i -g @bubblewrap/cli@1.27.0
+          mkdir -p ~/.bubblewrap
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_HOME" > ~/.bubblewrap/config.json
+      - name: Set the version
+        working-directory: android
+        env:
+          NAME: ${{ inputs.versionName }}
+          CODE: ${{ inputs.versionCode }}
+        run: |
+          node -e 'const f="twa-manifest.json",m=JSON.parse(require("fs").readFileSync(f));m.appVersionName=m.appVersion=process.env.NAME;m.appVersionCode=+process.env.CODE;require("fs").writeFileSync(f,JSON.stringify(m,null,2)+"\n")'
+      - name: The signing key
+        working-directory: android
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE" ]; then
+            echo "$KEYSTORE" | base64 -d > ivb-upload.keystore
+            echo "BUBBLEWRAP_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "BUBBLEWRAP_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+          else
+            pw=$(openssl rand -hex 16)
+            echo "::add-mask::$pw"
+            keytool -genkeypair -keystore ivb-upload.keystore -alias ivb -keyalg RSA -keysize 2048 -validity 30 \
+              -storepass "$pw" -keypass "$pw" -dname "CN=IVB test build" > /dev/null
+            echo "BUBBLEWRAP_KEYSTORE_PASSWORD=$pw" >> "$GITHUB_ENV"
+            echo "BUBBLEWRAP_KEY_PASSWORD=$pw" >> "$GITHUB_ENV"
+            echo "::warning::No upload key in the repository's secrets: this build is signed with a throwaway key, for testing on a phone only, not for Google Play."
+          fi
+      - name: Generate the Android project and build it
+        working-directory: android
+        run: |
+          bubblewrap update --skipVersionUpgrade
+          bubblewrap build --skipPwaValidation
+          # Digital Asset Links for this key (and any fingerprints in twa-manifest.json, such as Play's app signing key)
+          export FP=$(keytool -list -v -keystore ivb-upload.keystore -alias ivb -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" | sed -n 's/^[[:space:]]*SHA256: //p')
+          node -e 'const m=require("./twa-manifest.json");const fps=[...new Set([process.env.FP,...(m.fingerprints||[]).map((f)=>f.value)].filter(Boolean))];require("fs").writeFileSync("assetlinks.json",JSON.stringify([{relation:["delegate_permission/common.handle_all_urls"],target:{namespace:"android_app",package_name:m.packageId,sha256_cert_fingerprints:fps}}],null,2)+"\n")'
+          cat assetlinks.json
+          rm -f ivb-upload.keystore
+          ls -la *.aab *.apk assetlinks.json 2>/dev/null || true
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ivb-android-${{ inputs.versionName }}
+          path: |
+            android/app-release-bundle.aab
+            android/app-release-signed.apk
+            android/assetlinks.json

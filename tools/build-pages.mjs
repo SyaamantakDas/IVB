@@ -69,7 +69,7 @@ ${kicker ? `<p class="kicker">${kicker}</p>\n` : ""}<h1>${esc(h1)}</h1>
 ${body}
 </main>
 <footer><p>IVB is an unofficial planner, not connected with Indian Railways or IRCTC. Timetables change at short notice: check NTES or IRCTC before you travel.</p>
-<p>© 2026 Syaamantak Das. Data under the <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a>; track lines © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. <a href="https://github.com/SyaamantakDas/IVB">Source and data</a>.</p></footer>
+<p>© 2026 Syaamantak Das. Data under the <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a>; track lines © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. <a href="https://github.com/SyaamantakDas/IVB">Source and data</a> · <a href="${up}privacy/">Privacy</a>.</p></footer>
 </body>
 </html>
 `;
@@ -217,6 +217,25 @@ for (const c of circuits) {
   });
 }
 
+// ---------- privacy: what IVB keeps (nothing), for visitors and for the Play Store listing
+page("privacy/", {
+  title: "Privacy: IVB collects no personal data",
+  description: "IVB, the website and the Android app, collects no personal data: no accounts, analytics, advertising or cookies. Your choices stay on your device.",
+  kicker: "Privacy",
+  h1: "IVB collects no personal data",
+  body: `<p class="lede">IVB, the website and the Android app, has no accounts, no analytics, no advertising and no cookies, and it sends nothing about you anywhere.</p>
+<h2>What stays on your device</h2>
+<p>The places, dates and settings you choose are kept in your browser's local storage on your own device, so IVB remembers them next time. They never leave the device. Clearing the site's data in your browser removes them.</p>
+<h2>What IVB loads</h2>
+<p>IVB loads only its own files, from syaamantakdas.github.io: its pages, fonts, map and timetables. It loads nothing from other servers. The site is hosted on GitHub Pages, which may record visitors' IP addresses for security; see <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.</p>
+<h2>The Android app</h2>
+<p>The app opens IVB in Chrome or another browser on your phone, as a full-screen window, so that browser's own privacy policy applies too. The app asks for no permissions and collects nothing itself.</p>
+<h2>Links to other sites</h2>
+<p>Links to timetable sources, IRCTC and booking sites, and the form for reporting a problem on GitHub, take you to those sites, whose own privacy policies apply.</p>
+<h2>Questions</h2>
+<p>Ask on <a href="https://github.com/SyaamantakDas/IVB/issues">IVB's issue tracker</a>. This page was last updated on 9 November 2026.</p>`,
+});
+
 // ---------- the index of everything, and the sitemap
 {
   const path = "browse/";
@@ -237,7 +256,7 @@ for (const c of circuits) {
   });
 }
 // clear only what this script writes, so pointing it at the site root can never delete anything else
-for (const dir of ["train", "station", "place", "go", "loop", "browse"]) rmSync(join(out, dir), { recursive: true, force: true });
+for (const dir of ["train", "station", "place", "go", "loop", "browse", "privacy"]) rmSync(join(out, dir), { recursive: true, force: true });
 for (const [path, html] of pages) {
   mkdirSync(join(out, path), { recursive: true });
   writeFileSync(join(out, path, "index.html"), html);
