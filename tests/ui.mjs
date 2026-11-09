@@ -136,7 +136,10 @@ const axe = async (p) => {
 const shot = async (p, name, clip) => {
   if (!SHOTS || !p || p.isClosed()) return;
   mkdirSync(SHOTS, { recursive: true });
-  await p.screenshot({ path: join(SHOTS, `${BROWSER}-${name}.png`), clip }).catch(() => null);
+  // caret: "initial" stops Playwright adding a style of its own, which the site's policy would rightly refuse
+  await p
+    .screenshot({ path: join(SHOTS, `${BROWSER}-${name}.jpg`), clip, type: "jpeg", quality: 70, caret: "initial" })
+    .catch(() => null);
 };
 // each group of checks: one that throws (a page that never shows what it should) counts as a failure, with a
 // screenshot, and the rest still run
@@ -149,6 +152,19 @@ async function section(name, fn) {
     await shot(current, `failed-${name.toLowerCase().replace(/\W+/g, "-")}`);
   }
 }
+// the light-or-dark switch: three options in a row, each about 32 by 28 pixels
+const sideBySide = (p) =>
+  p.$$eval(".theme label", (ls) => {
+    const r = ls.map((l) => l.getBoundingClientRect());
+    return (
+      r.length === 3 &&
+      r.every(
+        (b) => b.width > 20 && b.width < 50 && b.height > 20 && b.height < 50 && Math.abs(b.top - r[0].top) < 2,
+      ) &&
+      r[0].right <= r[1].left + 1 &&
+      r[1].right <= r[2].left + 1
+    );
+  });
 const trackLoaded = (p) =>
   p.waitForFunction(() => /track/.test(document.getElementById("lg-note").textContent), null, { timeout: 15000 });
 
@@ -239,6 +255,7 @@ await section("Phone", async () => {
     "nothing runs off the side of a phone",
   );
   ok(await p.isVisible(".theme"), "the light-or-dark switch is there on a phone");
+  ok(await sideBySide(p), "its three options sit side by side");
   await shot(p, "phone");
   await p.context().close();
 });
@@ -252,6 +269,7 @@ await section("Light or dark", async () => {
   const ready = (p) => p.waitForSelector(".theme:not([hidden])");
   const p = await open("index.html", { colorScheme: "dark" }); // a device set to dark
   await ready(p);
+  ok(await sideBySide(p), "the switch's three options sit side by side, each the size of an icon");
   ok((await chosen(p)) === "auto" && (await bg(p)) === DARK, "the switch starts on the device's setting");
   await pick(p, "light");
   ok((await bg(p)) === LIGHT, "Light turns the page light on a dark device");
