@@ -25,7 +25,7 @@ The fields are name, latitude, longitude, whether the position is approximate (`
 One entry per route, in calling order from one end to the other:
 
 ```json
-{"n": "22435/22436", "l": "New Delhi – Varanasi", "t": "cc", "s": ["NDLS", "CNB", "PRYJ", "BSB"], "note": "", "u": [], "km": 759, "k": [0, 440, 634, 759]}
+{"n": "22435/22436", "l": "New Delhi – Varanasi", "t": "cc", "s": ["NDLS", "CNB", "PRYJ", "BSB"], "note": "", "u": [], "km": 758, "k": [0, 439, 634, 758]}
 ```
 
 - `n`: the train numbers. Two numbers on one route are separated by ` · `.
@@ -104,12 +104,12 @@ The map's lines and the distances by rail come from India's railway lines in Ope
 
 ```sh
 git fetch origin osm-data
-mkdir -p osm && git show origin/osm-data:osm/rail.json.gz > osm/rail.json.gz
+mkdir -p osm && git show FETCH_HEAD:osm/rail.json.gz > osm/rail.json.gz
 node tools/build-shapes.mjs        # writes data/shapes.json and km and k in data/routes.json
 node tools/format-data.mjs
 ```
 
-For each two stops in a row, it looks for the shortest way along broad-gauge track from the track near one station to the track near the next. Freight-only lines and lines outside India count as much longer, so a route never cuts through Bangladesh or along a freight corridor when a passenger line will do. It reports any pair it could not trace, any line much longer than the straight line, and any station more than 600 m from the track, which usually means its position in `stations.json` needs fixing.
+For each two stops in a row, it looks for the shortest way along broad-gauge track from the track near one station to the track near the next. Freight-only lines and lines outside India count as much longer, so a route never cuts through Bangladesh or along a freight corridor when a passenger line will do. Where OpenStreetMap's lines stop short of each other (a few metres, or up to 1.5 km where a bridge or new alignment is missing), it joins the loose end to the nearest track. It reports any pair it could not trace, any line much longer than the straight line, any break in the map a line crosses, and any station more than 600 m from the track, which usually means its position in `stations.json` needs fixing.
 
 ## The weekly check
 

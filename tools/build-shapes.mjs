@@ -5,7 +5,7 @@
 // Usage: node tools/build-shapes.mjs [osm/rail.json.gz] [--tolerance=40] [--dry] [--all] [--out=data]
 //   --dry  report only   --all  report every pair   --out  where to write the two files
 // The railway lines come from .github/workflows/osm-rail.yml, which keeps them on the osm-data branch:
-//   git fetch origin osm-data && git show origin/osm-data:osm/rail.json.gz > osm/rail.json.gz
+//   git fetch origin osm-data && mkdir -p osm && git show FETCH_HEAD:osm/rail.json.gz > osm/rail.json.gz
 //
 // How a line is traced: every point of track within reach of each station is a possible start or end,
 // costed at twice its distance from the station, and A* finds the cheapest way along the track between them.
@@ -26,7 +26,8 @@ const DRY = args.includes("--dry"), ALL = args.includes("--all");
 const OUT = resolve(root, opt("out", "data"));
 const STEP = 0.3; // km: long straight stretches get extra points this far apart, so stations can snap to them
 const SNAP_W = 2, FREIGHT_W = 4, ABROAD_W = 10;
-const MAX_RATIO = 1.8; // a traced line longer than this many times the straight line is reported
+const MAX_RATIO = 3; // a traced line longer than this many times the straight line is not used (mountain and city lines reach 2.6)
+const GAP_KM = 1.5; // the furthest a loose end of track is joined across a break in the map
 
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
 const stations = load("stations.json"), routes = load("routes.json");
@@ -146,9 +147,6 @@ function near(la, lo, km) {
   return out;
 }
 
-// ---------- A* from the track near one station to the track near the next
-const G_ = new Float64Array(N), PREV = new Int32Array(N), SEEN = new Int32Array(N);
-let qid = 0;
 class Heap {
   constructor() { this.k = []; this.v = []; }
   get size() { return this.k.length; }
@@ -174,6 +172,46 @@ class Heap {
     return top;
   }
 }
+
+// ---------- Breaks in the map
+// OpenStreetMap's lines sometimes stop short of each other: two ways that should meet end a few metres apart, or,
+// where a bridge or a new alignment is missing, up to a kilometre or so. Each loose end of track is joined to the
+// nearest track within GAP_KM that cannot be reached along the track within 5 km. A join over 50 m costs three
+// times its length plus 1 km, so it is only used across a real break; the report names every one used.
+const GAPS = new Map(), GAPKM = new Map();
+{
+  let joins = 0;
+  for (let d = 0; d < N; d++) {
+    if (OFF[d + 1] - OFF[d] !== 1) continue;
+    const cands = near(LAT[d], LON[d], GAP_KM).filter(([m]) => m !== d).sort((x, y) => x[1] - y[1]);
+    if (!cands.length) continue;
+    const reach = new Map([[d, 0]]), heap = new Heap();
+    heap.push(0, d);
+    while (heap.size) {
+      const [g, n] = heap.pop();
+      if (g > 5) break;
+      if (g > reach.get(n)) continue;
+      for (let e = OFF[n]; e < OFF[n + 1]; e++) {
+        const m = TO[e], gm = g + WT[e];
+        if (gm < (reach.get(m) ?? Infinity)) { reach.set(m, gm); heap.push(gm, m); }
+      }
+    }
+    const far = cands.find(([m]) => !(reach.get(m) <= 5));
+    if (!far) continue;
+    const [m, km] = far, w = km <= 0.05 ? km : km * 3 + 1;
+    for (const [x, y] of [[d, m], [m, d]]) {
+      if (!GAPS.has(x)) GAPS.set(x, []);
+      GAPS.get(x).push([y, w]);
+      GAPKM.set(x + "," + y, km);
+    }
+    joins++;
+  }
+  stats.joins = joins;
+}
+
+// ---------- A* from the track near one station to the track near the next
+const G_ = new Float64Array(N), PREV = new Int32Array(N), SEEN = new Int32Array(N);
+let qid = 0;
 
 function trace(a, b) {
   const A = stations[a], B = stations[b];
@@ -205,16 +243,24 @@ function trace(a, b) {
       const m = TO[e], gm = gn + WT[e];
       if (gm < g(m)) { SEEN[m] = qid; G_[m] = gm; PREV[m] = n; heap.push(gm + h(m), m); }
     }
+    for (const [m, w] of GAPS.get(n) || []) {
+      const gm = gn + w;
+      if (gm < g(m)) { SEEN[m] = qid; G_[m] = gm; PREV[m] = n; heap.push(gm + h(m), m); }
+    }
   }
   if (end < 0) return { a, b, straight, fail: `no track joins them within ${Math.round(limit)} km` };
   const path = [];
-  for (let n = end; n >= 0; n = PREV[n]) path.push([LAT[n], LON[n]]);
+  let gaps = 0;
+  for (let n = end; n >= 0; n = PREV[n]) {
+    path.push([LAT[n], LON[n]]);
+    if (PREV[n] >= 0 && GAPKM.has(PREV[n] + "," + n) && GAPKM.get(PREV[n] + "," + n) > 0.05) gaps += GAPKM.get(PREV[n] + "," + n);
+  }
   path.reverse();
   const pts = [[A[1], A[2]], ...path, [B[1], B[2]]];
   let km = 0;
   for (let i = 1; i < pts.length; i++) km += hav(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
   const snapA = hav(A[1], A[2], path[0][0], path[0][1]), snapB = hav(B[1], B[2], path[path.length - 1][0], path[path.length - 1][1]);
-  return { a, b, straight, km, pts, snapA, snapB, popped, ratio: km / Math.max(straight, 0.1) };
+  return { a, b, straight, km, pts, snapA, snapB, popped, gaps, ratio: km / Math.max(straight, 0.1) };
 }
 
 // Douglas-Peucker on a local flat projection; keeps both ends
@@ -259,16 +305,16 @@ for (const [key, p] of [...pairs].sort((x, y) => (x[0] < y[0] ? -1 : 1))) {
 }
 
 // ---------- Report
-console.log(`${stats.ways} railway lines (${stats.skippedGauge} not broad gauge left out, ${stats.freight} for freight), ${N} points of track, ${stats.abroad} stretches outside India`);
+console.log(`${stats.ways} railway lines (${stats.skippedGauge} not broad gauge left out, ${stats.freight} for freight), ${N} points of track, ${stats.abroad} stretches outside India, ${stats.joins} loose ends joined across breaks in the map`);
 console.log(`${pairs.size} pairs of stops traced in ${((Date.now() - t0) / 1000).toFixed(1)} s: ${pairs.size - estimated.length} along the track, ${estimated.length} not; ${traced} points simplified to ${points} at ${TOL * 1000} m`);
 const name = (c) => `${stations[c][0]} (${c})`;
 for (const key of estimated) {
   const p = pairs.get(key);
   console.log(`  NOT TRACED ${name(p.a)} to ${name(p.b)}: ${p.fail || `the line found is ${p.km.toFixed(0)} km, ${p.ratio.toFixed(2)} times the ${p.straight.toFixed(0)} km straight line`}`);
 }
-const odd = [...pairs.values()].filter((p) => !p.fail && p.ratio <= MAX_RATIO && (ALL || p.ratio > 1.45 || p.snapA > 0.6 || p.snapB > 0.6));
+const odd = [...pairs.values()].filter((p) => !p.fail && p.ratio <= MAX_RATIO && (ALL || p.ratio > 1.45 || p.snapA > 0.6 || p.snapB > 0.6 || p.gaps > 0));
 for (const p of odd.sort((x, y) => y.ratio - x.ratio)) {
-  console.log(`  check ${name(p.a)} to ${name(p.b)}: ${p.km.toFixed(1)} km by rail, ${p.ratio.toFixed(2)} times the straight line; track ${p.snapA.toFixed(2)} km from ${p.a}, ${p.snapB.toFixed(2)} km from ${p.b}`);
+  console.log(`  check ${name(p.a)} to ${name(p.b)}: ${p.km.toFixed(1)} km by rail, ${p.ratio.toFixed(2)} times the straight line; track ${p.snapA.toFixed(2)} km from ${p.a}, ${p.snapB.toFixed(2)} km from ${p.b}${p.gaps ? `; crosses ${p.gaps.toFixed(2)} km of breaks in the map` : ""}`);
 }
 
 // ---------- Write the files

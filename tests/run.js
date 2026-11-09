@@ -85,7 +85,7 @@ console.log("Track");
     ok(r.k.length === r.s.length && r.k[0] === 0 && r.k.every((x, i) => !i || x >= r.k[i - 1]) && r.km === r.k[r.k.length - 1], `route ${r.n}: k must give the distance to each stop, from 0 up to km`);
     for (let i = 1; i < r.s.length; i++) {
       const d = haversine(at(r.s[i - 1]), at(r.s[i])), by = r.k[i] - r.k[i - 1];
-      ok(by >= d - 1.5 && by <= 2 * d + 5, `route ${r.n}: ${by} km by rail from ${r.s[i - 1]} to ${r.s[i]}, against ${d.toFixed(0)} km in a straight line`);
+      ok(by >= d - 1.5 && by <= 3 * d + 5, `route ${r.n}: ${by} km by rail from ${r.s[i - 1]} to ${r.s[i]}, against ${d.toFixed(0)} km in a straight line`);
     }
   }
   const r0 = net.ROUTES[0];
