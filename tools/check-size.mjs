@@ -16,6 +16,7 @@ const gz = (f) =>
 const BUDGET = {
   "index.html": 6 * KB,
   "assets/app.js": 30 * KB,
+  "assets/theme.js": 1 * KB,
   "assets/app.css": 10 * KB,
   "assets/pages.css": 3 * KB,
   "vendor/d3.ivb.min.js": 30 * KB,
@@ -34,6 +35,7 @@ const FIRST = [
   "index.html",
   "assets/app.css",
   "assets/app.js",
+  "assets/theme.js",
   "vendor/d3.ivb.min.js",
   ...readdirSync(join(root, "lib")).map((f) => `lib/${f}`),
   ...["stations", "routes", "timetables", "places", "circuits", "events", "india.geo"].map((f) => `data/${f}.json`),

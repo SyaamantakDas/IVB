@@ -125,7 +125,8 @@ async function boot() {
   try {
     const got = await Promise.all(
       files.map((f) =>
-        fetch(`data/${f}.json`).then((r) => {
+        // "no-cache": the server confirms each file is current, so the data files are always of one version
+        fetch(`data/${f}.json`, { cache: "no-cache" }).then((r) => {
           if (!r.ok) throw new Error(f);
           return r.json();
         }),
@@ -2153,7 +2154,7 @@ function start(raw) {
   } else {
     // the track lines are the biggest file, so they load once everything else is on screen
     const loadShapes = () =>
-      fetch("data/shapes.json")
+      fetch("data/shapes.json", { cache: "no-cache" })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d && map.setShapes(d))
         .catch((err) => console.error(err));
@@ -2188,9 +2189,11 @@ function start(raw) {
   route();
   if (!location.hash) refreshMap(true);
 
-  // Installable on phones when served from a real site (service workers don't run inside previews)
+  // Installable on phones when served from a real site (service workers don't run inside previews), and on this
+  // computer for the checks in tests/update.mjs
   const pwa = document.querySelector("link[data-pwa]");
-  if (pwa && "serviceWorker" in navigator && location.protocol === "https:") {
+  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (pwa && "serviceWorker" in navigator && (location.protocol === "https:" || local)) {
     navigator.serviceWorker.register("sw.js").catch(() => {
       /* not available here */
     });

@@ -330,5 +330,40 @@ console.log("Booking");
   );
 }
 
+// ---------- Light or dark ----------
+console.log("Light or dark");
+{
+  // the dark colours appear twice in each style sheet: for the device's setting, and for the visitor's choice
+  const tokens = (css, selector) => {
+    const at = css.indexOf(selector + " {");
+    if (at < 0) return null;
+    const block = css.slice(at, css.indexOf("}", at));
+    return [...block.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => `${m[1]}: ${m[2].trim()}`).join("; ");
+  };
+  for (const f of ["assets/app.css", "assets/pages.css"]) {
+    const css = readFileSync(join(root, f), "utf8");
+    const device = tokens(css, ':root:not([data-theme="light"])'),
+      chosen = tokens(css, ':root[data-theme="dark"]');
+    ok(
+      device && device.length > 100 && device === chosen,
+      `${f}: the dark colours for the device and for "Dark" match`,
+    );
+    ok(
+      /@media screen and \(prefers-color-scheme: dark\)/.test(css) &&
+        !/@media \(prefers-color-scheme: dark\)/.test(css),
+      `${f}: dark colours on screen only, so a printout stays dark on white`,
+    );
+  }
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  ok(
+    ["light", "auto", "dark"].every((v) => html.includes(`name="ivb-theme" value="${v}"`)),
+    "the switch offers light, the device's setting and dark",
+  );
+  ok(
+    html.indexOf('src="assets/theme.js"') > 0 && html.indexOf('src="assets/theme.js"') < html.indexOf("app.css"),
+    "the theme is set before the styles load, so the page never shows the wrong colours first",
+  );
+}
+
 console.log(`\n${passes} checks passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);

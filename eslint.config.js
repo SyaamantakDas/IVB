@@ -10,6 +10,7 @@ export default [
       "vendor/",
       "gtfs/",
       "pages/",
+      "site/",
       "osm/",
       "android/",
       "train/",
@@ -27,6 +28,11 @@ export default [
     languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: { ...globals.browser, d3: "readonly" } },
   },
   {
+    // loaded with a plain <script> in the <head>, before the styles
+    files: ["assets/theme.js"],
+    languageOptions: { sourceType: "script" },
+  },
+  {
     files: ["lib/**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals["shared-node-browser"] },
   },
@@ -40,7 +46,7 @@ export default [
   },
   {
     // the browser checks pass functions to page.evaluate, which run in the page
-    files: ["tests/ui.mjs"],
+    files: ["tests/ui.mjs", "tests/update.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
