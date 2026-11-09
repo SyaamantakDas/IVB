@@ -330,6 +330,18 @@ console.log("Booking");
   );
 }
 
+// ---------- Search engines ----------
+console.log("Search engines");
+{
+  // Google Search Console checks this file from time to time: without it, IVB would no longer be verified
+  const f = "googlef4079fbcc9def674.html";
+  const file = join(root, f);
+  ok(
+    existsSync(file) && readFileSync(file, "utf8").trim() === `google-site-verification: ${f}`,
+    `${f}, Search Console's proof that the site is IVB's, is in place and unchanged`,
+  );
+}
+
 // ---------- Light or dark ----------
 console.log("Light or dark");
 {
