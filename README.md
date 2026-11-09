@@ -7,7 +7,7 @@
 
 # IVB: India on Vande Bharat
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24087007.svg)](https://doi.org/10.5281/zenodo.24087007)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24087006.svg)](https://doi.org/10.5281/zenodo.24087006)
 
 **See India on India’s finest trains.**
 
@@ -113,6 +113,6 @@ IVB is © 2026 Syaamantak Das.
 - **Code:** the MIT licence; see [LICENSE](LICENSE).
 - **Data:** everything in `data/`, and the GTFS feed built from it, is under the [Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/); the full text is in [data/LICENSE](data/LICENSE). Original text in the data, such as the notes on places and circuits, is under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - **Credit IVB** wherever you use its code or data: *IVB (India on Vande Bharat) by Syaamantak Das, https://syaamantakdas.github.io/IVB/, data under ODbL 1.0.* If you publish a database built from IVB's data, the ODbL asks you to share it under the ODbL too.
-- **Cite IVB** as: Das, S. (2026). *IVB: India on Vande Bharat* (Version v1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24087007. GitHub shows the same details under **Cite this repository**, from [CITATION.cff](CITATION.cff). Each release is archived on Zenodo with its own DOI. Author: Syaamantak Das, [ORCID 0000-0001-9896-3312](https://orcid.org/0000-0001-9896-3312).
+- **Cite IVB** as: Das, S. (2026). *IVB: India on Vande Bharat* (Version v1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24087007. To cite IVB as a whole, whatever the version, use https://doi.org/10.5281/zenodo.24087006, which always leads to the latest release. GitHub shows these details under **Cite this repository**, from [CITATION.cff](CITATION.cff). Each release is archived on Zenodo with its own DOI. Author: Syaamantak Das, [ORCID 0000-0001-9896-3312](https://orcid.org/0000-0001-9896-3312).
 - **Name and logo:** the IVB name and the I♥B logo are not covered by either licence.
 - **Other sources:** station positions come from [DataMeet railways](https://github.com/datameet/railways) (CC0); the map from the Survey of India outline published by [DataMeet maps](https://github.com/datameet/maps) (CC BY 4.0) with one boundary from [india-maps-data](https://github.com/udit-001/india-maps-data); and the track lines and distances by rail from [OpenStreetMap](https://www.openstreetmap.org/copyright), © OpenStreetMap contributors (ODbL). Credit those projects too when you reuse the map or the feed.

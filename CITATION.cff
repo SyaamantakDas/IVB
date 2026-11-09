@@ -18,7 +18,14 @@ license:
   - ODbL-1.0
 version: 1.0.0
 date-released: "2026-11-09"
-doi: 10.5281/zenodo.24087007
+doi: 10.5281/zenodo.24087006
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24087006
+    description: All versions; resolves to the latest release
+  - type: doi
+    value: 10.5281/zenodo.24087007
+    description: Version 1.0.0
 keywords:
   - Vande Bharat
   - Indian Railways
