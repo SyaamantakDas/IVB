@@ -1,10 +1,12 @@
 name: Check the live site
 
-# Once a week, and by hand from the Actions tab: opens the published site in a browser and runs the checks that
-# come before every deploy, then checks that every address in the sitemap answers, that the GTFS feed downloads,
-# that the site runs the code on main, and that the timetables were checked recently. It only reads the site.
-# GitHub emails whoever last changed this schedule when a run fails. GitHub pauses schedules in a public
-# repository after 60 days without activity; a push, or "Enable workflow" on the Actions tab, restarts it.
+# Once a week, and by hand from the Actions tab: opens the published site in Chromium, Safari's engine (WebKit)
+# and Firefox, and runs the checks that come before every deploy; in Chromium it also checks that every address
+# in the sitemap answers, that the GTFS feed downloads, that the site runs the code on main, and that the
+# timetables were checked recently. It only reads the site. Screenshots of the main views, and of any check
+# that fails, are kept with each run for two weeks. GitHub emails whoever last changed this schedule when a run
+# fails. GitHub pauses schedules in a public repository after 60 days without activity; a push, or "Enable
+# workflow" on the Actions tab, restarts it.
 on:
   schedule:
     - cron: "23 1 * * 1" # Mondays, 06:53 India time
@@ -17,6 +19,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, firefox]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,6 +32,13 @@ jobs:
           node-version: 24
       - name: Install the checking tools (package-lock.json)
         run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - name: Check https://syaamantakdas.github.io/IVB/
-        run: node tests/ui.mjs --live
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Check https://syaamantakdas.github.io/IVB/ in ${{ matrix.browser }}
+        run: node tests/ui.mjs --live --browser=${{ matrix.browser }} --shots=shots
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: screenshots-${{ matrix.browser }}
+          path: shots/
+          if-no-files-found: ignore
+          retention-days: 14
