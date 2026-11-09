@@ -214,6 +214,56 @@ console.log("Phone");
     await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     "nothing runs off the side of a phone",
   );
+  ok(await p.isVisible(".theme"), "the light-or-dark switch is there on a phone");
+  await p.context().close();
+}
+
+console.log("Light or dark");
+{
+  const LIGHT = "rgb(237, 241, 246)",
+    DARK = "rgb(10, 17, 29)";
+  const bg = (p) => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const pick = (p, v) => p.check(`input[name="ivb-theme"][value="${v}"]`);
+  const chosen = (p) => p.$eval('input[name="ivb-theme"]:checked', (e) => e.value);
+  const ready = (p) => p.waitForSelector(".theme:not([hidden])");
+  const p = await open("index.html", { colorScheme: "dark" }); // a device set to dark
+  await ready(p);
+  ok((await chosen(p)) === "auto" && (await bg(p)) === DARK, "the switch starts on the device's setting");
+  await pick(p, "light");
+  ok((await bg(p)) === LIGHT, "Light turns the page light on a dark device");
+  // the choice is in place before the page's body arrives, so the page never shows the wrong colours first
+  await p.addInitScript(() => {
+    new MutationObserver((_, obs) => {
+      if (!document.body) return;
+      window.themeAtBody = document.documentElement.dataset.theme || "auto";
+      obs.disconnect();
+    }).observe(document, { childList: true, subtree: true }); // from before the page has any elements
+  });
+  await p.reload();
+  await ready(p);
+  ok((await chosen(p)) === "light" && (await bg(p)) === LIGHT, "the choice is remembered");
+  ok((await p.evaluate(() => window.themeAtBody)) === "light", "and applied before the page is drawn");
+  await p.focus('input[name="ivb-theme"]:checked');
+  await p.keyboard.press("ArrowRight");
+  ok((await chosen(p)) === "auto" && (await bg(p)) === DARK, "the arrow keys move to the device's setting");
+  // the plain pages follow the choice, and a choice made on one page reaches the others
+  if (LIVE || (await get(base + "privacy/")).ok) {
+    const q = await p.context().newPage();
+    q.on("console", (m) => m.type() === "error" && problems.push(`privacy/: ${m.text()}`));
+    q.on("pageerror", (e) => problems.push(`privacy/: ${e.message}`));
+    await pick(p, "light");
+    await q.goto(base + "privacy/");
+    await ready(q);
+    ok((await chosen(q)) === "light" && (await bg(q)) === LIGHT, "a plain page follows the choice");
+    await pick(q, "dark");
+    await p
+      .waitForFunction(() => document.documentElement.dataset.theme === "dark", null, { timeout: 3000 })
+      .catch(() => null);
+    ok(
+      (await bg(q)) === DARK && (await bg(p)) === DARK && (await chosen(p)) === "dark",
+      "and a choice there reaches the app",
+    );
+  }
   await p.context().close();
 }
 
@@ -262,7 +312,8 @@ else {
     bad.length === 0,
     `every address in the sitemap answers: ${bad.slice(0, 10).join(", ")}${bad.length > 10 ? ` and ${bad.length - 10} more` : ""}`,
   );
-  // one page of each kind: it has its heading and no errors under its policy (no scripts at all), and passes axe
+  // one page of each kind: it has its heading and no errors under its policy (no script but the light-or-dark
+  // switch), and passes axe
   const kinds = ["train/", "station/", "place/", "go/", "loop/", "browse/", "privacy/"];
   const samples = kinds.map((k) => locs.map(rel).find((p) => p.startsWith(k))).filter(Boolean);
   ok(samples.length === kinds.length, `the sitemap has a page of every kind (${samples.join(", ")})`);

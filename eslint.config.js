@@ -27,6 +27,11 @@ export default [
     languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: { ...globals.browser, d3: "readonly" } },
   },
   {
+    // loaded with a plain <script> in the <head>, before the styles
+    files: ["assets/theme.js"],
+    languageOptions: { sourceType: "script" },
+  },
+  {
     files: ["lib/**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals["shared-node-browser"] },
   },

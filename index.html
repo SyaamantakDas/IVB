@@ -24,6 +24,7 @@
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest" data-pwa>
+<script src="assets/theme.js"></script>
 <link rel="preload" href="assets/fonts/hind-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/teko-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/app.css">
@@ -38,11 +39,19 @@
         <span class="brand-dek">See India on India’s finest trains</span>
       </div>
     </a>
-    <dl class="tally" aria-label="Network summary">
-      <div><dt>Train pairs</dt><dd id="n-pairs">–</dd></div>
-      <div><dt>Routes</dt><dd id="n-routes">–</dd></div>
-      <div><dt>Stations</dt><dd id="n-stations">–</dd></div>
-    </dl>
+    <div class="mast-end">
+      <dl class="tally" aria-label="Network summary">
+        <div><dt>Train pairs</dt><dd id="n-pairs">–</dd></div>
+        <div><dt>Routes</dt><dd id="n-routes">–</dd></div>
+        <div><dt>Stations</dt><dd id="n-stations">–</dd></div>
+      </dl>
+      <fieldset class="theme" hidden>
+        <legend class="vh">Light or dark</legend>
+        <label title="Light"><input type="radio" name="ivb-theme" value="light"><span class="theme-face"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.9"/><path d="M8 1.2v1.9M8 12.9v1.9M1.2 8h1.9M12.9 8h1.9M3.2 3.2l1.35 1.35M11.45 11.45l1.35 1.35M3.2 12.8l1.35-1.35M11.45 4.55l1.35-1.35"/></svg></span><span class="vh">Light</span></label>
+        <label title="Same as this device"><input type="radio" name="ivb-theme" value="auto" checked><span class="theme-face"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path class="fill" d="M8 2.4a5.6 5.6 0 0 0 0 11.2z"/></svg></span><span class="vh">Same as this device</span></label>
+        <label title="Dark"><input type="radio" name="ivb-theme" value="dark"><span class="theme-face"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.4 9.7A5.6 5.6 0 1 1 6.3 2.6a5.2 5.2 0 0 0 7.1 7.1z"/></svg></span><span class="vh">Dark</span></label>
+      </fieldset>
+    </div>
   </header>
 
   <main class="stage">

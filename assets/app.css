@@ -102,7 +102,9 @@
   --f-body: "Hind", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-@media (prefers-color-scheme: dark) {
+/* Dark colours: from the device's setting, unless the visitor picked light or dark (assets/theme.js sets
+   data-theme); on screen only, so a printout is always dark on white. tests/run.js checks the two blocks match. */
+@media screen and (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #0a111d;
     --sea: #0c1524;
@@ -132,33 +134,35 @@
     color-scheme: dark;
   }
 }
-:root[data-theme="dark"] {
-  --paper: #0a111d;
-  --sea: #0c1524;
-  --land: #152034;
-  --surface: #101929;
-  --ink: #e5ebf4;
-  --muted: #93a3bb;
-  --rule: #24324b;
-  --state-line: #2d3d59;
-  --coast: #52688d;
-  --vb: #6c9ef0;
-  --sleeper: #bc8ff0;
-  --saffron: #ff9445;
-  --saffron-ink: #ffa45c;
-  --on-saffron: #1c1206;
-  --board: #f4c51c;
-  --board-ink: #121212;
-  --tip-bg: #e5ebf4;
-  --tip-fg: #0a111d;
-  --net: #43526a;
-  --net-st: #5a6983;
-  --bar: #5a8ae0;
-  --bar-hi: #e2701f;
-  --good: #57c58f;
-  --fair: #e3aa45;
-  --poor: #f2857a;
-  color-scheme: dark;
+@media screen {
+  :root[data-theme="dark"] {
+    --paper: #0a111d;
+    --sea: #0c1524;
+    --land: #152034;
+    --surface: #101929;
+    --ink: #e5ebf4;
+    --muted: #93a3bb;
+    --rule: #24324b;
+    --state-line: #2d3d59;
+    --coast: #52688d;
+    --vb: #6c9ef0;
+    --sleeper: #bc8ff0;
+    --saffron: #ff9445;
+    --saffron-ink: #ffa45c;
+    --on-saffron: #1c1206;
+    --board: #f4c51c;
+    --board-ink: #121212;
+    --tip-bg: #e5ebf4;
+    --tip-fg: #0a111d;
+    --net: #43526a;
+    --net-st: #5a6983;
+    --bar: #5a8ae0;
+    --bar-hi: #e2701f;
+    --good: #57c58f;
+    --fair: #e3aa45;
+    --poor: #f2857a;
+    color-scheme: dark;
+  }
 }
 
 html,
@@ -247,6 +251,12 @@ select {
   color: var(--muted);
   font-size: 14px;
 }
+.mast-end {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-left: auto;
+}
 .tally {
   margin: 0;
   display: flex;
@@ -271,6 +281,61 @@ select {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+/* Light or dark: three options, light, the device's setting and dark (assets/theme.js) */
+.theme {
+  display: inline-flex;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.theme label {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.theme input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.theme-face {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.theme label:hover .theme-face {
+  color: var(--ink);
+}
+.theme input:checked + .theme-face {
+  background: var(--ink);
+  color: var(--surface);
+}
+.theme input:focus-visible + .theme-face {
+  outline: 2px solid var(--saffron);
+  outline-offset: 2px;
+}
+.theme svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.theme svg .fill {
+  fill: currentColor;
+  stroke: none;
 }
 
 /* Stage */
@@ -2243,6 +2308,11 @@ select {
   body {
     height: auto;
   }
+  .mast-end {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
   .app {
     height: auto;
     grid-template-rows: auto auto;
@@ -2351,6 +2421,7 @@ select {
     padding: 0 0 8px;
   }
   .tally,
+  .theme,
   #mapsection,
   .tabs,
   .finder,

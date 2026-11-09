@@ -20,6 +20,10 @@ const net = buildNetwork({ stations: load("stations.json"), routes: load("routes
 const { ST, ROUTES, TRAINS, PLACES } = net;
 
 const SITE = "https://syaamantakdas.github.io/IVB/";
+// the light-or-dark switch, as in the app's masthead (assets/theme.js wires it up)
+const THEME = (readFileSync(join(root, "index.html"), "utf8").match(/<fieldset class="theme"[\s\S]*?<\/fieldset>/) ||
+  [])[0];
+if (!THEME) throw new Error("index.html has no light-or-dark switch to copy");
 const CHECKED = timetables.checked;
 const MONTHS = [
   "January",
@@ -88,7 +92,7 @@ function page(path, { title, description, h1, kicker, body, image, jsonld }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${url}">
@@ -101,11 +105,12 @@ function page(path, { title, description, h1, kicker, body, image, jsonld }) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#13213B">
 <link rel="icon" href="${up}assets/favicon.svg" type="image/svg+xml">
+<script src="${up}assets/theme.js"></script>
 <link rel="preload" href="${up}assets/fonts/hind-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${up}assets/pages.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
 <body>
-<header class="top"><a class="home" href="${up}"><img src="${up}assets/logo.svg" alt="" width="64" height="27"><span>India on Vande Bharat</span></a><nav><a href="${up}browse/">All trains and places</a></nav></header>
+<header class="top"><a class="home" href="${up}"><img src="${up}assets/logo.svg" alt="" width="64" height="27"><span>India on Vande Bharat</span></a><div class="top-end"><nav><a href="${up}browse/">All trains and places</a></nav>${THEME}</div></header>
 <main>
 ${kicker ? `<p class="kicker">${kicker}</p>\n` : ""}<h1>${esc(h1)}</h1>
 ${body}
@@ -323,7 +328,7 @@ page("privacy/", {
   h1: "IVB collects no personal data",
   body: `<p class="lede">IVB, the website and the Android app, has no accounts, no analytics, no advertising and no cookies, and it sends nothing about you anywhere.</p>
 <h2>What stays on your device</h2>
-<p>The places, dates and settings you choose are kept in your browser's local storage on your own device, so IVB remembers them next time. They never leave the device. Clearing the site's data in your browser removes them.</p>
+<p>The places, dates and settings you choose, such as light or dark, are kept in your browser's local storage on your own device, so IVB remembers them next time. They never leave the device. Clearing the site's data in your browser removes them.</p>
 <h2>What IVB loads</h2>
 <p>IVB loads only its own files, from syaamantakdas.github.io: its pages, fonts, map and timetables. It loads nothing from other servers. The site is hosted on GitHub Pages, which may record visitors' IP addresses for security; see <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.</p>
 <h2>The Android app</h2>
