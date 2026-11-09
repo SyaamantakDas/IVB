@@ -10,9 +10,14 @@ abstract: >-
 authors:
   - family-names: Das
     given-names: Syaamantak
+    orcid: "https://orcid.org/0000-0001-9896-3312"
 repository-code: "https://github.com/SyaamantakDas/IVB"
 url: "https://syaamantakdas.github.io/IVB/"
-license: MIT
+license:
+  - MIT
+  - ODbL-1.0
+version: 1.0.0
+date-released: "2026-11-09"
 keywords:
   - Vande Bharat
   - Indian Railways
