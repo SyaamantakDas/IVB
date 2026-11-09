@@ -112,7 +112,10 @@ try {
   ok(seen[seen.length - 1] === "new/new/new", `the new version arrives within three reloads: ${seen.join(" then ")}`);
   ok(seen[0] === "new/new/new", `in fact on the first reload: ${seen[0]}`);
 
-  await ctx.setOffline(true);
+  // offline: the server is gone, as for a phone with no signal (rather than the browser's own offline mode, which
+  // each engine imitates differently)
+  server.closeAllConnections();
+  await new Promise((r) => server.close(r));
   const opened = await page
     .reload()
     .then(() => settle())
@@ -124,7 +127,7 @@ try {
   ok(false, String(e.message).split("\n")[0]);
 }
 await browser.close();
-server.close();
+if (server.listening) server.close();
 rmSync(work, { recursive: true, force: true });
 console.log(`\n${passes} checks passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);

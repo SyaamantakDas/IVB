@@ -42,7 +42,7 @@ export function stamp(dir) {
   for (const f of TAGGED) tag.set(f, hashOf(readFileSync(join(dir, f))));
 
   // every page: index.html and the generated ones (their references start with ../ as deep as they are)
-  const names = TAGGED.map((f) => f.replace(/[.]/g, "\\.")).join("|");
+  const names = TAGGED.map((f) => f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const REF = new RegExp(`((?:\\.\\./)*)(${names})(?=")`, "g");
   let pages = 0;
   const walk = (d) => {
