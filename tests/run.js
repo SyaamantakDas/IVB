@@ -12,12 +12,23 @@ import { buildCircuit, ownPlaces, ownFromText, ownToText } from "../lib/own.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
-const stations = load("stations.json"), routes = load("routes.json"), timetables = load("timetables.json");
-const places = load("places.json"), circuits = load("circuits.json").circuits, events = load("events.json").events;
+const stations = load("stations.json"),
+  routes = load("routes.json"),
+  timetables = load("timetables.json");
+const places = load("places.json"),
+  circuits = load("circuits.json").circuits,
+  events = load("events.json").events;
 const net = buildNetwork({ stations, routes, timetables, places });
 
-let failures = 0, passes = 0;
-const ok = (cond, msg) => { if (cond) passes++; else { failures++; console.log("  FAIL", msg); } };
+let failures = 0,
+  passes = 0;
+const ok = (cond, msg) => {
+  if (cond) passes++;
+  else {
+    failures++;
+    console.log("  FAIL", msg);
+  }
+};
 
 // ---------- Data ----------
 console.log("Data");
@@ -28,11 +39,22 @@ for (const [num, t] of Object.entries(timetables.trains)) {
   ok(!!r, `train ${num}: unknown route ${t.route}`);
   if (!r) continue;
   ok(t.days.length > 0 && t.days.every((d) => DAYS.includes(d)), `train ${num}: bad days ${t.days}`);
-  ok(Array.isArray(t.src) && t.src.length > 0 && t.src.every((u) => /^https:\/\//.test(u)), `train ${num}: needs at least one https source`);
-  ok(/^\d{4}-\d{2}-\d{2}$/.test(t.checked || "") && t.checked <= timetables.checked, `train ${num}: needs the date it was last checked, no later than the file's`);
-  const idx = Object.keys(t.times).filter((c) => r.s.includes(c)).map((c) => r.s.indexOf(c));
+  ok(
+    Array.isArray(t.src) && t.src.length > 0 && t.src.every((u) => /^https:\/\//.test(u)),
+    `train ${num}: needs at least one https source`,
+  );
+  ok(
+    /^\d{4}-\d{2}-\d{2}$/.test(t.checked || "") && t.checked <= timetables.checked,
+    `train ${num}: needs the date it was last checked, no later than the file's`,
+  );
+  const idx = Object.keys(t.times)
+    .filter((c) => r.s.includes(c))
+    .map((c) => r.s.indexOf(c));
   const sorted = [...idx].sort((a, b) => a - b);
-  ok(idx.join() === sorted.join() || idx.join() === [...sorted].reverse().join(), `train ${num}: times out of route order`);
+  ok(
+    idx.join() === sorted.join() || idx.join() === [...sorted].reverse().join(),
+    `train ${num}: times out of route order`,
+  );
   for (const c of Object.keys(t.times)) ok(r.s.includes(c), `train ${num}: ${c} is not a halt on ${t.route}`);
 }
 for (const p of places.places) {
@@ -51,15 +73,19 @@ for (const c of circuits) {
         ok(!!t, `${c.id}: no timetable for ${n}`);
         if (!t) continue;
         const r = t.route;
-        const i = r.index.get(leg.from), j = r.index.get(leg.to);
+        const i = r.index.get(leg.from),
+          j = r.index.get(leg.to);
         ok(i != null && j != null, `${c.id}: ${n} does not call at ${leg.from} and ${leg.to}`);
-        ok(t.forward === (i < j), `${c.id}: ${n} runs the other way between ${leg.from} and ${leg.to}`);
+        ok(t.forward === i < j, `${c.id}: ${n} runs the other way between ${leg.from} and ${leg.to}`);
       }
     }
   }
 }
 ok(extras.has("orchha"), "Orchha needs coordinates");
-ok(stations.MMCT && stations.MMCT[4] === "Maharashtra", "Mumbai Central is in Maharashtra, not Dadra and Nagar Haveli and Daman and Diu");
+ok(
+  stations.MMCT && stations.MMCT[4] === "Maharashtra",
+  "Mumbai Central is in Maharashtra, not Dadra and Nagar Haveli and Daman and Diu",
+);
 
 // ---------- Track lines and distances ----------
 console.log("Track");
@@ -67,37 +93,66 @@ console.log("Track");
   const at = (c) => ({ lat: stations[c][1], lon: stations[c][2] });
   const pairs = new Set();
   for (const r of routes) for (let i = 1; i < r.s.length; i++) pairs.add([r.s[i - 1], r.s[i]].sort().join(" "));
-  let lines = {}, estimated = [];
+  let lines = {},
+    estimated = [];
   if (existsSync(join(root, "data", "shapes.json"))) ({ lines, estimated } = load("shapes.json"));
   for (const [key, text] of Object.entries(lines)) {
-    const [a, b] = key.split(" "), pts = decode(text);
-    ok(pairs.has(key) && a < b, `shapes: "${key}" must be two stops next to each other on a route, in alphabetical order`);
+    const [a, b] = key.split(" "),
+      pts = decode(text);
+    ok(
+      pairs.has(key) && a < b,
+      `shapes: "${key}" must be two stops next to each other on a route, in alphabetical order`,
+    );
     if (!(a in stations && b in stations)) continue;
-    const miss = Math.max(haversine(at(a), { lat: pts[0][0], lon: pts[0][1] }), haversine(at(b), { lat: pts[pts.length - 1][0], lon: pts[pts.length - 1][1] }));
-    ok(pts.length >= 2 && miss < 0.5, `shapes: the line for ${key} must start at ${a} and end at ${b} (it misses by ${miss.toFixed(2)} km: rerun tools/build-shapes.mjs)`);
+    const miss = Math.max(
+      haversine(at(a), { lat: pts[0][0], lon: pts[0][1] }),
+      haversine(at(b), { lat: pts[pts.length - 1][0], lon: pts[pts.length - 1][1] }),
+    );
+    ok(
+      pts.length >= 2 && miss < 0.5,
+      `shapes: the line for ${key} must start at ${a} and end at ${b} (it misses by ${miss.toFixed(2)} km: rerun tools/build-shapes.mjs)`,
+    );
   }
   const untraced = [...pairs].filter((key) => !(key in lines) && !estimated.includes(key));
-  if (untraced.length) console.log(`  note: ${untraced.length} pairs of stops have no track line yet, so the map draws them straight (rerun tools/build-shapes.mjs): ${untraced.slice(0, 12).join(", ")}${untraced.length > 12 ? " …" : ""}`);
+  if (untraced.length)
+    console.log(
+      `  note: ${untraced.length} pairs of stops have no track line yet, so the map draws them straight (rerun tools/build-shapes.mjs): ${untraced.slice(0, 12).join(", ")}${untraced.length > 12 ? " …" : ""}`,
+    );
   let traced = 0;
   for (const r of routes) {
     if (!r.k) continue;
     traced++;
-    ok(r.k.length === r.s.length && r.k[0] === 0 && r.k.every((x, i) => !i || x >= r.k[i - 1]) && r.km === r.k[r.k.length - 1], `route ${r.n}: k must give the distance to each stop, from 0 up to km`);
+    ok(
+      r.k.length === r.s.length &&
+        r.k[0] === 0 &&
+        r.k.every((x, i) => !i || x >= r.k[i - 1]) &&
+        r.km === r.k[r.k.length - 1],
+      `route ${r.n}: k must give the distance to each stop, from 0 up to km`,
+    );
     for (let i = 1; i < r.s.length; i++) {
-      const d = haversine(at(r.s[i - 1]), at(r.s[i])), by = r.k[i] - r.k[i - 1];
-      ok(by >= d - 1.5 && by <= 3 * d + 5, `route ${r.n}: ${by} km by rail from ${r.s[i - 1]} to ${r.s[i]}, against ${d.toFixed(0)} km in a straight line`);
+      const d = haversine(at(r.s[i - 1]), at(r.s[i])),
+        by = r.k[i] - r.k[i - 1];
+      ok(
+        by >= d - 1.5 && by <= 3 * d + 5,
+        `route ${r.n}: ${by} km by rail from ${r.s[i - 1]} to ${r.s[i]}, against ${d.toFixed(0)} km in a straight line`,
+      );
     }
   }
   const r0 = net.ROUTES[0];
   ok(!r0.k || legKm(r0, 0, r0.stops.length - 1) === r0.km, "legKm: a whole route is its km");
-  console.log(`  ${Object.keys(lines).length} of ${pairs.size} pairs of stops follow the track; ${traced} of ${routes.length} routes have distances along it`);
+  console.log(
+    `  ${Object.keys(lines).length} of ${pairs.size} pairs of stops follow the track; ${traced} of ${routes.length} routes have distances along it`,
+  );
 }
 
 // ---------- Finder ----------
 console.log("Finder");
 const city = (id) => net.PLACES.get(id).codes;
 let j = findJourneys(net, city("chennai"), city("mysuru"), { maxChanges: 2 });
-ok(j.length && j[0].trains === 1 && j[0].legs[0].train && j[0].legs[0].train.num === "20607", "Chennai to Mysuru: the direct 20607 comes first");
+ok(
+  j.length && j[0].trains === 1 && j[0].legs[0].train && j[0].legs[0].train.num === "20607",
+  "Chennai to Mysuru: the direct 20607 comes first",
+);
 j = findJourneys(net, city("srinagar"), city("delhi"), { maxChanges: 2 });
 ok(j.length && j[0].trains === 2, "Srinagar to Delhi: two trains via Katra or Jammu");
 j = findJourneys(net, city("mumbai"), city("kolkata"), { maxChanges: 6 });
@@ -107,19 +162,24 @@ j = findJourneys(net, ["NDLS"], ["NDLS"], {});
 ok(j.length === 0, "same station returns nothing");
 j = findJourneys(net, city("srinagar"), ["NCJ"], { maxChanges: 6 });
 ok(j.length && j[0].trains === 8, "Srinagar to Nagercoil: Any finds the 8-train journeys");
-ok(findJourneys(net, city("srinagar"), ["NCJ"], { maxChanges: 3 }).length === 0, "Srinagar to Nagercoil: nothing within 3 changes");
+ok(
+  findJourneys(net, city("srinagar"), ["NCJ"], { maxChanges: 3 }).length === 0,
+  "Srinagar to Nagercoil: nothing within 3 changes",
+);
 // "Any" must never come back empty: for every pair of places, its first journey has the fewest trains possible
 let deep = 0;
-for (const p of net.PLACES.values()) for (const q of net.PLACES.values()) {
-  if (p === q || !p.codes.length || !q.codes.length) continue;
-  const o = new Set(p.codes), d = new Set(q.codes.filter((c) => !o.has(c)));
-  const f = fewestTrains(net, o, d);
-  ok(!!f, `${p.name} to ${q.name}: Vande Bharats can make it`);
-  if (!f || f.trains < 7) continue;
-  deep++;
-  const jj = findJourneys(net, p.codes, q.codes, { maxChanges: 6, limit: 1 });
-  ok(jj.length && jj[0].trains === f.trains, `${p.name} to ${q.name}: Any finds the ${f.trains}-train journey`);
-}
+for (const p of net.PLACES.values())
+  for (const q of net.PLACES.values()) {
+    if (p === q || !p.codes.length || !q.codes.length) continue;
+    const o = new Set(p.codes),
+      d = new Set(q.codes.filter((c) => !o.has(c)));
+    const f = fewestTrains(net, o, d);
+    ok(!!f, `${p.name} to ${q.name}: Vande Bharats can make it`);
+    if (!f || f.trains < 7) continue;
+    deep++;
+    const jj = findJourneys(net, p.codes, q.codes, { maxChanges: 6, limit: 1 });
+    ok(jj.length && jj[0].trains === f.trains, `${p.name} to ${q.name}: Any finds the ${f.trains}-train journey`);
+  }
 console.log(`  ${deep} pairs of places need 7 or more trains; Any finds every one`);
 
 // ---------- Circuits ----------
@@ -138,12 +198,18 @@ for (const c of circuits) {
       if (!s.first) ok(s.depart.day >= s.arrive.day, `${c.id}: leaves ${s.place.name} before arriving`);
     }
     ok(plan.end > plan.start, `${c.id}: ends after it starts`);
-    if (startAt === 0) console.log(`  ${c.name}: ${plan.days} days, ${plan.rides} rides, ${plan.waits} nights waiting for a train, ${fmtDay(plan.start)} to ${fmtDay(plan.end)}`);
+    if (startAt === 0)
+      console.log(
+        `  ${c.name}: ${plan.days} days, ${plan.rides} rides, ${plan.waits} nights waiting for a train, ${fmtDay(plan.start)} to ${fmtDay(plan.end)}`,
+      );
   }
   const scan = seasonScan(net, c.stops, toDay(2026, 12, 1), 24, events);
   ok(scan.length === 24 && scan.every((x) => x.score >= 0 && x.score <= 1), `${c.id}: season scan`);
   const best = scan.reduce((a, b) => (b.score > a.score ? b : a));
-  console.log(`  best start ${fmtDay(best.day)} (${Math.round(best.score * 100)}%); scores: ` + scan.map((x) => fmtDay(x.day, false) + " " + Math.round(x.score * 100)).join(", "));
+  console.log(
+    `  best start ${fmtDay(best.day)} (${Math.round(best.score * 100)}%); scores: ` +
+      scan.map((x) => fmtDay(x.day, false) + " " + Math.round(x.score * 100)).join(", "),
+  );
 }
 
 // ---------- Dated journeys ----------
@@ -152,50 +218,81 @@ console.log("Dated journeys");
   const mon = toDay(2026, 11, 16);
   // every journey's trains run on the days it uses them, and every change leaves time to make it
   const sane = (j, label) => {
-    let prev = null, road = 0;
+    let prev = null,
+      road = 0;
     for (const l of j.legs) {
-      if (l.kind === "road") { road += l.km * 4; continue; }
-      ok(l.train.days.includes(DAYS[weekday(l.start)]), `${label}: ${l.train.num} does not leave its first station on ${fmtDay(l.start)}`);
+      if (l.kind === "road") {
+        road += l.km * 4;
+        continue;
+      }
+      ok(
+        l.train.days.includes(DAYS[weekday(l.start)]),
+        `${label}: ${l.train.num} does not leave its first station on ${fmtDay(l.start)}`,
+      );
       ok(l.arr > l.dep, `${label}: ${l.train.num} arrives before it leaves`);
       if (prev) ok(l.dep >= prev.arr + road + MIN_CHANGE, `${label}: too little time to change onto ${l.train.num}`);
-      prev = l; road = 0;
+      prev = l;
+      road = 0;
     }
   };
   let js = planJourneys(net, city("chennai"), city("mysuru"), mon);
-  ok(js.length >= 2 && js[0].trains === 1 && js[0].legs[0].train.num === "20607" && js[0].dep < 1440, "Chennai to Mysuru on a Monday: the 20607 first");
-  ok(js.every((j, i) => !i || j.arr >= js[i - 1].arr), "dated journeys come soonest arrival first");
+  ok(
+    js.length >= 2 && js[0].trains === 1 && js[0].legs[0].train.num === "20607" && js[0].dep < 1440,
+    "Chennai to Mysuru on a Monday: the 20607 first",
+  );
+  ok(
+    js.every((j, i) => !i || j.arr >= js[i - 1].arr),
+    "dated journeys come soonest arrival first",
+  );
   js = planJourneys(net, city("mumbai"), city("srinagar"), mon, { maxTrains: 10 });
   ok(js.length > 0 && js[0].legs[0].from === "MMCT", "Mumbai to Srinagar: boards at Mumbai Central, not Borivali");
   const ps = ownPlaces(net);
   let n = 0;
-  for (let a = 0; a < ps.length; a++) for (let b = 0; b < ps.length; b += 3) {
-    if (a === b) continue;
-    const day = mon + ((a + b) % 7);
-    const jj = planJourneys(net, ps[a].codes, ps[b].codes, day, { maxTrains: 10, limit: 2 });
-    ok(jj.length > 0, `${ps[a].name} to ${ps[b].name} on ${fmtDay(day)}: some dated journey`);
-    jj.forEach((j) => sane(j, `${ps[a].name} to ${ps[b].name}`));
-    n++;
-  }
+  for (let a = 0; a < ps.length; a++)
+    for (let b = 0; b < ps.length; b += 3) {
+      if (a === b) continue;
+      const day = mon + ((a + b) % 7);
+      const jj = planJourneys(net, ps[a].codes, ps[b].codes, day, { maxTrains: 10, limit: 2 });
+      ok(jj.length > 0, `${ps[a].name} to ${ps[b].name} on ${fmtDay(day)}: some dated journey`);
+      jj.forEach((j) => sane(j, `${ps[a].name} to ${ps[b].name}`));
+      n++;
+    }
   console.log(`  ${n} pairs of places, each on a different weekday: every one has a dated journey that works`);
 }
 
 // ---------- Your own circuit ----------
 console.log("Your own circuit");
 {
-  ok(ownToText(ownFromText(net, "delhi.2,agra.1,varanasi.9,nowhere.1")) === "delhi.2,agra.1,varanasi.7", "own: reads a list from a link, capped at 7 nights");
-  ok(ownFromText(net, "delhi.2") === null && ownFromText(net, "orchha.1,delhi.1") === null, "own: needs two places with a Vande Bharat station");
-  for (const text of ["delhi.2,agra.1,varanasi.2", "mumbai.2,goa.3,mangaluru.1,kochi.2,chennai.1", "kolkata.1,puri.2,siliguri.1,guwahati.2"]) {
-    const list = ownFromText(net, text), built = buildCircuit(net, list);
+  ok(
+    ownToText(ownFromText(net, "delhi.2,agra.1,varanasi.9,nowhere.1")) === "delhi.2,agra.1,varanasi.7",
+    "own: reads a list from a link, capped at 7 nights",
+  );
+  ok(
+    ownFromText(net, "delhi.2") === null && ownFromText(net, "orchha.1,delhi.1") === null,
+    "own: needs two places with a Vande Bharat station",
+  );
+  for (const text of [
+    "delhi.2,agra.1,varanasi.2",
+    "mumbai.2,goa.3,mangaluru.1,kochi.2,chennai.1",
+    "kolkata.1,puri.2,siliguri.1,guwahati.2",
+  ]) {
+    const list = ownFromText(net, text),
+      built = buildCircuit(net, list);
     ok(built.missing.length === 0 && built.stops.length === list.length, `own ${text}: every hop on Vande Bharats`);
     const plan = schedule(net, built.stops, start, events);
     ok(plan.warnings.length === 0, `own ${text}: ${plan.warnings.join("; ")}`);
     let prevTo = null;
-    for (const st of plan.stops) for (const l of st.legs) {
-      if (prevTo) ok(l.from === prevTo, `own ${text}: ${l.from} does not follow on from ${prevTo}`);
-      prevTo = l.to;
-      if (l.kind === "rail") ok(runsOn(l.train, l.from, weekday(l.day)), `own ${text}: ${l.train.num} does not run on ${fmtDay(l.day)}`);
-    }
-    ok(list.map((s) => s.place).every((p) => plan.stops.some((st) => st.place.id === p)), `own ${text}: visits every place`);
+    for (const st of plan.stops)
+      for (const l of st.legs) {
+        if (prevTo) ok(l.from === prevTo, `own ${text}: ${l.from} does not follow on from ${prevTo}`);
+        prevTo = l.to;
+        if (l.kind === "rail")
+          ok(runsOn(l.train, l.from, weekday(l.day)), `own ${text}: ${l.train.num} does not run on ${fmtDay(l.day)}`);
+      }
+    ok(
+      list.map((s) => s.place).every((p) => plan.stops.some((st) => st.place.id === p)),
+      `own ${text}: visits every place`,
+    );
     console.log(`  ${text}: ${plan.days} days, ${plan.rides} rides, ${plan.waits} nights waiting`);
   }
 }
@@ -208,18 +305,29 @@ console.log("Booking");
   const items = bookingDates(plan);
   ok(items.length === plan.rides, `booking: one date per ride (${items.length} vs ${plan.rides})`);
   for (const it of items) {
-    ok(it.opens === it.trainStart - 60 && it.trainStart <= it.day && it.day - it.trainStart <= 1, `booking: ${it.num} opens 60 days before the train leaves its first station`);
+    ok(
+      it.opens === it.trainStart - 60 && it.trainStart <= it.day && it.day - it.trainStart <= 1,
+      `booking: ${it.num} opens 60 days before the train leaves its first station`,
+    );
   }
   // a ride boarded after midnight counts from the day before
   const t = net.TRAINS.get("27575");
   const fake = { stops: [{ legs: [{ kind: "rail", train: t, from: "AUB", to: "KYQ", day: start }] }] };
   const [b] = bookingDates(fake);
-  ok(b && b.trainStart === start - 1 && b.opens === start - 61, "booking: boarding 27575 at Aluabari Road after midnight opens 61 days before");
+  ok(
+    b && b.trainStart === start - 1 && b.opens === start - 61,
+    "booking: boarding 27575 at Aluabari Road after midnight opens 61 days before",
+  );
   const ics = bookingCalendar(items, { name: c.name, stationName: (code) => net.ST.get(code).name });
   ok((ics.match(/BEGIN:VEVENT/g) || []).length === items.length, "calendar: one event per ride");
-  ok(ics.split("\r\n").every((l) => new TextEncoder().encode(l).length <= 75), "calendar: lines folded at 75 octets");
+  ok(
+    ics.split("\r\n").every((l) => new TextEncoder().encode(l).length <= 75),
+    "calendar: lines folded at 75 octets",
+  );
   ok(/DTSTART:\d{8}T023000Z/.test(ics), "calendar: reminders at 8:00 India time");
-  console.log(`  ${c.name}: ${items.length} rides go on sale between ${fmtDay(Math.min(...items.map((x) => x.opens)))} and ${fmtDay(Math.max(...items.map((x) => x.opens)))}`);
+  console.log(
+    `  ${c.name}: ${items.length} rides go on sale between ${fmtDay(Math.min(...items.map((x) => x.opens)))} and ${fmtDay(Math.max(...items.map((x) => x.opens)))}`,
+  );
 }
 
 console.log(`\n${passes} checks passed, ${failures} failed`);

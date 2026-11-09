@@ -9,7 +9,11 @@
 // because a query clipped to India's outline is too slow for the public Overpass servers.
 import { writeFileSync, mkdirSync } from "node:fs";
 
-const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+const ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
 const UA = "IVB-track-shapes/1.0 (+https://github.com/SyaamantakDas/IVB)";
 const STEP = 3; // degrees
 const KEEP = ["gauge", "usage", "name", "railway:traffic_mode"];
@@ -21,7 +25,11 @@ async function query(q) {
       try {
         const res = await fetch(url, {
           method: "POST",
-          headers: { "User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+          headers: {
+            "User-Agent": UA,
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
           body: "data=" + encodeURIComponent(q),
         });
         if (res.ok) return await res.json();
@@ -49,7 +57,12 @@ for (let s = 6; s < 37; s += STEP) {
       const tags = {};
       for (const k of KEEP) if (el.tags && el.tags[k]) tags[k] = el.tags[k];
       if (el.tags && el.tags.service) tags.service = el.tags.service;
-      ways.set(el.id, { id: el.id, tags, nodes: el.nodes, geometry: el.geometry.map((p) => [+p.lat.toFixed(6), +p.lon.toFixed(6)]) });
+      ways.set(el.id, {
+        id: el.id,
+        tags,
+        nodes: el.nodes,
+        geometry: el.geometry.map((p) => [+p.lat.toFixed(6), +p.lon.toFixed(6)]),
+      });
       n++;
     }
     tiles++;
@@ -58,5 +71,12 @@ for (let s = 6; s < 37; s += STEP) {
   }
 }
 mkdirSync("osm", { recursive: true });
-writeFileSync("osm/rail.json", JSON.stringify({ source: "© OpenStreetMap contributors, ODbL 1.0", fetched: new Date().toISOString(), ways: [...ways.values()] }));
+writeFileSync(
+  "osm/rail.json",
+  JSON.stringify({
+    source: "© OpenStreetMap contributors, ODbL 1.0",
+    fetched: new Date().toISOString(),
+    ways: [...ways.values()],
+  }),
+);
 console.log(`${tiles} tiles, ${ways.size} ways`);

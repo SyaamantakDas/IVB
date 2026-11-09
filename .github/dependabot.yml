@@ -1,0 +1,18 @@
+# Dependabot proposes updates as pull requests: the GitHub Actions the workflows use (pinned to exact commits)
+# and the checking tools in package.json. The site itself has no dependencies to update.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      checking-tools:
+        patterns: ["*"]

@@ -5,10 +5,7 @@
   "description": "See India on India’s finest trains: plan journeys and circuits on Vande Bharat trains alone.",
   "lang": "en",
   "dir": "ltr",
-  "categories": [
-    "travel",
-    "navigation"
-  ],
+  "categories": ["travel", "navigation"],
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

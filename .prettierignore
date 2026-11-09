@@ -1,0 +1,18 @@
+# Prettier lays out the JavaScript, CSS, YAML and config JSON. Not these:
+node_modules/
+vendor/
+data/
+gtfs/
+pages/
+osm/
+android/
+train/
+station/
+place/
+go/
+loop/
+browse/
+privacy/
+package-lock.json
+*.md
+*.html

@@ -2,9 +2,7 @@
   "title": "IVB: India on Vande Bharat",
   "upload_type": "software",
   "description": "<p>A planner for journeys and circuits across India on Vande Bharat trains alone, with an open dataset of the network: 415 stations, 83 routes and 168 trains with their halts, times, days of running and track lines, also published as a GTFS feed.</p><p>Website: <a href=\"https://syaamantakdas.github.io/IVB/\">https://syaamantakdas.github.io/IVB/</a></p>",
-  "creators": [
-    { "name": "Das, Syaamantak", "orcid": "0000-0001-9896-3312" }
-  ],
+  "creators": [{ "name": "Das, Syaamantak", "orcid": "0000-0001-9896-3312" }],
   "license": "MIT",
   "keywords": ["Vande Bharat", "Indian Railways", "rail travel", "journey planner", "GTFS", "open data"],
   "notes": "The code is under the MIT licence. The data in the data/ folder is under the Open Database License (ODbL) 1.0 (see data/LICENSE); its track lines and distances derive from OpenStreetMap, © OpenStreetMap contributors, ODbL. The GTFS feed built from the data is published at https://syaamantakdas.github.io/IVB/gtfs/ivb-gtfs.zip. The names IVB and India on Vande Bharat and the logo are not licensed. IVB is unofficial and not connected with Indian Railways or IRCTC."

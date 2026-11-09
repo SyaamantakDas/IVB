@@ -2,49 +2,104 @@
 import { buildNetwork, DAYS, runsOn } from "../lib/network.js";
 import { findJourneys } from "../lib/finder.js";
 import { planJourneys } from "../lib/planner.js";
-import { schedule, rotate, seasonScan, seasonScore, toDay, fromISO, isoOf, fmtDay, monthOf, yearOf, weekday } from "../lib/schedule.js";
+import {
+  schedule,
+  rotate,
+  seasonScan,
+  seasonScore,
+  toDay,
+  fromISO,
+  isoOf,
+  fmtDay,
+  monthOf,
+  yearOf,
+  weekday,
+} from "../lib/schedule.js";
 import { bookingDates, bookingCalendar, ADVANCE_DAYS } from "../lib/booking.js";
 import { decode } from "../lib/polyline.js";
 import { OWN_ID, MAX_NIGHTS, ownPlaces, ownToText, ownFromText, buildCircuit } from "../lib/own.js";
 
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const esc = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("ivb-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("ivb-" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+  get(k, d) {
+    try {
+      const v = localStorage.getItem("ivb-" + k);
+      return v == null ? d : JSON.parse(v);
+    } catch (e) {
+      return d;
+    }
+  },
+  set(k, v) {
+    try {
+      localStorage.setItem("ivb-" + k, JSON.stringify(v));
+    } catch (e) {
+      /* storage unavailable */
+    }
+  },
 };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const FULLDAY = { Sun: "Sundays", Mon: "Mondays", Tue: "Tuesdays", Wed: "Wednesdays", Thu: "Thursdays", Fri: "Fridays", Sat: "Saturdays" };
+const FULLDAY = {
+  Sun: "Sundays",
+  Mon: "Mondays",
+  Tue: "Tuesdays",
+  Wed: "Wednesdays",
+  Thu: "Thursdays",
+  Fri: "Fridays",
+  Sat: "Saturdays",
+};
 
 function daysText(days) {
   if (!days) return "";
   if (days.length === 7) return "daily";
-  if (days.length >= 5) return "not on " + DAYS.filter((d) => !days.includes(d)).map((d) => FULLDAY[d]).join(" or ");
+  if (days.length >= 5)
+    return (
+      "not on " +
+      DAYS.filter((d) => !days.includes(d))
+        .map((d) => FULLDAY[d])
+        .join(" or ")
+    );
   return days.join(", ") + " only";
 }
 const fmtKm = (km) => km.toLocaleString("en-IN") + " km";
 // Where a train's times come from: the site names IVB checked them against, and when
 const SOURCE_NAMES = {
-  "confirmtkt.com": "ConfirmTkt", "erail.in": "erail", "railmitra.com": "RailMitra", "etrain.info": "etrain",
-  "totaltraininfo.com": "Total Train Info", "wikipedia.org": "Wikipedia", "indianrailways.gov.in": "Railway Board",
-  "cleartrip.com": "Cleartrip", "deshgujarat.com": "DeshGujarat", "odishabytes.com": "OdishaBytes",
+  "confirmtkt.com": "ConfirmTkt",
+  "erail.in": "erail",
+  "railmitra.com": "RailMitra",
+  "etrain.info": "etrain",
+  "totaltraininfo.com": "Total Train Info",
+  "wikipedia.org": "Wikipedia",
+  "indianrailways.gov.in": "Railway Board",
+  "cleartrip.com": "Cleartrip",
+  "deshgujarat.com": "DeshGujarat",
+  "odishabytes.com": "OdishaBytes",
 };
 function sourceName(url) {
-  let host = "";
-  try { host = new URL(url).hostname.replace(/^(www|m|amp|en)\./, ""); } catch (e) { return "source"; }
-  if (host.includes("wikipedia") || host.startsWith("wiki.") || host.includes("kiwix") || host.includes("freedombox")) return "Wikipedia";
+  let host;
+  try {
+    host = new URL(url).hostname.replace(/^(www|m|amp|en)\./, "");
+  } catch (e) {
+    return "source";
+  }
+  if (host.includes("wikipedia") || host.startsWith("wiki.") || host.includes("kiwix") || host.includes("freedombox"))
+    return "Wikipedia";
   return SOURCE_NAMES[host] || host;
 }
 function fmtISO(iso) {
-  const [y, m, d] = String(iso || "").split("-").map(Number);
+  const [y, m, d] = String(iso || "")
+    .split("-")
+    .map(Number);
   return y ? `${d} ${MONTHS[m - 1]} ${y}` : "";
 }
 // "Checked 8 Nov 2026 against ConfirmTkt and RailMitra", with each source linked
 function provenance(t) {
   const urls = (t && t.src) || [];
   if (!urls.length) return "";
-  const seen = new Set(), links = [];
+  const seen = new Set(),
+    links = [];
   for (const u of urls) {
     const n = sourceName(u);
     if (seen.has(n)) continue;
@@ -59,26 +114,42 @@ function reportLink(num) {
   const url = `https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&title=${encodeURIComponent(`Train ${num}: `)}&train=${encodeURIComponent(num)}`;
   return `<a href="${url}" target="_blank" rel="noopener">report a problem</a>`;
 }
-const fmtDur = (min) => (min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`);
+const fmtDur = (min) =>
+  min < 60
+    ? `${min} min`
+    : `${Math.floor(min / 60)} h${min % 60 ? " " + String(min % 60).padStart(2, "0") + " min" : ""}`;
 
 async function boot() {
   const files = ["stations", "routes", "timetables", "places", "circuits", "events", "india.geo"];
   let raw;
   try {
-    const got = await Promise.all(files.map((f) => fetch(`data/${f}.json`).then((r) => { if (!r.ok) throw new Error(f); return r.json(); })));
+    const got = await Promise.all(
+      files.map((f) =>
+        fetch(`data/${f}.json`).then((r) => {
+          if (!r.ok) throw new Error(f);
+          return r.json();
+        }),
+      ),
+    );
     raw = Object.fromEntries(files.map((f, i) => [f, got[i]]));
   } catch (err) {
     console.error(err);
     const m = $("map-msg");
     m.hidden = false;
-    m.textContent = "The data files could not be loaded. If you opened index.html straight from disk, serve the folder instead (for example: python3 -m http.server).";
+    m.textContent =
+      "The data files could not be loaded. If you opened index.html straight from disk, serve the folder instead (for example: python3 -m http.server).";
     return;
   }
   start(raw);
 }
 
 function start(raw) {
-  const net = buildNetwork({ stations: raw.stations, routes: raw.routes, timetables: raw.timetables, places: raw.places });
+  const net = buildNetwork({
+    stations: raw.stations,
+    routes: raw.routes,
+    timetables: raw.timetables,
+    places: raw.places,
+  });
   const { ST, ROUTES, PLACES, TRAINS } = net;
   const EVENTS = raw.events.events;
   const CIRCUITS = raw.circuits.circuits;
@@ -87,7 +158,18 @@ function start(raw) {
   // Places that are not Vande Bharat stations (Orchha) still need a point on the map
   for (const p of PLACES.values()) {
     if (p.lat == null || !p.code) continue;
-    ST.set(p.code, { code: p.code, name: p.name, lat: p.lat, lon: p.lon, state: p.state, routes: [], near: [], term: false, pairs: 0, extra: true });
+    ST.set(p.code, {
+      code: p.code,
+      name: p.name,
+      lat: p.lat,
+      lon: p.lon,
+      state: p.state,
+      routes: [],
+      near: [],
+      term: false,
+      pairs: 0,
+      extra: true,
+    });
     net.placeByCode.set(p.code, p);
   }
   for (const s of ST.values()) {
@@ -109,52 +191,94 @@ function start(raw) {
   $("c-sl").textContent = ROUTES.filter((r) => r.type === "sleeper").length;
   if (net.checked) {
     const [y, m, d] = net.checked.split("-").map(Number);
-    $("checked-date").textContent = `${d} ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m - 1]} ${y}`;
+    $("checked-date").textContent =
+      `${d} ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m - 1]} ${y}`;
   }
 
   /* ---------- State ---------- */
-  const today = (() => { const n = new Date(); return toDay(n.getFullYear(), n.getMonth() + 1, n.getDate()); })();
+  const today = (() => {
+    const n = new Date();
+    return toDay(n.getFullYear(), n.getMonth() + 1, n.getDate());
+  })();
   const state = {
-    tab: "connections", view: "connections", sel: null, history: [], hover: null, hoverStation: null,
-    type: "all", q: "", sort: "num",
-    from: null, to: null, maxChanges: store.get("max", 6), allowRoad: store.get("road", true), onDay: null, journeys: [], jSel: 0,
-    variant: store.get("variant", "loop"), startPlace: store.get("startPlace", "mumbai"), startDay: null, plan: null, scan: null,
-    leg: null, legHover: null,
+    tab: "connections",
+    view: "connections",
+    sel: null,
+    history: [],
+    hover: null,
+    hoverStation: null,
+    type: "all",
+    q: "",
+    sort: "num",
+    from: null,
+    to: null,
+    maxChanges: store.get("max", 6),
+    allowRoad: store.get("road", true),
+    onDay: null,
+    journeys: [],
+    jSel: 0,
+    variant: store.get("variant", "loop"),
+    startPlace: store.get("startPlace", "mumbai"),
+    startDay: null,
+    plan: null,
+    scan: null,
+    leg: null,
+    legHover: null,
   };
   // A shared link carries the plan in its query: ?from=Mumbai&to=Goa&max=2, or ?loop=loop&start=mumbai&date=2027-10-15
   const params = new URLSearchParams(location.search);
   if (/^[0-6]$/.test(params.get("max") || "")) state.maxChanges = +params.get("max");
   if (params.has("road")) state.allowRoad = params.get("road") !== "0";
-  if (CIRCUITS.some((c) => c.id === params.get("loop")) || params.get("loop") === OWN_ID) state.variant = params.get("loop");
+  if (CIRCUITS.some((c) => c.id === params.get("loop")) || params.get("loop") === OWN_ID)
+    state.variant = params.get("loop");
   // Your own circuit: the places and nights you chose, kept on this device and in a shared link (?loop=own&stops=delhi.2,agra.1)
-  state.own = (params.get("loop") === OWN_ID && ownFromText(net, params.get("stops"))) || ownFromText(net, store.get("own", "")) ||
-    [{ place: "delhi", nights: 2 }, { place: "agra", nights: 1 }, { place: "varanasi", nights: 2 }];
+  state.own = (params.get("loop") === OWN_ID && ownFromText(net, params.get("stops"))) ||
+    ownFromText(net, store.get("own", "")) || [
+      { place: "delhi", nights: 2 },
+      { place: "agra", nights: 1 },
+      { place: "varanasi", nights: 2 },
+    ];
   if (PLACES.has(params.get("start"))) state.startPlace = params.get("start");
-  if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("date") || "")) state.startDay = Math.max(fromISO(params.get("date")), today);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("date") || ""))
+    state.startDay = Math.max(fromISO(params.get("date")), today);
   if (/^\d{4}-\d{2}-\d{2}$/.test(params.get("on") || "")) state.onDay = Math.max(fromISO(params.get("on")), today);
   // Keep the address bar in step with the plan, so it can be copied or shared at any time
   function syncURL() {
     const p = new URLSearchParams();
     if (state.tab === "connections" && state.from && state.to) {
-      p.set("from", state.from.label); p.set("to", state.to.label); p.set("max", state.maxChanges);
+      p.set("from", state.from.label);
+      p.set("to", state.to.label);
+      p.set("max", state.maxChanges);
       if (!state.allowRoad) p.set("road", "0");
       if (state.onDay != null) p.set("on", isoOf(state.onDay));
     } else if (state.tab === "circuits" && state.plan) {
       p.set("loop", state.variant);
-      if (state.variant === OWN_ID) p.set("stops", ownToText(state.own)); else p.set("start", state.startPlace);
+      if (state.variant === OWN_ID) p.set("stops", ownToText(state.own));
+      else p.set("start", state.startPlace);
       p.set("date", isoOf(state.startDay));
     }
     const q = p.toString();
-    try { history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash); } catch (e) { /* ignore */ }
+    try {
+      history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
+    } catch (e) {
+      /* ignore */
+    }
   }
-  const shareBar = () => `<div class="sharebar"><button class="btn" type="button" data-act="share">Share</button><button class="btn" type="button" data-act="print">Print</button><span class="share-msg" role="status" aria-live="polite"></span></div>`;
+  const shareBar = () =>
+    `<div class="sharebar"><button class="btn" type="button" data-act="share">Share</button><button class="btn" type="button" data-act="print">Print</button><span class="share-msg" role="status" aria-live="polite"></span></div>`;
   async function share(btn) {
     syncURL();
     const msg = btn.parentElement.querySelector(".share-msg");
     const c = circuitStops().c;
-    const text = state.tab === "circuits" ? `${c.name} on Vande Bharat trains, planned with IVB` : `${state.from.label} to ${state.to.label} on Vande Bharat trains, planned with IVB`;
+    const text =
+      state.tab === "circuits"
+        ? `${c.name} on Vande Bharat trains, planned with IVB`
+        : `${state.from.label} to ${state.to.label} on Vande Bharat trains, planned with IVB`;
     try {
-      if (navigator.share) { await navigator.share({ title: "IVB: India on Vande Bharat", text, url: location.href }); return; }
+      if (navigator.share) {
+        await navigator.share({ title: "IVB: India on Vande Bharat", text, url: location.href });
+        return;
+      }
       await navigator.clipboard.writeText(location.href);
       if (msg) msg.textContent = "Link copied";
     } catch (e) {
@@ -166,12 +290,25 @@ function start(raw) {
     window.print();
   }
 
-  const panel = $("panel"), mapSection = $("mapsection"), mapwrap = $("mapwrap"), tip = $("tip");
-  const views = { connections: $("v-connections"), circuits: $("v-circuits"), trains: $("v-trains"), route: $("v-route"), station: $("v-station") };
+  const panel = $("panel"),
+    mapSection = $("mapsection"),
+    mapwrap = $("mapwrap"),
+    tip = $("tip");
+  const views = {
+    connections: $("v-connections"),
+    circuits: $("v-circuits"),
+    trains: $("v-trains"),
+    route: $("v-route"),
+    station: $("v-station"),
+  };
 
   /* ---------- Places and stations for the From and To boxes ---------- */
-  function endpointFromPlace(p) { return { label: p.name, codes: p.codes.slice(), place: p }; }
-  function endpointFromStation(s) { return { label: `${s.name} (${s.code})`, codes: [s.code], place: placeOf(s.code), station: s }; }
+  function endpointFromPlace(p) {
+    return { label: p.name, codes: p.codes.slice(), place: p };
+  }
+  function endpointFromStation(s) {
+    return { label: `${s.name} (${s.code})`, codes: [s.code], place: placeOf(s.code), station: s };
+  }
   function suggestions(q) {
     q = q.trim().toLowerCase();
     if (!q) return [];
@@ -179,11 +316,13 @@ function start(raw) {
     for (const p of PLACES.values()) {
       if (!p.codes.length) continue;
       const n = p.name.toLowerCase();
-      if (n.startsWith(q) || (q.length >= 3 && n.includes(q))) out.push({ kind: "place", p, rank: n.startsWith(q) ? 0 : 1 });
+      if (n.startsWith(q) || (q.length >= 3 && n.includes(q)))
+        out.push({ kind: "place", p, rank: n.startsWith(q) ? 0 : 1 });
     }
     for (const s of ST.values()) {
       if (s.extra) continue;
-      const n = s.name.toLowerCase(), c = s.code.toLowerCase();
+      const n = s.name.toLowerCase(),
+        c = s.code.toLowerCase();
       let rank = -1;
       if (c === q) rank = 0;
       else if (n.startsWith(q)) rank = 2;
@@ -191,7 +330,10 @@ function start(raw) {
       else if (q.length >= 2 && c.startsWith(q)) rank = 4;
       if (rank >= 0) out.push({ kind: "station", s, rank });
     }
-    out.sort((a, b) => a.rank - b.rank || (b.kind === "place") - (a.kind === "place") || (b.s ? b.s.pairs : 0) - (a.s ? a.s.pairs : 0));
+    out.sort(
+      (a, b) =>
+        a.rank - b.rank || (b.kind === "place") - (a.kind === "place") || (b.s ? b.s.pairs : 0) - (a.s ? a.s.pairs : 0),
+    );
     return out.slice(0, 8);
   }
   function resolve(text) {
@@ -208,9 +350,15 @@ function start(raw) {
   }
 
   function combo(inputId, listId, key) {
-    const input = $(inputId), list = $(listId);
-    let items = [], active = -1;
-    const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1; };
+    const input = $(inputId),
+      list = $(listId);
+    let items = [],
+      active = -1;
+    const close = () => {
+      list.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      active = -1;
+    };
     const choose = (it) => {
       state[key] = it.kind === "place" ? endpointFromPlace(it.p) : endpointFromStation(it.s);
       input.value = state[key].label;
@@ -219,16 +367,31 @@ function start(raw) {
     };
     const render = () => {
       items = suggestions(input.value);
-      if (!items.length) { close(); return; }
-      list.innerHTML = items.map((it, i) => it.kind === "place"
-        ? `<li role="option" id="${listId}-${i}" aria-selected="${i === active}" data-i="${i}"><span class="city-tag">City</span><span>${esc(it.p.name)}</span><small>${it.p.codes.length} ${it.p.codes.length === 1 ? "station" : "stations"}</small></li>`
-        : `<li role="option" id="${listId}-${i}" aria-selected="${i === active}" data-i="${i}"><span class="code">${it.s.code}</span><span>${esc(it.s.name)}</span><small>${esc(it.s.state || "")}</small></li>`).join("");
+      if (!items.length) {
+        close();
+        return;
+      }
+      list.innerHTML = items
+        .map((it, i) =>
+          it.kind === "place"
+            ? `<li role="option" id="${listId}-${i}" aria-selected="${i === active}" data-i="${i}"><span class="city-tag">City</span><span>${esc(it.p.name)}</span><small>${it.p.codes.length} ${it.p.codes.length === 1 ? "station" : "stations"}</small></li>`
+            : `<li role="option" id="${listId}-${i}" aria-selected="${i === active}" data-i="${i}"><span class="code">${it.s.code}</span><span>${esc(it.s.name)}</span><small>${esc(it.s.state || "")}</small></li>`,
+        )
+        .join("");
       list.hidden = false;
       input.setAttribute("aria-expanded", "true");
-      if (active >= 0) input.setAttribute("aria-activedescendant", `${listId}-${active}`); else input.removeAttribute("aria-activedescendant");
+      if (active >= 0) input.setAttribute("aria-activedescendant", `${listId}-${active}`);
+      else input.removeAttribute("aria-activedescendant");
     };
-    input.addEventListener("input", () => { active = -1; render(); });
-    input.addEventListener("focus", () => { if (input.value) { input.select(); } });
+    input.addEventListener("input", () => {
+      active = -1;
+      render();
+    });
+    input.addEventListener("focus", () => {
+      if (input.value) {
+        input.select();
+      }
+    });
     input.addEventListener("keydown", (e) => {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         if (list.hidden) render();
@@ -239,24 +402,53 @@ function start(raw) {
       } else if (e.key === "Enter") {
         e.preventDefault();
         if (!list.hidden && items.length) choose(items[Math.max(0, active)]);
-        else { const r = resolve(input.value); if (r) { state[key] = r; input.value = r.label; search(); } }
-      } else if (e.key === "Escape") { close(); }
-    });
-    input.addEventListener("blur", () => setTimeout(() => {
-      close();
-      if (input.value && (!state[key] || state[key].label !== input.value)) {
-        const r = resolve(input.value);
-        if (r) { state[key] = r; input.value = r.label; search(); }
+        else {
+          const r = resolve(input.value);
+          if (r) {
+            state[key] = r;
+            input.value = r.label;
+            search();
+          }
+        }
+      } else if (e.key === "Escape") {
+        close();
       }
-    }, 150));
+    });
+    input.addEventListener("blur", () =>
+      setTimeout(() => {
+        close();
+        if (input.value && (!state[key] || state[key].label !== input.value)) {
+          const r = resolve(input.value);
+          if (r) {
+            state[key] = r;
+            input.value = r.label;
+            search();
+          }
+        }
+      }, 150),
+    );
     list.addEventListener("mousedown", (e) => e.preventDefault());
-    list.addEventListener("click", (e) => { const li = e.target.closest("li"); if (li) choose(items[+li.dataset.i]); });
-    return { set(ep) { state[key] = ep; input.value = ep ? ep.label : ""; } };
+    list.addEventListener("click", (e) => {
+      const li = e.target.closest("li");
+      if (li) choose(items[+li.dataset.i]);
+    });
+    return {
+      set(ep) {
+        state[key] = ep;
+        input.value = ep ? ep.label : "";
+      },
+    };
   }
   const fromBox = combo("from", "from-list", "from");
   const toBox = combo("to", "to-list", "to");
   $("finder").addEventListener("submit", (e) => e.preventDefault());
-  $("swap").addEventListener("click", () => { const a = state.from, b = state.to; fromBox.set(b); toBox.set(a); search(); });
+  $("swap").addEventListener("click", () => {
+    const a = state.from,
+      b = state.to;
+    fromBox.set(b);
+    toBox.set(a);
+    search();
+  });
   document.querySelectorAll(".seg button").forEach((b) => {
     b.setAttribute("aria-checked", String(+b.dataset.max === state.maxChanges));
     b.addEventListener("click", () => {
@@ -267,20 +459,37 @@ function start(raw) {
     });
   });
   $("road").checked = state.allowRoad;
-  $("road").addEventListener("change", (e) => { state.allowRoad = e.target.checked; store.set("road", state.allowRoad); search(); });
+  $("road").addEventListener("change", (e) => {
+    state.allowRoad = e.target.checked;
+    store.set("road", state.allowRoad);
+    search();
+  });
   // A date turns the connections into dated journeys: the actual trains, days and times
   const onInput = $("on");
   onInput.min = isoOf(today);
-  function showOn() { onInput.value = state.onDay != null ? isoOf(state.onDay) : ""; $("on-clear").hidden = state.onDay == null; }
+  function showOn() {
+    onInput.value = state.onDay != null ? isoOf(state.onDay) : "";
+    $("on-clear").hidden = state.onDay == null;
+  }
   showOn();
-  onInput.addEventListener("change", () => { state.onDay = onInput.value ? Math.max(today, fromISO(onInput.value)) : null; showOn(); search(); });
-  $("on-clear").addEventListener("click", () => { state.onDay = null; showOn(); search(); onInput.focus(); });
+  onInput.addEventListener("change", () => {
+    state.onDay = onInput.value ? Math.max(today, fromISO(onInput.value)) : null;
+    showOn();
+    search();
+  });
+  $("on-clear").addEventListener("click", () => {
+    state.onDay = null;
+    showOn();
+    search();
+    onInput.focus();
+  });
 
   /* ---------- Connections ---------- */
   function expand(ep) {
     // a single station also counts its near neighbours (Varanasi Jn and Banaras, say) when road changes are allowed
     const set = new Set(ep.codes);
-    if (state.allowRoad && ep.codes.length === 1) for (const n of ST.get(ep.codes[0]).near) if (n.km <= 12) set.add(n.code);
+    if (state.allowRoad && ep.codes.length === 1)
+      for (const n of ST.get(ep.codes[0]).near) if (n.km <= 12) set.add(n.code);
     return [...set];
   }
   function search() {
@@ -288,19 +497,38 @@ function start(raw) {
     store.set("to", state.to ? state.to.label : "");
     state.jSel = 0;
     state.leg = null;
-    if (!state.from || !state.to) { state.journeys = []; renderResults(); renderDest(); refreshMap(true); return; }
+    if (!state.from || !state.to) {
+      state.journeys = [];
+      renderResults();
+      renderDest();
+      refreshMap(true);
+      return;
+    }
     state.wider = null;
     if (state.onDay != null) {
-      const plan = (maxTrains, limit) => planJourneys(net, expand(state.from), expand(state.to), state.onDay, { maxTrains, allowRoad: state.allowRoad, limit });
+      const plan = (maxTrains, limit) =>
+        planJourneys(net, expand(state.from), expand(state.to), state.onDay, {
+          maxTrains,
+          allowRoad: state.allowRoad,
+          limit,
+        });
       state.journeys = plan(state.maxChanges >= 6 ? 10 : state.maxChanges + 1, 6);
       if (!state.journeys.length && state.maxChanges < 6) {
         const more = plan(10, 1);
         state.wider = more.length ? more[0].changes : null;
       }
     } else {
-      state.journeys = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: state.maxChanges, allowRoad: state.allowRoad, limit: 8 });
+      state.journeys = findJourneys(net, expand(state.from), expand(state.to), {
+        maxChanges: state.maxChanges,
+        allowRoad: state.allowRoad,
+        limit: 8,
+      });
       if (!state.journeys.length && state.maxChanges < 6) {
-        const more = findJourneys(net, expand(state.from), expand(state.to), { maxChanges: 6, allowRoad: state.allowRoad, limit: 1 });
+        const more = findJourneys(net, expand(state.from), expand(state.to), {
+          maxChanges: 6,
+          allowRoad: state.allowRoad,
+          limit: 1,
+        });
         state.wider = more.length ? more[0].changes : null;
       }
     }
@@ -325,48 +553,79 @@ function start(raw) {
     const js = state.journeys;
     if (!js.length) {
       const within = state.onDay != null ? ` leaving within a week of ${fmtDay(state.onDay)}` : "";
-      el.innerHTML = `<div class="res-head"><p class="kicker">Connections</p><h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2></div>` +
-        `<p class="empty">${state.wider != null
-          ? `No Vande Bharat journey with ${state.maxChanges === 0 ? "no changes" : "up to " + state.maxChanges + (state.maxChanges === 1 ? " change" : " changes")}${within}. The fewest it takes is ${state.wider} ${state.wider === 1 ? "change" : "changes"}: choose “Any” to see them.`
-          : state.onDay != null ? `No Vande Bharat journey${within}.`
-          : state.allowRoad
-            ? "There is no way to make this journey on Vande Bharat trains alone."
-            : "There is no way to make this journey on Vande Bharat trains alone without a change of station by road. Allow one and IVB will look again."}</p>`;
+      el.innerHTML =
+        `<div class="res-head"><p class="kicker">Connections</p><h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2></div>` +
+        `<p class="empty">${
+          state.wider != null
+            ? `No Vande Bharat journey with ${state.maxChanges === 0 ? "no changes" : "up to " + state.maxChanges + (state.maxChanges === 1 ? " change" : " changes")}${within}. The fewest it takes is ${state.wider} ${state.wider === 1 ? "change" : "changes"}: choose “Any” to see them.`
+            : state.onDay != null
+              ? `No Vande Bharat journey${within}.`
+              : state.allowRoad
+                ? "There is no way to make this journey on Vande Bharat trains alone."
+                : "There is no way to make this journey on Vande Bharat trains alone without a change of station by road. Allow one and IVB will look again."
+        }</p>`;
       return;
     }
     if (state.onDay != null) return renderDated(el, js);
     const fewest = js[0].trains;
-    const head = `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
+    const head =
+      `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
       `<h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2>` +
       `<p>${fewest === 1 ? "There is a direct train." : `The fewest is ${fewest} trains.`} Pick one to see its trains and the route on the map.</p>${shareBar()}</div>`;
     const cityOf = (code) => (placeOf(code) ? placeOf(code).name : stName(code));
-    const cards = js.map((j, k) => {
-      const open = k === state.jSel;
-      const rails = j.legs.filter((l) => l.kind === "rail");
-      const via = [...new Set(rails.slice(1).map((l) => cityOf(l.from)))];
-      const label = j.trains === 1 ? "Direct" : `${j.trains} trains`;
-      const when = j.duration != null ? fmtDur(j.duration) + " end to end"
-        : j.timed ? (j.nights ? `${j.nights} ${j.nights === 1 ? "night" : "nights"} on the way` : "")
-        : "some timings not in IVB yet";
-      const sub = [fmtKm(j.km), when].filter(Boolean);
-      let body = "";
-      if (open) {
-        const parts = [];
-        j.legs.forEach((l) => {
-          if (l.kind === "road") { parts.push(`<li class="jx">${esc(legText(l))}</li>`); return; }
-          if (l.change) parts.push(`<li class="jx wait">${l.change.sameDay ? `${fmtDur(l.change.min)} to change at ${esc(stName(l.from))}` : `Night in ${esc(cityOf(l.from))}${l.dep ? `; the next train leaves at ${l.dep.text}` : ""}`}</li>`);
-          const meta = [l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}${l.arr.day > (l.dep.day || 0) ? " next day" : ""}` : "", l.days ? daysText(l.days) : "timetable not in IVB yet", `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`, fmtKm(l.km)].filter(Boolean).join(" · ");
-          const prov = l.train ? `<span class="prov">${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span>` : "";
-          parts.push(`<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(trainNum(l))}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>${prov}</li>`);
-        });
-        body = `<ul class="jlegs">${parts.join("")}</ul>`;
-      } else {
-        body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map(trainNum).join(" · "))}</p>`;
-      }
-      return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
-    }).join("");
+    const cards = js
+      .map((j, k) => {
+        const open = k === state.jSel;
+        const rails = j.legs.filter((l) => l.kind === "rail");
+        const via = [...new Set(rails.slice(1).map((l) => cityOf(l.from)))];
+        const label = j.trains === 1 ? "Direct" : `${j.trains} trains`;
+        const when =
+          j.duration != null
+            ? fmtDur(j.duration) + " end to end"
+            : j.timed
+              ? j.nights
+                ? `${j.nights} ${j.nights === 1 ? "night" : "nights"} on the way`
+                : ""
+              : "some timings not in IVB yet";
+        const sub = [fmtKm(j.km), when].filter(Boolean);
+        let body;
+        if (open) {
+          const parts = [];
+          j.legs.forEach((l) => {
+            if (l.kind === "road") {
+              parts.push(`<li class="jx">${esc(legText(l))}</li>`);
+              return;
+            }
+            if (l.change)
+              parts.push(
+                `<li class="jx wait">${l.change.sameDay ? `${fmtDur(l.change.min)} to change at ${esc(stName(l.from))}` : `Night in ${esc(cityOf(l.from))}${l.dep ? `; the next train leaves at ${l.dep.text}` : ""}`}</li>`,
+              );
+            const meta = [
+              l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}${l.arr.day > (l.dep.day || 0) ? " next day" : ""}` : "",
+              l.days ? daysText(l.days) : "timetable not in IVB yet",
+              `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`,
+              fmtKm(l.km),
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            const prov = l.train
+              ? `<span class="prov">${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span>`
+              : "";
+            parts.push(
+              `<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(trainNum(l))}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>${prov}</li>`,
+            );
+          });
+          body = `<ul class="jlegs">${parts.join("")}</ul>`;
+        } else {
+          body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map(trainNum).join(" · "))}</p>`;
+        }
+        return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${label}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
+      })
+      .join("");
     syncURL();
-    el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
+    el.innerHTML =
+      head +
+      `<ol class="journeys">${cards}</ol>` +
       `<p class="res-more">Times and days come from the timetable sites named on each train, checked on the date shown; a night on the way assumes the next train runs that day. Pick a date above to see which days the trains actually run. Distances are measured along the track.</p>`;
   }
   // Dated journeys (a date is picked): the actual trains, with the day and time of each
@@ -375,52 +634,77 @@ function start(raw) {
     const dayAt = (m) => state.onDay + Math.floor(m / 1440);
     const at = (m) => `${fmtDay(dayAt(m))}, ${clock(m)}`;
     const until = (a, b) => (dayAt(a) === dayAt(b) ? clock(b) : at(b));
-    const span = (min) => { const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60); return d ? `${d} ${d === 1 ? "day" : "days"}${h ? ` ${h} h` : ""}` : fmtDur(min); };
+    const span = (min) => {
+      const d = Math.floor(min / 1440),
+        h = Math.floor((min % 1440) / 60);
+      return d ? `${d} ${d === 1 ? "day" : "days"}${h ? ` ${h} h` : ""}` : fmtDur(min);
+    };
     const cityOf = (code) => (placeOf(code) ? placeOf(code).name : stName(code));
     const later = js[0].dep >= 1440;
-    const head = `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
+    const head =
+      `<div class="res-head"><p class="kicker">${js.length} ${js.length === 1 ? "way" : "ways"} on Vande Bharats only</p>` +
       `<h2>${esc(state.from.label)} to ${esc(state.to.label)}</h2>` +
       `<p>${later ? `No Vande Bharat journey leaves on ${fmtDay(state.onDay)}; these are the next.` : `Leaving on ${fmtDay(state.onDay)}, soonest arrival first.`} Pick one to see its trains and the route on the map.</p>${shareBar()}</div>`;
-    const cards = js.map((j, k) => {
-      const open = k === state.jSel;
-      const rails = j.legs.filter((l) => l.kind === "rail");
-      const via = [...new Set(rails.slice(1).map((l) => cityOf(l.from)))];
-      const sub = [`${at(j.dep)} → ${until(j.dep, j.arr)}`, span(j.arr - j.dep), fmtKm(j.km)];
-      let body;
-      if (open) {
-        const parts = [];
-        let prev = null;
-        for (const l of j.legs) {
-          if (l.kind === "road") { parts.push(`<li class="jx">${esc(legText(l))}</li>`); continue; }
-          if (prev) {
-            const nights = dayAt(l.dep) - dayAt(prev.arr);
-            parts.push(`<li class="jx wait">${nights ? `${nights === 1 ? "A night" : `${nights} nights`} in ${esc(cityOf(l.from))}; the next train leaves ${esc(at(l.dep))}` : `${fmtDur(l.dep - prev.arr)} to change at ${esc(stName(l.from))}`}</li>`);
+    const cards = js
+      .map((j, k) => {
+        const open = k === state.jSel;
+        const rails = j.legs.filter((l) => l.kind === "rail");
+        const via = [...new Set(rails.slice(1).map((l) => cityOf(l.from)))];
+        const sub = [`${at(j.dep)} → ${until(j.dep, j.arr)}`, span(j.arr - j.dep), fmtKm(j.km)];
+        let body;
+        if (open) {
+          const parts = [];
+          let prev = null;
+          for (const l of j.legs) {
+            if (l.kind === "road") {
+              parts.push(`<li class="jx">${esc(legText(l))}</li>`);
+              continue;
+            }
+            if (prev) {
+              const nights = dayAt(l.dep) - dayAt(prev.arr);
+              parts.push(
+                `<li class="jx wait">${nights ? `${nights === 1 ? "A night" : `${nights} nights`} in ${esc(cityOf(l.from))}; the next train leaves ${esc(at(l.dep))}` : `${fmtDur(l.dep - prev.arr)} to change at ${esc(stName(l.from))}`}</li>`,
+              );
+            }
+            const meta = [
+              `${at(l.dep)} → ${until(l.dep, l.arr)}`,
+              `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`,
+              fmtKm(l.km),
+            ].join(" · ");
+            const opens = l.start - ADVANCE_DAYS;
+            const book = opens >= today ? `Booking opens ${fmtDay(opens)} at 8:00 am` : "Booking is open";
+            parts.push(
+              `<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(l.train.num)}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>` +
+                `<span class="prov">${esc(book)}. ${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span></li>`,
+            );
+            prev = l;
           }
-          const meta = [`${at(l.dep)} → ${until(l.dep, l.arr)}`, `${l.halts} ${l.halts === 1 ? "halt" : "halts"}`, fmtKm(l.km)].join(" · ");
-          const opens = l.start - ADVANCE_DAYS;
-          const book = opens >= today ? `Booking opens ${fmtDay(opens)} at 8:00 am` : "Booking is open";
-          parts.push(`<li class="jleg"><span class="num${l.route.type === "sleeper" ? " sl" : ""}">${esc(l.train.num)}</span><span class="what">${esc(legText(l))}</span><span class="meta">${esc(meta)}</span>` +
-            `<span class="prov">${esc(book)}. ${provenance(l.train)}${l.train.note ? `. ${esc(l.train.note)}` : ""}</span></li>`);
-          prev = l;
+          body = `<ul class="jlegs">${parts.join("")}</ul>`;
+        } else {
+          body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map((l) => l.train.num).join(" · "))}</p>`;
         }
-        body = `<ul class="jlegs">${parts.join("")}</ul>`;
-      } else {
-        body = `<p class="jvia">${via.length ? "Change at " + esc(via.join(", ")) : esc(rails.map((l) => l.train.num).join(" · "))}</p>`;
-      }
-      return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${j.trains === 1 ? "Direct" : `${j.trains} trains`}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
-    }).join("");
+        return `<li><div class="jcard${open ? " open" : ""}" data-j="${k}"><div class="jsum" role="button" tabindex="0" aria-pressed="${open}" aria-expanded="${open}"><b>${j.trains === 1 ? "Direct" : `${j.trains} trains`}</b>${sub.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${body}</div></li>`;
+      })
+      .join("");
     syncURL();
-    el.innerHTML = head + `<ol class="journeys">${cards}</ol>` +
+    el.innerHTML =
+      head +
+      `<ol class="journeys">${cards}</ol>` +
       `<p class="res-more">Each journey leaves as late as it can for its arrival. Times come from the timetable sites named on each train, checked on the date shown. Booking opens ${ADVANCE_DAYS} days before a train leaves its first station, at 8:00 am India time. Distances are measured along the track.</p>`;
   }
   function placeCard(p, heading) {
     const now = monthOf(today);
-    const strip = MONTHS.map((m, i) => `<span class="m${p.months[i]}${i === now ? " now" : ""}" title="${m}: ${["avoid", "fair", "good"][+p.months[i]]}">${m[0]}</span>`).join("");
-    return `<div class="place"><div><p class="kicker">${esc(heading)}</p><h3>${esc(p.name)}</h3><p class="state">${esc(p.state)}</p></div>` +
+    const strip = MONTHS.map(
+      (m, i) =>
+        `<span class="m${p.months[i]}${i === now ? " now" : ""}" title="${m}: ${["avoid", "fair", "good"][+p.months[i]]}">${m[0]}</span>`,
+    ).join("");
+    return (
+      `<div class="place"><div><p class="kicker">${esc(heading)}</p><h3>${esc(p.name)}</h3><p class="state">${esc(p.state)}</p></div>` +
       `<ul>${p.see.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>` +
       `<p class="ptip">${esc(p.tip)}</p>` +
       `<div class="months"><span class="months-label">Best time to visit</span><div class="mstrip" role="img" aria-label="Good months: ${MONTHS.filter((m, i) => p.months[i] === "2").join(", ")}">${strip}</div>` +
-      `<span class="mkey"><span><i class="k2"></i>Good</span><span><i class="k1"></i>Fair</span><span><i class="k0"></i>Better avoided</span><span>Outlined: this month</span></span></div></div>`;
+      `<span class="mkey"><span><i class="k2"></i>Good</span><span><i class="k1"></i>Fair</span><span><i class="k0"></i>Better avoided</span><span>Outlined: this month</span></span></div></div>`
+    );
   }
   function renderDest() {
     const p = state.to && (state.to.place || placeOf(state.to.codes[0]));
@@ -433,7 +717,13 @@ function start(raw) {
     if (state.variant === OWN_ID) {
       const key = ownToText(state.own);
       if (!ownBuilt || ownBuilt.key !== key) ownBuilt = { key, ...buildCircuit(net, state.own) };
-      const c = { id: OWN_ID, name: "Your own circuit", blurb: "Choose the places and how many nights in each. IVB finds the Vande Bharats between them and brings you back to where you started.", stops: ownBuilt.stops };
+      const c = {
+        id: OWN_ID,
+        name: "Your own circuit",
+        blurb:
+          "Choose the places and how many nights in each. IVB finds the Vande Bharats between them and brings you back to where you started.",
+        stops: ownBuilt.stops,
+      };
       return { c, stops: ownBuilt.stops, missing: ownBuilt.missing };
     }
     const c = CIRCUITS.find((x) => x.id === state.variant) || CIRCUITS[0];
@@ -447,7 +737,8 @@ function start(raw) {
     state.scan = seasonScan(net, stops, scanFrom, 24, EVENTS);
     if (resetDate || state.startDay == null) {
       const saved = store.get("startDay", null);
-      state.startDay = !resetDate && saved && saved >= today ? saved : state.scan.reduce((a, b) => (b.score > a.score ? b : a)).day;
+      state.startDay =
+        !resetDate && saved && saved >= today ? saved : state.scan.reduce((a, b) => (b.score > a.score ? b : a)).day;
     }
     state.plan = schedule(net, stops, state.startDay, EVENTS);
     state.planScore = seasonScore(net, state.plan);
@@ -456,15 +747,19 @@ function start(raw) {
     const planned = s.first ? s.depart.day - s.waited : s.arrive.day + s.nights;
     for (const l of s.legs) {
       if (l.kind !== "rail") continue;
-      if (!runsOn(l.train, l.from, weekday(planned))) return `${l.train.num} does not run on ${FULLDAY[DAYS[weekday(planned)]]}`;
+      if (!runsOn(l.train, l.from, weekday(planned)))
+        return `${l.train.num} does not run on ${FULLDAY[DAYS[weekday(planned)]]}`;
     }
     return "the onward train leaves too early to make the change";
   }
   function legButton(l, idx) {
-    if (l.kind === "road") return `<li><p class="leg-x">${esc(l.text || legText(l))}, about ${l.km} km by road</p></li>`;
+    if (l.kind === "road")
+      return `<li><p class="leg-x">${esc(l.text || legText(l))}, about ${l.km} km by road</p></li>`;
     const t = l.train;
     const time = l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}${l.arrDay > l.day ? " next day" : ""}` : "";
-    const meta = [fmtDay(l.day), time, t.sleeper ? "sleeper, overnight" : "", daysText(t.days)].filter(Boolean).join(" · ");
+    const meta = [fmtDay(l.day), time, t.sleeper ? "sleeper, overnight" : "", daysText(t.days)]
+      .filter(Boolean)
+      .join(" · ");
     return `<li><button class="leg" type="button" data-leg="${idx}"><span class="leg-no">${t.num}</span><span class="leg-route">${esc(stName(l.from))} → ${esc(stName(l.to))}</span><span class="leg-meta">${esc(meta)}</span></button></li>`;
   }
   function seasonChip(p, day) {
@@ -473,27 +768,42 @@ function start(raw) {
   }
   function statesOf(plan) {
     const set = new Set();
-    for (const s of plan.stops) for (const l of s.legs) {
-      if (l.kind !== "rail") continue;
-      const r = l.train.route, i = r.index.get(l.from), j = r.index.get(l.to);
-      for (let k = Math.min(i, j); k <= Math.max(i, j); k++) set.add(ST.get(r.stops[k]).state);
-    }
+    for (const s of plan.stops)
+      for (const l of s.legs) {
+        if (l.kind !== "rail") continue;
+        const r = l.train.route,
+          i = r.index.get(l.from),
+          j = r.index.get(l.to);
+        for (let k = Math.min(i, j); k <= Math.max(i, j); k++) set.add(ST.get(r.stops[k]).state);
+      }
     return set.size;
   }
   // When each train of the trip goes on sale, with a calendar file of reminders
   function bookingSection(c, plan) {
     const items = bookingDates(plan);
     if (!items.length) return "";
-    const opens = items.map((x) => x.opens), first = Math.min(...opens), last = Math.max(...opens);
-    const upcoming = items.filter((x) => x.opens > today).length, onSale = items.length - upcoming;
+    const opens = items.map((x) => x.opens),
+      first = Math.min(...opens),
+      last = Math.max(...opens);
+    const upcoming = items.filter((x) => x.opens > today).length,
+      onSale = items.length - upcoming;
     const when = (d) => `${fmtDay(d)} ${yearOf(d)}`;
     const span = first === last ? `on <b>${when(first)}</b>` : `between <b>${when(first)}</b> and <b>${when(last)}</b>`;
-    const rows = items.map((x) => `<tr><td>${x.num}</td><td>${esc(stName(x.from))} → ${esc(stName(x.to))}</td><td>${fmtDay(x.day)}</td><td>${x.opens <= today ? "on sale now" : esc(fmtDay(x.opens)) + ", 8 am"}</td></tr>`).join("");
-    return `<section class="season booking" aria-labelledby="book-h"><h3 id="book-h">When to book</h3>` +
+    const rows = items
+      .map(
+        (x) =>
+          `<tr><td>${x.num}</td><td>${esc(stName(x.from))} → ${esc(stName(x.to))}</td><td>${fmtDay(x.day)}</td><td>${x.opens <= today ? "on sale now" : esc(fmtDay(x.opens)) + ", 8 am"}</td></tr>`,
+      )
+      .join("");
+    return (
+      `<section class="season booking" aria-labelledby="book-h"><h3 id="book-h">When to book</h3>` +
       `<p>Tickets go on sale 60 days before a train leaves its first station, at 8 am. This trip's ${items.length} train ${items.length === 1 ? "ride goes" : "rides go"} on sale ${span}${onSale ? `; ${onSale} ${onSale === 1 ? "is" : "are"} on sale already` : ""}. On the first day of sale only Aadhaar-verified IRCTC accounts can book, so verify yours beforehand.</p>` +
-      (upcoming ? `<div class="season-actions"><button class="btn" type="button" data-act="ics">Add ${upcoming === 1 ? "the booking date" : `the ${upcoming} booking dates`} to your calendar</button></div>` : "") +
+      (upcoming
+        ? `<div class="season-actions"><button class="btn" type="button" data-act="ics">Add ${upcoming === 1 ? "the booking date" : `the ${upcoming} booking dates`} to your calendar</button></div>`
+        : "") +
       `<details><summary>Show when each ride goes on sale</summary><table><thead><tr><th>Train</th><th>Ride</th><th>Travel</th><th>On sale</th></tr></thead><tbody>${rows}</tbody></table></details>` +
-      `<p>Rules as of 2026; check IRCTC if in doubt.</p></section>`;
+      `<p>Rules as of 2026; check IRCTC if in doubt.</p></section>`
+    );
   }
   function downloadBookingCalendar() {
     const { c } = circuitStops();
@@ -502,33 +812,63 @@ function start(raw) {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
     a.download = `ivb-booking-dates-${isoOf(state.plan.start)}.ics`;
-    document.body.appendChild(a); a.click(); a.remove();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   // When the circuit's trains were last checked, and that each train names its sources
   function circuitProvenance(plan) {
-    const dates = [...new Set(plan.stops.flatMap((s) => s.legs).filter((l) => l.kind === "rail" && l.train && l.train.checked).map((l) => l.train.checked))].sort();
+    const dates = [
+      ...new Set(
+        plan.stops
+          .flatMap((s) => s.legs)
+          .filter((l) => l.kind === "rail" && l.train && l.train.checked)
+          .map((l) => l.train.checked),
+      ),
+    ].sort();
     if (!dates.length) return "";
-    const when = dates.length === 1 ? `on ${fmtISO(dates[0])}` : `between ${fmtISO(dates[0])} and ${fmtISO(dates[dates.length - 1])}`;
+    const when =
+      dates.length === 1
+        ? `on ${fmtISO(dates[0])}`
+        : `between ${fmtISO(dates[0])} and ${fmtISO(dates[dates.length - 1])}`;
     return `The times of these trains were checked ${esc(when)} against timetable sites. Each train's page under Trains names its sources.`;
   }
   function ownEditor() {
-    const opts = ownPlaces(net).sort((a, b) => a.name.localeCompare(b.name)).map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
-    const rows = state.own.map((s, i) => {
-      const p = PLACES.get(s.place), last = state.own.length - 1;
-      const nights = Array.from({ length: MAX_NIGHTS + 1 }, (_, n) => `<option value="${n}"${n === s.nights ? " selected" : ""}>${n === 0 ? "Day stop" : `${n} ${n === 1 ? "night" : "nights"}`}</option>`).join("");
-      return `<li><span class="own-name">${esc(p.name)}</span>` +
-        (i === 0 ? `<span class="own-start">Start and end</span>` : `<select data-own="nights" data-i="${i}" aria-label="Nights in ${esc(p.name)}">${nights}</select>`) +
-        `<span class="own-btns"><button type="button" data-own="up" data-i="${i}" aria-label="Move ${esc(p.name)} earlier"${i === 0 ? " disabled" : ""}>↑</button>` +
-        `<button type="button" data-own="down" data-i="${i}" aria-label="Move ${esc(p.name)} later"${i === last ? " disabled" : ""}>↓</button>` +
-        `<button type="button" data-own="del" data-i="${i}" aria-label="Remove ${esc(p.name)}"${state.own.length <= 2 ? " disabled" : ""}>×</button></span></li>`;
-    }).join("");
-    return `<div class="own"><ol class="own-list">${rows}</ol>` +
-      `<label class="own-add" for="own-add">Add a place<select id="own-add"><option value="">Choose a place…</option>${opts}</select></label></div>`;
+    const opts = ownPlaces(net)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((p) => `<option value="${p.id}">${esc(p.name)}</option>`)
+      .join("");
+    const rows = state.own
+      .map((s, i) => {
+        const p = PLACES.get(s.place),
+          last = state.own.length - 1;
+        const nights = Array.from(
+          { length: MAX_NIGHTS + 1 },
+          (_, n) =>
+            `<option value="${n}"${n === s.nights ? " selected" : ""}>${n === 0 ? "Day stop" : `${n} ${n === 1 ? "night" : "nights"}`}</option>`,
+        ).join("");
+        return (
+          `<li><span class="own-name">${esc(p.name)}</span>` +
+          (i === 0
+            ? `<span class="own-start">Start and end</span>`
+            : `<select data-own="nights" data-i="${i}" aria-label="Nights in ${esc(p.name)}">${nights}</select>`) +
+          `<span class="own-btns"><button type="button" data-own="up" data-i="${i}" aria-label="Move ${esc(p.name)} earlier"${i === 0 ? " disabled" : ""}>↑</button>` +
+          `<button type="button" data-own="down" data-i="${i}" aria-label="Move ${esc(p.name)} later"${i === last ? " disabled" : ""}>↓</button>` +
+          `<button type="button" data-own="del" data-i="${i}" aria-label="Remove ${esc(p.name)}"${state.own.length <= 2 ? " disabled" : ""}>×</button></span></li>`
+        );
+      })
+      .join("");
+    return (
+      `<div class="own"><ol class="own-list">${rows}</ol>` +
+      `<label class="own-add" for="own-add">Add a place<select id="own-add"><option value="">Choose a place…</option>${opts}</select></label></div>`
+    );
   }
   function ownChanged() {
     store.set("own", ownToText(state.own));
-    computeCircuit(false); renderCircuits(); refreshMap(true);
+    computeCircuit(false);
+    renderCircuits();
+    refreshMap(true);
   }
   function renderCircuits() {
     const { c, missing } = circuitStops();
@@ -537,34 +877,62 @@ function start(raw) {
     const startPlace = own ? plan.stops[0].place : PLACES.get(state.startPlace) || plan.stops[0].place;
     let legIdx = 0;
     const startOptions = [...new Map(c.stops.map((s) => [s.place, PLACES.get(s.place)])).values()]
-      .map((p) => `<option value="${p.id}"${p.id === state.startPlace ? " selected" : ""}>${esc(p.name)}</option>`).join("");
-    const items = plan.stops.map((s, i) => {
-      const p = s.place;
-      const stay = s.first ? `Leave ${fmtDay(s.depart.day)}` :
-        s.nightsActual === 0 ? `${fmtDay(s.arrive.day)} · day stop` :
-        `${fmtDay(s.arrive.day)} – ${fmtDay(s.depart.day)} · ${s.nightsActual} ${s.nightsActual === 1 ? "night" : "nights"}`;
-      const chips = (s.first ? "" : seasonChip(p, s.arrive.day)) + s.events.map((e) => `<span class="pchip ev">${esc(e.name)}${e.from === e.to ? ", " + fmtDay(fromISO(e.from)) : ""}</span>`).join("");
-      const legs = s.legs.map((l) => { const b = legButton(l, l.kind === "rail" ? legIdx : -1); if (l.kind === "rail") legIdx++; return b; }).join("");
-      return `<li><span class="stopno" aria-hidden="true">${i + 1}</span>` +
-        `<div class="stop-h"><button class="stop-city" type="button" data-code="${esc(s.code)}">${esc(p.name)}${s.first ? " (start)" : ""}</button><span class="stop-stay">${esc(stay)}</span></div>` +
-        (chips ? `<div class="chips-row">${chips}</div>` : "") +
-        (s.note ? `<p class="stop-note">${esc(s.note)}</p>` : "") +
-        (s.first ? "" : `<p class="stop-see">${esc(p.see.slice(0, 3).join(" · "))}</p>`) +
-        (s.waited ? `<p class="waited">Stays ${s.waited} more ${s.waited === 1 ? "night" : "nights"}: ${esc(waitReason(s))}.</p>` : "") +
-        `<ul class="legs">${legs}</ul></li>`;
-    }).join("");
+      .map((p) => `<option value="${p.id}"${p.id === state.startPlace ? " selected" : ""}>${esc(p.name)}</option>`)
+      .join("");
+    const items = plan.stops
+      .map((s, i) => {
+        const p = s.place;
+        const stay = s.first
+          ? `Leave ${fmtDay(s.depart.day)}`
+          : s.nightsActual === 0
+            ? `${fmtDay(s.arrive.day)} · day stop`
+            : `${fmtDay(s.arrive.day)} – ${fmtDay(s.depart.day)} · ${s.nightsActual} ${s.nightsActual === 1 ? "night" : "nights"}`;
+        const chips =
+          (s.first ? "" : seasonChip(p, s.arrive.day)) +
+          s.events
+            .map(
+              (e) =>
+                `<span class="pchip ev">${esc(e.name)}${e.from === e.to ? ", " + fmtDay(fromISO(e.from)) : ""}</span>`,
+            )
+            .join("");
+        const legs = s.legs
+          .map((l) => {
+            const b = legButton(l, l.kind === "rail" ? legIdx : -1);
+            if (l.kind === "rail") legIdx++;
+            return b;
+          })
+          .join("");
+        return (
+          `<li><span class="stopno" aria-hidden="true">${i + 1}</span>` +
+          `<div class="stop-h"><button class="stop-city" type="button" data-code="${esc(s.code)}">${esc(p.name)}${s.first ? " (start)" : ""}</button><span class="stop-stay">${esc(stay)}</span></div>` +
+          (chips ? `<div class="chips-row">${chips}</div>` : "") +
+          (s.note ? `<p class="stop-note">${esc(s.note)}</p>` : "") +
+          (s.first ? "" : `<p class="stop-see">${esc(p.see.slice(0, 3).join(" · "))}</p>`) +
+          (s.waited
+            ? `<p class="waited">Stays ${s.waited} more ${s.waited === 1 ? "night" : "nights"}: ${esc(waitReason(s))}.</p>`
+            : "") +
+          `<ul class="legs">${legs}</ul></li>`
+        );
+      })
+      .join("");
     const best = state.scan.reduce((a, b) => (b.score > a.score ? b : a));
     const nstops = plan.stops.length;
     views.circuits.innerHTML =
       `<div class="cv-head"><p class="kicker">Circuits</p><h2>${esc(c.name)}</h2><p class="cv-blurb">${esc(c.blurb)}</p>` +
       `<div class="cv-controls"><div class="variant" role="group" aria-label="Which loop">` +
       [...CIRCUITS.map((x) => [x.id, x.id === "loop" ? "Central India Loop" : "With the east"]), [OWN_ID, "Your own"]]
-        .map(([id, label]) => `<button type="button" data-variant="${id}" aria-pressed="${id === c.id}">${label}</button>`).join("") +
+        .map(
+          ([id, label]) => `<button type="button" data-variant="${id}" aria-pressed="${id === c.id}">${label}</button>`,
+        )
+        .join("") +
       `</div>${own ? ownEditor() : ""}<div class="cv-row">${own ? "" : `<label for="cv-start">Start from<select id="cv-start">${startOptions}</select></label>`}` +
       `<label for="cv-date">Start date<input type="date" id="cv-date" value="${isoOf(state.startDay)}" min="${isoOf(today)}"></label></div></div>` +
       `<dl class="stats"><div><dt>Days</dt><dd>${plan.days}</dd></div><div><dt>Train rides</dt><dd>${plan.rides}</dd></div><div><dt>Stops</dt><dd>${nstops - 1}</dd></div><div><dt>States and UTs</dt><dd>${statesOf(plan)}</dd></div></dl>` +
       `<p class="cv-dates">Leave ${esc(startPlace.name)} on <b>${fmtDay(plan.start)} ${yearOf(plan.start)}</b>, back on <b>${fmtDay(plan.end)} ${yearOf(plan.end)}</b>.` +
-      (plan.waits ? ` That includes ${plan.waits} extra ${plan.waits === 1 ? "night" : "nights"} waiting for trains that skip a day.` : "") + `</p>${shareBar()}</div>` +
+      (plan.waits
+        ? ` That includes ${plan.waits} extra ${plan.waits === 1 ? "night" : "nights"} waiting for trains that skip a day.`
+        : "") +
+      `</p>${shareBar()}</div>` +
       `<section class="season" aria-labelledby="season-h"><h3 id="season-h">When to go</h3>` +
       `<p>Share of your nights spent in each place's good months, for a start on the 1st or 15th of each month.</p>` +
       `<div class="chart" id="season-chart"></div>` +
@@ -572,7 +940,12 @@ function start(raw) {
       `<div class="season-actions">${best.day !== state.startDay ? `<button class="btn" type="button" data-act="use-best">Start on the best date</button>` : ""}</div>` +
       `<p>The scores weigh weather only. October and November are also festival season, when trains fill up early.</p>` +
       `<details><summary>Show the scores as a table</summary><table><thead><tr><th>Start</th><th>Score</th><th>Days</th><th>Good</th><th>Fair</th><th>Off</th></tr></thead><tbody>` +
-      state.scan.map((x) => `<tr><td>${fmtDay(x.day)} ${yearOf(x.day)}</td><td>${Math.round(x.score * 100)}%</td><td>${x.days}</td><td>${x.best}</td><td>${x.fair}</td><td>${x.poor}</td></tr>`).join("") +
+      state.scan
+        .map(
+          (x) =>
+            `<tr><td>${fmtDay(x.day)} ${yearOf(x.day)}</td><td>${Math.round(x.score * 100)}%</td><td>${x.days}</td><td>${x.best}</td><td>${x.fair}</td><td>${x.poor}</td></tr>`,
+        )
+        .join("") +
       `</tbody></table></details></section>` +
       `<ol class="itin" aria-label="Stops in order">${items}</ol>` +
       `<p class="cv-end">Back in ${esc(startPlace.name)} on ${fmtDay(plan.end)}${plan.endTime != null ? " at " + String(Math.floor(plan.endTime / 60)).padStart(2, "0") + ":" + String(plan.endTime % 60).padStart(2, "0") : ""}.</p>` +
@@ -582,49 +955,88 @@ function start(raw) {
       `<p class="cv-src">${circuitProvenance(plan)}</p>`;
     syncURL();
     drawSeasonChart($("season-chart"), state.scan, state.startDay, best.day);
-    if (!own) $("cv-start").addEventListener("change", (e) => { state.startPlace = e.target.value; store.set("startPlace", state.startPlace); computeCircuit(false); renderCircuits(); refreshMap(true); });
+    if (!own)
+      $("cv-start").addEventListener("change", (e) => {
+        state.startPlace = e.target.value;
+        store.set("startPlace", state.startPlace);
+        computeCircuit(false);
+        renderCircuits();
+        refreshMap(true);
+      });
     if (own) {
-      views.circuits.querySelectorAll("select[data-own]").forEach((sel) => sel.addEventListener("change", () => { state.own[+sel.dataset.i].nights = +sel.value; ownChanged(); }));
-      $("own-add").addEventListener("change", (e) => { if (!e.target.value) return; state.own.push({ place: e.target.value, nights: 1 }); ownChanged(); });
+      views.circuits.querySelectorAll("select[data-own]").forEach((sel) =>
+        sel.addEventListener("change", () => {
+          state.own[+sel.dataset.i].nights = +sel.value;
+          ownChanged();
+        }),
+      );
+      $("own-add").addEventListener("change", (e) => {
+        if (!e.target.value) return;
+        state.own.push({ place: e.target.value, nights: 1 });
+        ownChanged();
+      });
     }
     $("cv-date").addEventListener("change", (e) => {
       if (!e.target.value) return;
       state.startDay = Math.max(today, fromISO(e.target.value));
       store.set("startDay", state.startDay);
-      computeCircuit(false); renderCircuits(); refreshMap(false);
+      computeCircuit(false);
+      renderCircuits();
+      refreshMap(false);
     });
   }
 
   // Season chart: one column per start date, the chosen date in saffron
   function drawSeasonChart(el, scan, chosen, bestDay) {
-    const W = 400, H = 132, padL = 30, padR = 6, padT = 18, padB = 22;
-    const iw = W - padL - padR, ih = H - padT - padB;
-    const slot = iw / scan.length, bw = Math.min(24, slot - 2);
+    const W = 400,
+      H = 132,
+      padL = 30,
+      padR = 6,
+      padT = 18,
+      padB = 22;
+    const iw = W - padL - padR,
+      ih = H - padT - padB;
+    const slot = iw / scan.length,
+      bw = Math.min(24, slot - 2);
     const near = scan.reduce((a, b) => (Math.abs(b.day - chosen) < Math.abs(a.day - chosen) ? b : a));
     const y = (v) => padT + ih * (1 - v);
     const parts = [];
     for (const g of [0, 0.5, 1]) {
       parts.push(`<line class="grid" x1="${padL}" x2="${W - padR}" y1="${y(g).toFixed(1)}" y2="${y(g).toFixed(1)}"/>`);
-      parts.push(`<text class="axis" x="${padL - 6}" y="${(y(g) + 3.5).toFixed(1)}" text-anchor="end">${g * 100}%</text>`);
+      parts.push(
+        `<text class="axis" x="${padL - 6}" y="${(y(g) + 3.5).toFixed(1)}" text-anchor="end">${g * 100}%</text>`,
+      );
     }
     scan.forEach((x, i) => {
       const cx = padL + slot * i + slot / 2;
-      const h = Math.max(1, ih * x.score), top = y(x.score), left = cx - bw / 2, r = Math.min(4, h, bw / 2);
+      const h = Math.max(1, ih * x.score),
+        top = y(x.score),
+        left = cx - bw / 2,
+        r = Math.min(4, h, bw / 2);
       const d = `M${left},${y(0)}V${top + r}Q${left},${top} ${left + r},${top}H${left + bw - r}Q${left + bw},${top} ${left + bw},${top + r}V${y(0)}Z`;
       const label = `${fmtDay(x.day)} ${yearOf(x.day)}: ${Math.round(x.score * 100)}%, ${x.days} days`;
-      parts.push(`<rect class="hitbar" x="${(padL + slot * i).toFixed(1)}" y="${padT}" width="${slot.toFixed(1)}" height="${ih}" tabindex="0" role="button" aria-label="${esc(label)}" data-i="${i}"/>`);
+      parts.push(
+        `<rect class="hitbar" x="${(padL + slot * i).toFixed(1)}" y="${padT}" width="${slot.toFixed(1)}" height="${ih}" tabindex="0" role="button" aria-label="${esc(label)}" data-i="${i}"/>`,
+      );
       parts.push(`<path class="bar${x === near ? " hi" : ""}" d="${d}"/>`);
       if (new Date(x.day * 86400000).getUTCDate() === 1) {
         const m = monthOf(x.day);
-        parts.push(`<text class="axis" x="${(padL + slot * i + slot).toFixed(1)}" y="${H - 6}" text-anchor="middle">${MONTHS[m][0]}${m === 0 ? "’" + String(yearOf(x.day)).slice(2) : ""}</text>`);
+        parts.push(
+          `<text class="axis" x="${(padL + slot * i + slot).toFixed(1)}" y="${H - 6}" text-anchor="middle">${MONTHS[m][0]}${m === 0 ? "’" + String(yearOf(x.day)).slice(2) : ""}</text>`,
+        );
       }
     });
     const bi = scan.findIndex((x) => x.day === bestDay);
-    if (bi >= 0) parts.push(`<text class="val" x="${(padL + slot * bi + slot / 2).toFixed(1)}" y="${(y(scan[bi].score) - 5).toFixed(1)}" text-anchor="middle">${Math.round(scan[bi].score * 100)}%</text>`);
+    if (bi >= 0)
+      parts.push(
+        `<text class="val" x="${(padL + slot * bi + slot / 2).toFixed(1)}" y="${(y(scan[bi].score) - 5).toFixed(1)}" text-anchor="middle">${Math.round(scan[bi].score * 100)}%</text>`,
+      );
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Season score by start date">${parts.join("")}</svg><div class="ctip" hidden></div>`;
     const ctip = el.querySelector(".ctip");
     const show = (i) => {
-      const x = scan[i], rect = el.getBoundingClientRect(), k = rect.width / W;
+      const x = scan[i],
+        rect = el.getBoundingClientRect(),
+        k = rect.width / W;
       ctip.innerHTML = `<b>${Math.round(x.score * 100)}%</b> · start ${esc(fmtDay(x.day))} ${yearOf(x.day)}<br>${x.days} days · ${x.best} stops in good season`;
       ctip.style.left = `${(padL + slot * i + slot / 2) * k}px`;
       ctip.style.top = `${(y(x.score) - 6) * k}px`;
@@ -634,11 +1046,26 @@ function start(raw) {
       const i = +r.dataset.i;
       r.addEventListener("pointerenter", () => show(i));
       r.addEventListener("focus", () => show(i));
-      r.addEventListener("pointerleave", () => { ctip.hidden = true; });
-      r.addEventListener("blur", () => { ctip.hidden = true; });
-      const pick = () => { state.startDay = Math.max(today, scan[i].day); store.set("startDay", state.startDay); computeCircuit(false); renderCircuits(); refreshMap(false); };
+      r.addEventListener("pointerleave", () => {
+        ctip.hidden = true;
+      });
+      r.addEventListener("blur", () => {
+        ctip.hidden = true;
+      });
+      const pick = () => {
+        state.startDay = Math.max(today, scan[i].day);
+        store.set("startDay", state.startDay);
+        computeCircuit(false);
+        renderCircuits();
+        refreshMap(false);
+      };
       r.addEventListener("click", pick);
-      r.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      r.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          pick();
+        }
+      });
     });
   }
 
@@ -649,7 +1076,8 @@ function start(raw) {
     if (r.label.toLowerCase().includes(q)) return true;
     return r.stops.some((c) => c.toLowerCase() === q || ST.get(c).name.toLowerCase().includes(q));
   }
-  const filtered = () => ROUTES.filter((r) => (state.type === "all" || r.type === state.type) && routeMatches(r, state.q));
+  const filtered = () =>
+    ROUTES.filter((r) => (state.type === "all" || r.type === state.type) && routeMatches(r, state.q));
   function sorted(list) {
     const a = list.slice();
     if (state.sort === "name") a.sort((x, y) => x.label.localeCompare(y.label));
@@ -659,44 +1087,84 @@ function start(raw) {
   }
   function rowHTML(r) {
     const halts = r.stops.length - 2;
-    return `<li><button type="button" class="rrow${r.type === "sleeper" ? " is-sl" : ""}" data-id="${r.id}">` +
+    return (
+      `<li><button type="button" class="rrow${r.type === "sleeper" ? " is-sl" : ""}" data-id="${r.id}">` +
       `<span class="rnum">${r.nums.map((n) => `<span>${n}</span>`).join("")}</span>` +
       `<span class="rname">${esc(r.label)}${r.type === "sleeper" ? '<span class="tag">Sleeper</span>' : ""}</span>` +
-      `<span class="rhalts"><b>${halts}</b>${halts === 1 ? "halt" : "halts"}</span></button></li>`;
+      `<span class="rhalts"><b>${halts}</b>${halts === 1 ? "halt" : "halts"}</span></button></li>`
+    );
   }
   function renderList() {
     const list = sorted(filtered());
-    $("routes").innerHTML = list.length ? list.map(rowHTML).join("") : `<li><p class="empty">No Vande Bharat train matches “${esc(state.q)}”. Try a station name, a code such as NDLS, or a train number.</p></li>`;
+    $("routes").innerHTML = list.length
+      ? list.map(rowHTML).join("")
+      : `<li><p class="empty">No Vande Bharat train matches “${esc(state.q)}”. Try a station name, a code such as NDLS, or a train number.</p></li>`;
     const pairs = list.reduce((n, r) => n + r.nums.length, 0);
-    $("count").textContent = state.q || state.type !== "all" ? `${list.length} ${list.length === 1 ? "route" : "routes"} · ${pairs} train ${pairs === 1 ? "pair" : "pairs"} match` : `${list.length} routes · ${pairs} train pairs`;
-    const q = state.q, el = $("st-results");
+    $("count").textContent =
+      state.q || state.type !== "all"
+        ? `${list.length} ${list.length === 1 ? "route" : "routes"} · ${pairs} train ${pairs === 1 ? "pair" : "pairs"} match`
+        : `${list.length} routes · ${pairs} train pairs`;
+    const q = state.q,
+      el = $("st-results");
     if (q.length >= 2) {
-      const hits = [...ST.values()].filter((s) => !s.extra && (s.code.toLowerCase() === q || (s.code.toLowerCase().startsWith(q) && q.length >= 3) || s.name.toLowerCase().includes(q)))
-        .sort((a, b) => (b.code.toLowerCase() === q) - (a.code.toLowerCase() === q) || b.pairs - a.pairs).slice(0, 6);
+      const hits = [...ST.values()]
+        .filter(
+          (s) =>
+            !s.extra &&
+            (s.code.toLowerCase() === q ||
+              (s.code.toLowerCase().startsWith(q) && q.length >= 3) ||
+              s.name.toLowerCase().includes(q)),
+        )
+        .sort((a, b) => (b.code.toLowerCase() === q) - (a.code.toLowerCase() === q) || b.pairs - a.pairs)
+        .slice(0, 6);
       el.hidden = !hits.length;
-      el.innerHTML = hits.length ? `<p class="group-label">Stations</p><ul class="stlist">${hits.map((s) => `<li><button type="button" class="strow" data-code="${s.code}"><span class="code">${s.code}</span><span class="rname">${esc(s.name)}</span><span class="stcount">${s.pairs} ${s.pairs === 1 ? "train" : "trains"}</span></button></li>`).join("")}</ul><p class="group-label">Trains</p>` : "";
-    } else { el.hidden = true; el.innerHTML = ""; }
+      el.innerHTML = hits.length
+        ? `<p class="group-label">Stations</p><ul class="stlist">${hits.map((s) => `<li><button type="button" class="strow" data-code="${s.code}"><span class="code">${s.code}</span><span class="rname">${esc(s.name)}</span><span class="stcount">${s.pairs} ${s.pairs === 1 ? "train" : "trains"}</span></button></li>`).join("")}</ul><p class="group-label">Trains</p>`
+        : "";
+    } else {
+      el.hidden = true;
+      el.innerHTML = "";
+    }
     if (!state.sel && map) map.focus();
   }
-  function backLabel() { return state.history.length ? "← Back" : { connections: "← Connections", circuits: "← Circuits", trains: "← All trains" }[state.tab]; }
+  function backLabel() {
+    return state.history.length
+      ? "← Back"
+      : { connections: "← Connections", circuits: "← Circuits", trains: "← All trains" }[state.tab];
+  }
   function renderRouteView(r) {
     const n = r.stops.length;
     const timed = [...TRAINS.values()].filter((t) => t.route === r && Object.keys(t.times).length);
-    const fwd = timed.find((t) => t.forward), rev = timed.find((t) => !t.forward);
-    const tCell = (t, c) => { const x = t && t.times[c]; const v = x && (x.dep || x.arr); return v ? v.text : ""; };
+    const fwd = timed.find((t) => t.forward),
+      rev = timed.find((t) => !t.forward);
+    const tCell = (t, c) => {
+      const x = t && t.times[c];
+      const v = x && (x.dep || x.arr);
+      return v ? v.text : "";
+    };
     views.route.innerHTML =
       `<div class="vhead"><button class="back" type="button" data-act="back">${backLabel()}</button><button class="tomap" type="button" data-act="tomap">Map ↑</button></div>` +
       `<div class="rv-head"><p class="rv-num${r.type === "sleeper" ? " sl" : ""}">${r.nums.map((x) => `<span>${x}</span>`).join("")}</p><h2>${esc(r.label)}</h2>` +
       `<p class="rv-meta"><span class="pill${r.type === "sleeper" ? " sl" : ""}">${r.type === "sleeper" ? "Sleeper" : "Chair car"}</span><span>${n} stations · ${n - 2} ${n - 2 === 1 ? "halt" : "halts"} · ${fmtKm(r.km)}</span></p>` +
       (r.note ? `<p class="rv-note">${esc(r.note)}</p>` : "") +
-      (timed.length ? `<ul class="rv-tt">${timed.map((t) => `<li><b>${t.num}</b> ${esc(stName(t.from))} → ${esc(stName(t.to))}, ${esc(daysText(t.days))}.${t.note ? " " + esc(t.note) : ""} <span class="prov">${provenance(t)}.</span></li>`).join("")}</ul>` : `<p class="rv-tt">IVB does not have this train's timetable yet.</p>`) +
-      `</div><ol class="strip" aria-label="Stops in order">${r.stops.map((c, i) => {
-        const s = ST.get(c), term = i === 0 || i === n - 1, unc = r.unc.has(c);
-        const times = [tCell(fwd, c), tCell(rev, c)].filter(Boolean).join(" / ");
-        return `<li class="${term ? "term" : ""}${unc ? " unc" : ""}"><button type="button" class="srow" data-code="${c}"><span class="sn">${i + 1}</span><span class="tick" aria-hidden="true"></span><span class="code">${c}</span>` +
-          `<span class="sname">${esc(s.name)}${unc ? '<span class="q" title="Listed by some sources only">unconfirmed</span>' : ""}</span><span class="sx">${times || (i === 0 ? "From" : i === n - 1 ? "To" : "")}</span></button></li>`;
-      }).join("")}</ol>` +
-      (fwd || rev ? `<p class="strip-foot">Times: ${[fwd && `${fwd.num} (${esc(stName(fwd.from))} first)`, rev && `${rev.num} (${esc(stName(rev.from))} first)`].filter(Boolean).join(" / ")}.</p>` : "") +
+      (timed.length
+        ? `<ul class="rv-tt">${timed.map((t) => `<li><b>${t.num}</b> ${esc(stName(t.from))} → ${esc(stName(t.to))}, ${esc(daysText(t.days))}.${t.note ? " " + esc(t.note) : ""} <span class="prov">${provenance(t)}.</span></li>`).join("")}</ul>`
+        : `<p class="rv-tt">IVB does not have this train's timetable yet.</p>`) +
+      `</div><ol class="strip" aria-label="Stops in order">${r.stops
+        .map((c, i) => {
+          const s = ST.get(c),
+            term = i === 0 || i === n - 1,
+            unc = r.unc.has(c);
+          const times = [tCell(fwd, c), tCell(rev, c)].filter(Boolean).join(" / ");
+          return (
+            `<li class="${term ? "term" : ""}${unc ? " unc" : ""}"><button type="button" class="srow" data-code="${c}"><span class="sn">${i + 1}</span><span class="tick" aria-hidden="true"></span><span class="code">${c}</span>` +
+            `<span class="sname">${esc(s.name)}${unc ? '<span class="q" title="Listed by some sources only">unconfirmed</span>' : ""}</span><span class="sx">${times || (i === 0 ? "From" : i === n - 1 ? "To" : "")}</span></button></li>`
+          );
+        })
+        .join("")}</ol>` +
+      (fwd || rev
+        ? `<p class="strip-foot">Times: ${[fwd && `${fwd.num} (${esc(stName(fwd.from))} first)`, rev && `${rev.num} (${esc(stName(rev.from))} first)`].filter(Boolean).join(" / ")}.</p>`
+        : "") +
       (r.unc.size ? `<p class="strip-foot">Halts marked unconfirmed appear in some timetables only.</p>` : "");
   }
   function renderStationView(s) {
@@ -704,11 +1172,14 @@ function start(raw) {
     views.station.innerHTML =
       `<div class="vhead"><button class="back" type="button" data-act="back">${backLabel()}</button><button class="tomap" type="button" data-act="tomap">Map ↑</button></div>` +
       `<div class="board"><h2 class="board-name">${esc(s.name)}</h2><span class="board-code">${s.extra ? "" : s.code}</span></div>` +
-      (s.extra ? `<p class="sv-meta">No Vande Bharat station. ${esc(p ? p.tip : "")}</p>` :
-        `<p class="sv-meta">${esc(s.state || "")} · ${s.pairs} Vande Bharat train ${s.pairs === 1 ? "pair stops" : "pairs stop"} here</p>` +
-        `<div class="sv-actions"><button class="btn" type="button" data-plan="from" data-code="${s.code}">Plan a journey from here</button><button class="btn" type="button" data-plan="to" data-code="${s.code}">Plan a journey to here</button></div>`) +
+      (s.extra
+        ? `<p class="sv-meta">No Vande Bharat station. ${esc(p ? p.tip : "")}</p>`
+        : `<p class="sv-meta">${esc(s.state || "")} · ${s.pairs} Vande Bharat train ${s.pairs === 1 ? "pair stops" : "pairs stop"} here</p>` +
+          `<div class="sv-actions"><button class="btn" type="button" data-plan="from" data-code="${s.code}">Plan a journey from here</button><button class="btn" type="button" data-plan="to" data-code="${s.code}">Plan a journey to here</button></div>`) +
       (p ? placeCard(p, "What to see") : "") +
-      (s.routes.length ? `<p class="group-label">Trains</p><ol class="routes">${s.routes.slice().sort(byNum).map(rowHTML).join("")}</ol>` : "");
+      (s.routes.length
+        ? `<p class="group-label">Trains</p><ol class="routes">${s.routes.slice().sort(byNum).map(rowHTML).join("")}</ol>`
+        : "");
   }
 
   /* ---------- Views and selection ---------- */
@@ -716,27 +1187,43 @@ function start(raw) {
     state.view = name;
     for (const [k, el] of Object.entries(views)) el.hidden = k !== name;
     panel.scrollTop = 0;
-    if (getComputedStyle(panel).overflowY === "visible" && panel.getBoundingClientRect().top < 0) panel.scrollIntoView({ block: "start" });
+    if (getComputedStyle(panel).overflowY === "visible" && panel.getBoundingClientRect().top < 0)
+      panel.scrollIntoView({ block: "start" });
   }
   function setTab(tab, opts = {}) {
     state.tab = tab;
     document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
-    state.sel = null; state.history = []; state.hover = null; state.leg = null; state.legHover = null;
+    state.sel = null;
+    state.history = [];
+    state.hover = null;
+    state.leg = null;
+    state.legHover = null;
     updateSelbar();
     if (tab === "circuits" && !views.circuits.innerHTML) renderCircuits();
     showView(tab);
-    if (!opts.keepHash && location.hash.slice(1) !== tab) { try { history.replaceState(null, "", "#" + tab); } catch (e) { /* ignore */ } }
+    if (!opts.keepHash && location.hash.slice(1) !== tab) {
+      try {
+        history.replaceState(null, "", "#" + tab);
+      } catch (e) {
+        /* ignore */
+      }
+    }
     syncURL();
     refreshMap(true);
   }
-  function pushHistory() { if (state.sel) state.history.push(state.sel); }
+  function pushHistory() {
+    if (state.sel) state.history.push(state.sel);
+  }
   function selectRoute(r, opts = {}) {
     if (!opts.fromBack) pushHistory();
     state.sel = { kind: "route", r };
     state.hover = null;
     renderRouteView(r);
     showView("route");
-    if (map) { map.focus(); map.zoomToRoute(r); }
+    if (map) {
+      map.focus();
+      map.zoomToRoute(r);
+    }
     updateSelbar();
   }
   function selectStation(s, opts = {}) {
@@ -745,11 +1232,16 @@ function start(raw) {
     state.hover = null;
     renderStationView(s);
     showView("station");
-    if (map) { map.focus(); map.ensureVisible(s); }
+    if (map) {
+      map.focus();
+      map.ensureVisible(s);
+    }
     updateSelbar();
   }
   function clearSel(opts = {}) {
-    state.sel = null; state.history = []; state.hover = null;
+    state.sel = null;
+    state.history = [];
+    state.hover = null;
     showView(state.tab);
     if (map) map.focus();
     updateSelbar();
@@ -762,10 +1254,14 @@ function start(raw) {
     else selectStation(prev.s, { fromBack: true });
   }
   function updateSelbar() {
-    const sel = state.sel, bar = $("selbar");
+    const sel = state.sel,
+      bar = $("selbar");
     bar.hidden = !sel;
     if (!sel) return;
-    $("selbar-text").innerHTML = sel.kind === "route" ? `<b>${sel.r.nums[0]}</b>${esc(sel.r.label)}` : `<b>${sel.s.extra ? "" : sel.s.code}</b>${esc(sel.s.name)}`;
+    $("selbar-text").innerHTML =
+      sel.kind === "route"
+        ? `<b>${sel.r.nums[0]}</b>${esc(sel.r.label)}`
+        : `<b>${sel.s.extra ? "" : sel.s.code}</b>${esc(sel.s.name)}`;
   }
   function markLegs() {
     panel.querySelectorAll(".leg").forEach((b) => b.classList.toggle("on", +b.dataset.leg === state.leg));
@@ -773,7 +1269,8 @@ function start(raw) {
 
   /* ---------- The overlay drawn on the map ---------- */
   function railCodes(route, a, b) {
-    const i = route.index.get(a), j = route.index.get(b);
+    const i = route.index.get(a),
+      j = route.index.get(b);
     const out = [];
     if (i <= j) for (let k = i; k <= j; k++) out.push(route.stops[k]);
     else for (let k = i; k >= j; k--) out.push(route.stops[k]);
@@ -782,12 +1279,20 @@ function start(raw) {
   function currentOverlay() {
     if (state.tab === "connections" && state.journeys.length) {
       const j = state.journeys[state.jSel] || state.journeys[0];
-      const legs = [], stops = [];
+      const legs = [],
+        stops = [];
       let n = 1;
       j.legs.forEach((l) => {
         if (l.kind === "rail") {
-          legs.push({ kind: "rail", codes: railCodes(l.route, l.from, l.to), num: trainNum(l), label: legText(l), idx: legs.length });
-          if (!stops.length || stops[stops.length - 1].code !== l.from) stops.push({ n: n++, code: l.from, label: placeOf(l.from) ? placeOf(l.from).name : stName(l.from) });
+          legs.push({
+            kind: "rail",
+            codes: railCodes(l.route, l.from, l.to),
+            num: trainNum(l),
+            label: legText(l),
+            idx: legs.length,
+          });
+          if (!stops.length || stops[stops.length - 1].code !== l.from)
+            stops.push({ n: n++, code: l.from, label: placeOf(l.from) ? placeOf(l.from).name : stName(l.from) });
         } else legs.push({ kind: "road", codes: [l.from, l.to], label: legText(l), idx: legs.length });
       });
       const last = j.legs[j.legs.length - 1];
@@ -796,11 +1301,21 @@ function start(raw) {
       return { kind: "journey", legs, stops, title: "This journey" };
     }
     if (state.tab === "circuits" && state.plan) {
-      const legs = [], stops = [];
+      const legs = [],
+        stops = [];
       state.plan.stops.forEach((s, i) => {
         stops.push({ n: i + 1, code: s.code, label: s.place.name });
         for (const l of s.legs) {
-          if (l.kind === "rail") legs.push({ kind: "rail", codes: railCodes(l.train.route, l.from, l.to), num: l.train.num, label: `${stName(l.from)} → ${stName(l.to)}`, date: fmtDay(l.day), time: l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}` : "", idx: legs.length });
+          if (l.kind === "rail")
+            legs.push({
+              kind: "rail",
+              codes: railCodes(l.train.route, l.from, l.to),
+              num: l.train.num,
+              label: `${stName(l.from)} → ${stName(l.to)}`,
+              date: fmtDay(l.day),
+              time: l.dep && l.arr ? `${l.dep.text} → ${l.arr.text}` : "",
+              idx: legs.length,
+            });
           else legs.push({ kind: "road", codes: [l.from, l.to], label: l.text, idx: legs.length });
         }
       });
@@ -820,56 +1335,89 @@ function start(raw) {
     markLegs();
     if (!map) return;
     map.legFocus();
-    if (state.leg != null) map.zoomToLeg(state.leg); else map.fitOverlay();
+    if (state.leg != null) map.zoomToLeg(state.leg);
+    else map.fitOverlay();
   }
 
   /* ---------- Panel events ---------- */
-  $("q").addEventListener("input", (e) => { state.q = e.target.value.trim().toLowerCase(); renderList(); });
-  $("sort").addEventListener("change", (e) => { state.sort = e.target.value; renderList(); });
-  document.querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => {
-    state.type = b.dataset.type;
-    document.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  $("q").addEventListener("input", (e) => {
+    state.q = e.target.value.trim().toLowerCase();
     renderList();
-  }));
+  });
+  $("sort").addEventListener("change", (e) => {
+    state.sort = e.target.value;
+    renderList();
+  });
+  document.querySelectorAll(".chip").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.type = b.dataset.type;
+      document.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      renderList();
+    }),
+  );
   function pickJourney(card) {
-    state.jSel = +card.dataset.j; state.leg = null;
+    state.jSel = +card.dataset.j;
+    state.leg = null;
     renderResults();
     const again = panel.querySelector(`.jcard[data-j="${state.jSel}"] .jsum`);
     if (again) again.focus({ preventScroll: true });
     refreshMap(true);
-    if (getComputedStyle(panel).overflowY === "visible") mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    if (getComputedStyle(panel).overflowY === "visible")
+      mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }
   panel.addEventListener("keydown", (e) => {
     const sum = e.target.closest && e.target.closest(".jsum[role=button]");
-    if (sum && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickJourney(sum.closest(".jcard")); }
+    if (sum && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      pickJourney(sum.closest(".jcard"));
+    }
   });
   panel.addEventListener("click", (e) => {
     const card = e.target.closest(".jcard");
-    if (card && !e.target.closest("a")) { pickJourney(card); return; } // a source link opens; it does not pick the card
+    if (card && !e.target.closest("a")) {
+      pickJourney(card);
+      return;
+    } // a source link opens; it does not pick the card
     if (card) return;
     const t = e.target.closest("button");
     if (!t || !panel.contains(t)) return;
-    if (t.dataset.tab) { setTab(t.dataset.tab); return; }
+    if (t.dataset.tab) {
+      setTab(t.dataset.tab);
+      return;
+    }
     if (t.dataset.act === "back") return goBack();
-    if (t.dataset.act === "tomap") return mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    if (t.dataset.act === "tomap")
+      return mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     if (t.dataset.act === "ics") return downloadBookingCalendar();
     if (t.dataset.act === "share") return share(t);
     if (t.dataset.act === "print") return printPlan();
     if (t.dataset.act === "use-best") {
       state.startDay = state.scan.reduce((a, b) => (b.score > a.score ? b : a)).day;
       store.set("startDay", state.startDay);
-      computeCircuit(false); renderCircuits(); refreshMap(false);
+      computeCircuit(false);
+      renderCircuits();
+      refreshMap(false);
       return;
     }
-    if (t.dataset.variant) { state.variant = t.dataset.variant; store.set("variant", state.variant); computeCircuit(false); renderCircuits(); refreshMap(true); return; }
+    if (t.dataset.variant) {
+      state.variant = t.dataset.variant;
+      store.set("variant", state.variant);
+      computeCircuit(false);
+      renderCircuits();
+      refreshMap(true);
+      return;
+    }
     if (t.dataset.own) {
-      const i = +t.dataset.i, list = state.own;
+      const i = +t.dataset.i,
+        list = state.own;
       if (t.dataset.own === "del" && list.length > 2) list.splice(i, 1);
       else if (t.dataset.own === "up" && i > 0) [list[i - 1], list[i]] = [list[i], list[i - 1]];
       else if (t.dataset.own === "down" && i < list.length - 1) [list[i + 1], list[i]] = [list[i], list[i + 1]];
       else return;
       ownChanged();
-      const again = views.circuits.querySelector(`button[data-own="${t.dataset.own}"][data-i="${t.dataset.own === "up" ? i - 1 : t.dataset.own === "down" ? i + 1 : Math.min(i, list.length - 1)}"]`);
+      const again = views.circuits.querySelector(
+        `button[data-own="${t.dataset.own}"][data-i="${t.dataset.own === "up" ? i - 1 : t.dataset.own === "down" ? i + 1 : Math.min(i, list.length - 1)}"]`,
+      );
       if (again && !again.disabled) again.focus();
       return;
     }
@@ -878,7 +1426,8 @@ function start(raw) {
       const ov = currentOverlay();
       const rails = ov ? ov.legs.filter((l) => l.kind === "rail") : [];
       if (rails[railIdx]) focusLeg(rails[railIdx].idx);
-      if (getComputedStyle(panel).overflowY === "visible") mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      if (getComputedStyle(panel).overflowY === "visible")
+        mapwrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
       return;
     }
     if (t.dataset.plan) {
@@ -889,7 +1438,10 @@ function start(raw) {
       return;
     }
     if (t.classList.contains("rrow")) return selectRoute(ROUTES[+t.dataset.id]);
-    if (t.dataset.code) { const s = ST.get(t.dataset.code); if (s) selectStation(s); }
+    if (t.dataset.code) {
+      const s = ST.get(t.dataset.code);
+      if (s) selectStation(s);
+    }
   });
   const hoverFromPanel = (e, on) => {
     const t = e.target.closest && e.target.closest(".rrow, .srow, .strow, .leg");
@@ -917,7 +1469,14 @@ function start(raw) {
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || ["q", "from", "to"].includes(document.activeElement && document.activeElement.id)) return;
     if (state.sel) goBack();
-    else if (state.leg != null) { state.leg = null; markLegs(); if (map) { map.legFocus(); map.fitOverlay(); } }
+    else if (state.leg != null) {
+      state.leg = null;
+      markLegs();
+      if (map) {
+        map.legFocus();
+        map.fitOverlay();
+      }
+    }
   });
 
   /* ---------- Map ---------- */
@@ -946,8 +1505,13 @@ function start(raw) {
     const path = d3.geoPath(projection);
     const landF = { type: "Feature", geometry: GEO.land };
     const innerF = { type: "Feature", geometry: GEO.inner };
-    let W = 0, H = 0, T = d3.zoomIdentity;
-    let OV = null, ovCodes = new Set(), ovStopCodes = new Set(), ovByImp = [];
+    let W = 0,
+      H = 0,
+      T = d3.zoomIdentity;
+    let OV = null,
+      ovCodes = new Set(),
+      ovStopCodes = new Set(),
+      ovByImp = [];
 
     const drawOrder = ROUTES.slice().sort((a, b) => (a.type === "sleeper") - (b.type === "sleeper"));
     // Track lines (data/shapes.json) arrive after the map first draws; until then, and for any pair of stops
@@ -961,7 +1525,8 @@ function start(raw) {
     function codesD(codes, rail) {
       let d = "";
       codes.forEach((c, i) => {
-        const s = ST.get(c), line = rail && i > 0 && pairLine(codes[i - 1], c);
+        const s = ST.get(c),
+          line = rail && i > 0 && pairLine(codes[i - 1], c);
         d += line || (i ? "L" : "M") + xy(s.x, s.y);
       });
       return d;
@@ -970,17 +1535,34 @@ function start(raw) {
       if (!SHAPES) return;
       for (const s of SHAPES.values()) {
         const p = s.pts.map(([lat, lon]) => projection([lon, lat]));
-        s.d = p.slice(1).map((q) => "L" + xy(q[0], q[1])).join("");
-        s.r = p.slice(0, -1).reverse().map((q) => "L" + xy(q[0], q[1])).join("");
+        s.d = p
+          .slice(1)
+          .map((q) => "L" + xy(q[0], q[1]))
+          .join("");
+        s.r = p
+          .slice(0, -1)
+          .reverse()
+          .map((q) => "L" + xy(q[0], q[1]))
+          .join("");
       }
     }
     const lineD = (r) => codesD(r.stops, true);
-    const routeSel = gRoutes.selectAll("path").data(drawOrder).join("path").attr("class", (r) => "route" + (r.type === "sleeper" ? " sl" : ""));
+    const routeSel = gRoutes
+      .selectAll("path")
+      .data(drawOrder)
+      .join("path")
+      .attr("class", (r) => "route" + (r.type === "sleeper" ? " sl" : ""));
     const hitSel = gHits.selectAll("path").data(drawOrder).join("path").attr("class", "hit");
     const stations = byImp.slice().reverse();
-    const stSel = gSt.selectAll("circle").data(stations).join("circle").attr("class", (s) => "st" + (s.term ? " term" : "") + (s.slOnly ? " sl" : ""));
+    const stSel = gSt
+      .selectAll("circle")
+      .data(stations)
+      .join("circle")
+      .attr("class", (s) => "st" + (s.term ? " term" : "") + (s.slOnly ? " sl" : ""));
     const stHitSel = gStHit.selectAll("circle").data(stations).join("circle").attr("class", "sthit");
-    let legSel = gOv.selectAll("g.ov-leg"), ovDotSel = gOvDots.selectAll("circle"), ovHitSel = gOvHit.selectAll("path");
+    let legSel = gOv.selectAll("g.ov-leg"),
+      ovDotSel = gOvDots.selectAll("circle"),
+      ovHitSel = gOvHit.selectAll("path");
 
     let tipFor = null;
     function showTip(e, html, cls, key) {
@@ -994,31 +1576,66 @@ function start(raw) {
     function moveTip(e) {
       if (tip.hidden) return;
       const [px, py] = d3.pointer(e, mapwrap);
-      const tw = tip.offsetWidth, th = tip.offsetHeight;
-      let x = px + 14, y = py + 16;
+      const tw = tip.offsetWidth,
+        th = tip.offsetHeight;
+      let x = px + 14,
+        y = py + 16;
       if (x + tw > W - 8) x = px - tw - 14;
       if (y + th > H - 8) y = py - th - 12;
       tip.style.transform = `translate(${Math.max(6, x)}px, ${Math.max(6, y)}px)`;
     }
-    function hideTip(key) { if (!key || key === tipFor) { tip.hidden = true; tipFor = null; } }
+    function hideTip(key) {
+      if (!key || key === tipFor) {
+        tip.hidden = true;
+        tipFor = null;
+      }
+    }
 
     hitSel
       .on("pointerenter", (e, r) => {
-        state.hover = r; overlay();
+        state.hover = r;
+        overlay();
         const halts = r.stops.length - 2;
-        showTip(e, `<span class="tn">${r.nums.join(" · ")}</span>${esc(r.label)}<small>${r.type === "sleeper" ? "Sleeper · " : ""}${halts} ${halts === 1 ? "halt" : "halts"} · click for stops</small>`, "", "r" + r.id);
+        showTip(
+          e,
+          `<span class="tn">${r.nums.join(" · ")}</span>${esc(r.label)}<small>${r.type === "sleeper" ? "Sleeper · " : ""}${halts} ${halts === 1 ? "halt" : "halts"} · click for stops</small>`,
+          "",
+          "r" + r.id,
+        );
       })
       .on("pointermove", moveTip)
-      .on("pointerleave", (e, r) => { if (state.hover === r) state.hover = null; overlay(); hideTip("r" + r.id); })
-      .on("click", (e, r) => { e.stopPropagation(); hideTip(); selectRoute(r); });
+      .on("pointerleave", (e, r) => {
+        if (state.hover === r) state.hover = null;
+        overlay();
+        hideTip("r" + r.id);
+      })
+      .on("click", (e, r) => {
+        e.stopPropagation();
+        hideTip();
+        selectRoute(r);
+      });
     stHitSel
       .on("pointerenter", (e, s) => {
-        state.hoverStation = s; overlay();
-        showTip(e, `<span class="bn">${esc(s.name)}</span><span class="bc">${s.code} · ${s.pairs} ${s.pairs === 1 ? "train" : "trains"}</span>`, "board", "s" + s.code);
+        state.hoverStation = s;
+        overlay();
+        showTip(
+          e,
+          `<span class="bn">${esc(s.name)}</span><span class="bc">${s.code} · ${s.pairs} ${s.pairs === 1 ? "train" : "trains"}</span>`,
+          "board",
+          "s" + s.code,
+        );
       })
       .on("pointermove", moveTip)
-      .on("pointerleave", (e, s) => { if (state.hoverStation === s) state.hoverStation = null; overlay(); hideTip("s" + s.code); })
-      .on("click", (e, s) => { e.stopPropagation(); hideTip(); selectStation(s); });
+      .on("pointerleave", (e, s) => {
+        if (state.hoverStation === s) state.hoverStation = null;
+        overlay();
+        hideTip("s" + s.code);
+      })
+      .on("click", (e, s) => {
+        e.stopPropagation();
+        hideTip();
+        selectStation(s);
+      });
 
     function setOverlay(ov) {
       OV = ov;
@@ -1028,22 +1645,52 @@ function start(raw) {
       ovByImp = byImp.filter((s) => ovCodes.has(s.code));
       $("lg-ov-text").textContent = ov ? ov.title : "";
       mapSection.classList.toggle("ov-on", !!ov);
-      legSel = gOv.selectAll("g.ov-leg").data(ov ? ov.legs : []).join((enter) => {
-        const g = enter.append("g");
-        g.append("path").attr("class", "ov-casing");
-        g.append("path").attr("class", "ov-line");
-        return g;
-      }).attr("class", (l) => "ov-leg " + l.kind);
-      ovDotSel = gOvDots.selectAll("circle").data([...ovCodes].map((c) => ST.get(c))).join("circle").attr("class", "ov-dot");
-      ovHitSel = gOvHit.selectAll("path").data(ov ? ov.legs.filter((l) => l.kind === "rail") : []).join("path").attr("class", "ovhit");
+      legSel = gOv
+        .selectAll("g.ov-leg")
+        .data(ov ? ov.legs : [])
+        .join((enter) => {
+          const g = enter.append("g");
+          g.append("path").attr("class", "ov-casing");
+          g.append("path").attr("class", "ov-line");
+          return g;
+        })
+        .attr("class", (l) => "ov-leg " + l.kind);
+      ovDotSel = gOvDots
+        .selectAll("circle")
+        .data([...ovCodes].map((c) => ST.get(c)))
+        .join("circle")
+        .attr("class", "ov-dot");
+      ovHitSel = gOvHit
+        .selectAll("path")
+        .data(ov ? ov.legs.filter((l) => l.kind === "rail") : [])
+        .join("path")
+        .attr("class", "ovhit");
       ovHitSel
         .on("pointerenter", (e, l) => {
-          state.legHover = l.idx; legFocus();
-          showTip(e, `<span class="tn">${esc(l.num)}${l.date ? " · " + esc(l.date) : ""}</span>${esc(l.label)}<small>${l.time ? esc(l.time) + " · " : ""}click to zoom in</small>`, "", "l" + l.idx);
+          state.legHover = l.idx;
+          legFocus();
+          showTip(
+            e,
+            `<span class="tn">${esc(l.num)}${l.date ? " · " + esc(l.date) : ""}</span>${esc(l.label)}<small>${l.time ? esc(l.time) + " · " : ""}click to zoom in</small>`,
+            "",
+            "l" + l.idx,
+          );
         })
         .on("pointermove", moveTip)
-        .on("pointerleave", (e, l) => { if (state.legHover === l.idx) state.legHover = null; legFocus(); hideTip("l" + l.idx); })
-        .on("click", (e, l) => { e.stopPropagation(); hideTip(); if (state.sel) clearSel(); state.leg = state.leg === l.idx ? null : l.idx; markLegs(); legFocus(); if (state.leg != null) zoomToLeg(l.idx); });
+        .on("pointerleave", (e, l) => {
+          if (state.legHover === l.idx) state.legHover = null;
+          legFocus();
+          hideTip("l" + l.idx);
+        })
+        .on("click", (e, l) => {
+          e.stopPropagation();
+          hideTip();
+          if (state.sel) clearSel();
+          state.leg = state.leg === l.idx ? null : l.idx;
+          markLegs();
+          legFocus();
+          if (state.leg != null) zoomToLeg(l.idx);
+        });
       project();
     }
     function project() {
@@ -1062,52 +1709,98 @@ function start(raw) {
     }
     function zoomToLeg(i) {
       const l = OV && OV.legs[i];
-      if (l) zoomToPoints(l.codes.map((c) => [ST.get(c).x, ST.get(c).y]), 8);
+      if (l)
+        zoomToPoints(
+          l.codes.map((c) => [ST.get(c).x, ST.get(c).y]),
+          8,
+        );
     }
     function fitOverlay() {
       if (!OV || state.sel) return fit();
       const pts = [...ovCodes].map((c) => [ST.get(c).x, ST.get(c).y]);
-      if (pts.length) zoomToPoints(pts, 6); else fit();
+      if (pts.length) zoomToPoints(pts, 6);
+      else fit();
     }
 
     svg.on("click", (e) => {
       if (e.defaultPrevented) return;
       if (state.sel) clearSel();
-      else if (state.leg != null) { state.leg = null; markLegs(); legFocus(); }
+      else if (state.leg != null) {
+        state.leg = null;
+        markLegs();
+        legFocus();
+      }
     });
 
-    const zoom = d3.zoom().scaleExtent([1, 40])
+    const zoom = d3
+      .zoom()
+      .scaleExtent([1, 40])
       .filter((e) => {
         if (e.type === "touchstart" && e.touches && e.touches.length < 2 && T.k <= 1.01) return false;
         return (!e.ctrlKey || e.type === "wheel") && !e.button;
       })
-      .on("start", (e) => { if (e.sourceEvent && e.sourceEvent.type === "mousedown") svg.classed("dragging", true); })
+      .on("start", (e) => {
+        if (e.sourceEvent && e.sourceEvent.type === "mousedown") svg.classed("dragging", true);
+      })
       .on("zoom", (e) => {
-        T = e.transform; root.attr("transform", T); radii(); scheduleLabels();
+        T = e.transform;
+        root.attr("transform", T);
+        radii();
+        scheduleLabels();
         if (tipFor && e.sourceEvent && e.sourceEvent.type !== "mousemove") hideTip();
       })
-      .on("end", () => { svg.classed("dragging", false); svg.style("touch-action", T.k > 1.01 ? "none" : "pan-y"); });
+      .on("end", () => {
+        svg.classed("dragging", false);
+        svg.style("touch-action", T.k > 1.01 ? "none" : "pan-y");
+      });
     svg.call(zoom).style("touch-action", "pan-y");
     const dur = (ms) => (reduceMotion ? 0 : ms);
     $("zin").addEventListener("click", () => svg.transition().duration(dur(250)).call(zoom.scaleBy, 1.7));
-    $("zout").addEventListener("click", () => svg.transition().duration(dur(250)).call(zoom.scaleBy, 1 / 1.7));
+    $("zout").addEventListener("click", () =>
+      svg
+        .transition()
+        .duration(dur(250))
+        .call(zoom.scaleBy, 1 / 1.7),
+    );
     $("zfit").addEventListener("click", () => fit());
-    function fit() { svg.transition().duration(dur(500)).call(zoom.transform, d3.zoomIdentity); }
+    function fit() {
+      svg.transition().duration(dur(500)).call(zoom.transform, d3.zoomIdentity);
+    }
     function zoomToPoints(pts, maxK, animate = true) {
-      const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
-      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-      const padX = 60, padTop = 50, padBottom = 80;
-      const k = Math.max(1, Math.min(maxK, (W - 2 * padX) / Math.max(x1 - x0, 1), (H - padTop - padBottom) / Math.max(y1 - y0, 1)));
-      const t = d3.zoomIdentity.translate(W / 2, (H + padTop - padBottom) / 2).scale(k).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+      const xs = pts.map((p) => p[0]),
+        ys = pts.map((p) => p[1]);
+      const x0 = Math.min(...xs),
+        x1 = Math.max(...xs),
+        y0 = Math.min(...ys),
+        y1 = Math.max(...ys);
+      const padX = 60,
+        padTop = 50,
+        padBottom = 80;
+      const k = Math.max(
+        1,
+        Math.min(maxK, (W - 2 * padX) / Math.max(x1 - x0, 1), (H - padTop - padBottom) / Math.max(y1 - y0, 1)),
+      );
+      const t = d3.zoomIdentity
+        .translate(W / 2, (H + padTop - padBottom) / 2)
+        .scale(k)
+        .translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
       (animate ? svg.transition().duration(dur(700)) : svg).call(zoom.transform, t);
     }
-    function zoomToRoute(r, animate = true) { zoomToPoints(r.stops.map((c) => [ST.get(c).x, ST.get(c).y]), 9, animate); }
+    function zoomToRoute(r, animate = true) {
+      zoomToPoints(
+        r.stops.map((c) => [ST.get(c).x, ST.get(c).y]),
+        9,
+        animate,
+      );
+    }
     function ensureVisible(s) {
       const [x, y] = T.apply([s.x, s.y]);
-      if (x < 50 || y < 50 || x > W - 50 || y > H - 70) svg.transition().duration(dur(500)).call(zoom.translateTo, s.x, s.y);
+      if (x < 50 || y < 50 || x > W - 50 || y > H - 70)
+        svg.transition().duration(dur(500)).call(zoom.translateTo, s.x, s.y);
     }
     function radii() {
-      const k = T.k, g = 1 + 0.22 * Math.log2(k);
+      const k = T.k,
+        g = 1 + 0.22 * Math.log2(k);
       stSel.attr("r", (s) => (s.r0 * g) / k);
       stHitSel.attr("r", Math.max(6, 5 * g) / k);
       gSelStops.selectAll("circle").attr("r", (d) => ((d.term ? 5.4 : 3.9) * g) / k);
@@ -1126,29 +1819,51 @@ function start(raw) {
       for (const s of ST.values()) s.off = !!set && !s.routes.some((r) => set.has(r.id));
       stSel.classed("off", (s) => s.off);
       svg.classed("ov-on", !!OV);
-      gOv.classed("faded", !!sel); gOvDots.classed("faded", !!sel); gBadges.classed("faded", !!sel);
+      gOv.classed("faded", !!sel);
+      gOvDots.classed("faded", !!sel);
+      gBadges.classed("faded", !!sel);
       legFocus();
       overlay();
     }
     function overlay() {
-      const sel = state.sel, items = [];
+      const sel = state.sel,
+        items = [];
       if (sel && sel.kind === "route") items.push({ r: sel.r, kind: "sel" });
-      if (state.hover && !(sel && sel.kind === "route" && sel.r === state.hover)) items.push({ r: state.hover, kind: "hover" });
-      const g = gSel.selectAll("g.sel").data(items, (d) => d.kind + d.r.id).join((enter) => {
-        const gg = enter.append("g").attr("class", (d) => "sel " + d.kind);
-        gg.append("path").attr("class", "casing");
-        gg.append("path").attr("class", "line");
-        return gg;
-      });
+      if (state.hover && !(sel && sel.kind === "route" && sel.r === state.hover))
+        items.push({ r: state.hover, kind: "hover" });
+      const g = gSel
+        .selectAll("g.sel")
+        .data(items, (d) => d.kind + d.r.id)
+        .join((enter) => {
+          const gg = enter.append("g").attr("class", (d) => "sel " + d.kind);
+          gg.append("path").attr("class", "casing");
+          gg.append("path").attr("class", "line");
+          return gg;
+        });
       g.select(".casing").attr("d", (d) => lineD(d.r));
       g.select(".line").attr("d", (d) => lineD(d.r));
-      const stops = sel && sel.kind === "route" ? sel.r.stops.map((c, i, a) => ({ s: ST.get(c), term: i === 0 || i === a.length - 1, unc: sel.r.unc.has(c) })) : [];
-      gSelStops.selectAll("circle").data(stops, (d) => d.s.code).join("circle")
-        .attr("class", (d) => "ss" + (d.term ? " term" : "") + (d.unc ? " unc" : "")).attr("cx", (d) => d.s.x).attr("cy", (d) => d.s.y);
+      const stops =
+        sel && sel.kind === "route"
+          ? sel.r.stops.map((c, i, a) => ({ s: ST.get(c), term: i === 0 || i === a.length - 1, unc: sel.r.unc.has(c) }))
+          : [];
+      gSelStops
+        .selectAll("circle")
+        .data(stops, (d) => d.s.code)
+        .join("circle")
+        .attr("class", (d) => "ss" + (d.term ? " term" : "") + (d.unc ? " unc" : ""))
+        .attr("cx", (d) => d.s.x)
+        .attr("cy", (d) => d.s.y);
       const rings = [];
       if (sel && sel.kind === "station") rings.push({ s: sel.s, cls: "ring" });
-      if (state.hoverStation && !(sel && sel.kind === "station" && sel.s === state.hoverStation)) rings.push({ s: state.hoverStation, cls: "pulse" });
-      gRing.selectAll("circle").data(rings, (d) => d.cls + d.s.code).join("circle").attr("class", (d) => d.cls).attr("cx", (d) => d.s.x).attr("cy", (d) => d.s.y);
+      if (state.hoverStation && !(sel && sel.kind === "station" && sel.s === state.hoverStation))
+        rings.push({ s: state.hoverStation, cls: "pulse" });
+      gRing
+        .selectAll("circle")
+        .data(rings, (d) => d.cls + d.s.code)
+        .join("circle")
+        .attr("class", (d) => d.cls)
+        .attr("cx", (d) => d.s.x)
+        .attr("cy", (d) => d.s.y);
       radii();
       scheduleLabels();
     }
@@ -1158,11 +1873,16 @@ function start(raw) {
     function textW(t, weight, size) {
       const key = weight + "|" + size + "|" + t;
       let w = widthCache.get(key);
-      if (w === undefined) { ctx.font = `${weight} ${size}px Hind, system-ui, sans-serif`; w = ctx.measureText(t).width; widthCache.set(key, w); }
+      if (w === undefined) {
+        ctx.font = `${weight} ${size}px Hind, system-ui, sans-serif`;
+        w = ctx.measureText(t).width;
+        widthCache.set(key, w);
+      }
       return w;
     }
     function obstacles() {
-      const out = [], base = mapwrap.getBoundingClientRect();
+      const out = [],
+        base = mapwrap.getBoundingClientRect();
       for (const id of ["zoombar", "selbar"]) {
         const el = $(id);
         if (!el || el.hidden) continue;
@@ -1175,22 +1895,36 @@ function start(raw) {
     function scheduleLabels() {
       if (labelQueued) return;
       labelQueued = true;
-      requestAnimationFrame(() => { labelQueued = false; labels(); });
+      requestAnimationFrame(() => {
+        labelQueued = false;
+        labels();
+      });
     }
     function labels() {
-      const k = T.k, g = 1 + 0.22 * Math.log2(k), sel = state.sel, placed = obstacles();
+      const k = T.k,
+        g = 1 + 0.22 * Math.log2(k),
+        sel = state.sel,
+        placed = obstacles();
       const badges = [];
       if (OV) {
         for (const st of OV.stops) {
           const s = ST.get(st.code);
           const [x, y] = T.apply([s.x, s.y]);
           const near = badges.find((b) => Math.hypot(b.x - x, b.y - y) < 16);
-          if (near) { if (!near.nums.includes(st.n)) { near.text += "·" + st.n; near.nums.push(st.n); } near.codes.push(st.code); continue; }
+          if (near) {
+            if (!near.nums.includes(st.n)) {
+              near.text += "·" + st.n;
+              near.nums.push(st.n);
+            }
+            near.codes.push(st.code);
+            continue;
+          }
           badges.push({ x, y, text: String(st.n), nums: [st.n], key: st.code + st.n, codes: [st.code] });
         }
         for (const b of badges) {
           if (b.nums.length > 3) b.text = b.nums[0] + "…" + b.nums[b.nums.length - 1];
-          b.w = Math.max(18, textW(b.text, 700, 10.5) + 9); b.h = 17;
+          b.w = Math.max(18, textW(b.text, 700, 10.5) + 9);
+          b.h = 17;
           placed.push([b.x - b.w / 2 - 1, b.y - b.h / 2 - 1, b.x + b.w / 2 + 1, b.y + b.h / 2 + 1]);
         }
       }
@@ -1198,34 +1932,65 @@ function start(raw) {
       let cands;
       if (sel && sel.kind === "route") {
         const a = sel.r.stops;
-        cands = a.map((c, i) => ({ s: ST.get(c), pri: i === 0 || i === a.length - 1 ? 2 : 1, focus: true })).sort((x, y) => y.pri - x.pri);
+        cands = a
+          .map((c, i) => ({ s: ST.get(c), pri: i === 0 || i === a.length - 1 ? 2 : 1, focus: true }))
+          .sort((x, y) => y.pri - x.pri);
       } else if (sel && sel.kind === "station") {
         const m = new Map([[sel.s.code, { s: sel.s, pri: 3, focus: true }]]);
-        for (const r of sel.s.routes) { const last = r.stops.length - 1; r.stops.forEach((c, i) => { if (!m.has(c)) m.set(c, { s: ST.get(c), pri: i === 0 || i === last ? 2 : 0 }); }); }
+        for (const r of sel.s.routes) {
+          const last = r.stops.length - 1;
+          r.stops.forEach((c, i) => {
+            if (!m.has(c)) m.set(c, { s: ST.get(c), pri: i === 0 || i === last ? 2 : 0 });
+          });
+        }
         cands = [...m.values()].sort((x, y) => y.pri - x.pri || y.s.imp - x.s.imp);
       } else if (OV) {
         cands = [];
         const seen = new Set();
-        const add = (c) => { const key = c.key || c.s.code; if (seen.has(key)) return; seen.add(key); cands.push(c); };
+        const add = (c) => {
+          const key = c.key || c.s.code;
+          if (seen.has(key)) return;
+          seen.add(key);
+          cands.push(c);
+        };
         const li = state.legHover != null ? state.legHover : state.leg;
-        if (li != null && OV.legs[li]) OV.legs[li].codes.forEach((c, i, a) => { if (!ovStopCodes.has(c)) add({ s: ST.get(c), pri: i === 0 || i === a.length - 1 ? 2 : 1, focus: true }); });
+        if (li != null && OV.legs[li])
+          OV.legs[li].codes.forEach((c, i, a) => {
+            if (!ovStopCodes.has(c)) add({ s: ST.get(c), pri: i === 0 || i === a.length - 1 ? 2 : 1, focus: true });
+          });
         const names = new Set();
         for (const st of OV.stops) {
           if (names.has(st.label)) continue;
           names.add(st.label);
           const b = badgeFor(st.code);
-          add({ s: ST.get(st.code), key: "city-" + st.n, text: st.label, city: true, pri: 3, rx: b ? b.w / 2 + 3 : 10, ry: 11 });
+          add({
+            s: ST.get(st.code),
+            key: "city-" + st.n,
+            text: st.label,
+            city: true,
+            pri: 3,
+            rx: b ? b.w / 2 + 3 : 10,
+            ry: 11,
+          });
         }
         const limitB = k < 1.8 ? 0 : Math.round(6 * Math.pow(k, 1.5));
-        ovByImp.filter((s) => !ovStopCodes.has(s.code)).slice(0, limitB).forEach((s) => add({ s, pri: 1 }));
+        ovByImp
+          .filter((s) => !ovStopCodes.has(s.code))
+          .slice(0, limitB)
+          .forEach((s) => add({ s, pri: 1 }));
         const limitC = k < 3 ? 0 : Math.round(4 * Math.pow(k, 1.4));
-        byImp.filter((s) => !ovCodes.has(s.code) && !s.off).slice(0, limitC).forEach((s) => add({ s, pri: 0 }));
+        byImp
+          .filter((s) => !ovCodes.has(s.code) && !s.off)
+          .slice(0, limitC)
+          .forEach((s) => add({ s, pri: 0 }));
       } else {
         const limit = Math.round(14 * Math.pow(k, 1.6));
         const pool = state.q || state.type !== "all" ? byImp.filter((s) => !s.off) : byImp;
         cands = pool.slice(0, limit).map((s) => ({ s, pri: s.term ? 2 : 0 }));
       }
-      const out = [], size = 11.5, h = size + 3;
+      const out = [],
+        size = 11.5,
+        h = size + 3;
       for (const c of cands) {
         const [x, y] = T.apply([c.s.x, c.s.y]);
         if (x < -40 || y < -20 || x > W + 40 || y > H + 20) continue;
@@ -1234,50 +1999,104 @@ function start(raw) {
         const fs = c.city ? 12.5 : c.focus ? 12 : size;
         const w = textW(text, weight, fs);
         const rr = (c.s.r0 || 2.2) * g + 3;
-        const rx = c.rx != null ? c.rx : rr, ry = c.ry != null ? c.ry : rr;
-        const opts = [[x + rx, y - h / 2, "start"], [x - rx - w, y - h / 2, "end"], [x - w / 2, y - ry - h + 1, "middle"], [x - w / 2, y + ry - 1, "middle"]];
+        const rx = c.rx != null ? c.rx : rr,
+          ry = c.ry != null ? c.ry : rr;
+        const opts = [
+          [x + rx, y - h / 2, "start"],
+          [x - rx - w, y - h / 2, "end"],
+          [x - w / 2, y - ry - h + 1, "middle"],
+          [x - w / 2, y + ry - 1, "middle"],
+        ];
         for (const [lx, ly, anchor] of opts) {
           const box = [lx - 2, ly, lx + w + 2, ly + h];
           if (box[0] < 4 || box[2] > W - 4 || box[1] < 4 || box[3] > H - 4) continue;
           let hit = false;
-          for (const b of placed) { if (b[0] < box[2] && b[2] > box[0] && b[1] < box[3] && b[3] > box[1]) { hit = true; break; } }
+          for (const b of placed) {
+            if (b[0] < box[2] && b[2] > box[0] && b[1] < box[3] && b[3] > box[1]) {
+              hit = true;
+              break;
+            }
+          }
           if (hit) continue;
           placed.push(box);
-          out.push({ key: c.key || c.s.code, text, x: anchor === "start" ? lx : anchor === "end" ? lx + w : lx + w / 2, y: ly + h / 2, anchor, cls: "lbl" + (c.city ? " city" : c.focus ? " focus" : c.pri >= 2 ? " term" : "") });
+          out.push({
+            key: c.key || c.s.code,
+            text,
+            x: anchor === "start" ? lx : anchor === "end" ? lx + w : lx + w / 2,
+            y: ly + h / 2,
+            anchor,
+            cls: "lbl" + (c.city ? " city" : c.focus ? " focus" : c.pri >= 2 ? " term" : ""),
+          });
           break;
         }
       }
-      gLabels.selectAll("text").data(out, (d) => d.key).join("text")
-        .attr("class", (d) => d.cls).attr("x", (d) => d.x.toFixed(1)).attr("y", (d) => d.y.toFixed(1)).attr("dy", "0.35em")
-        .attr("text-anchor", (d) => d.anchor).text((d) => d.text);
-      const bsel = gBadges.selectAll("g.badge").data(badges, (d) => d.key).join((enter) => {
-        const gg = enter.append("g").attr("class", "badge");
-        gg.append("rect");
-        gg.append("text").attr("text-anchor", "middle").attr("dy", "0.35em");
-        return gg;
-      });
+      gLabels
+        .selectAll("text")
+        .data(out, (d) => d.key)
+        .join("text")
+        .attr("class", (d) => d.cls)
+        .attr("x", (d) => d.x.toFixed(1))
+        .attr("y", (d) => d.y.toFixed(1))
+        .attr("dy", "0.35em")
+        .attr("text-anchor", (d) => d.anchor)
+        .text((d) => d.text);
+      const bsel = gBadges
+        .selectAll("g.badge")
+        .data(badges, (d) => d.key)
+        .join((enter) => {
+          const gg = enter.append("g").attr("class", "badge");
+          gg.append("rect");
+          gg.append("text").attr("text-anchor", "middle").attr("dy", "0.35em");
+          return gg;
+        });
       bsel.attr("transform", (d) => `translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`);
-      bsel.select("rect").attr("x", (d) => -d.w / 2).attr("y", (d) => -d.h / 2).attr("width", (d) => d.w).attr("height", (d) => d.h).attr("rx", (d) => d.h / 2);
+      bsel
+        .select("rect")
+        .attr("x", (d) => -d.w / 2)
+        .attr("y", (d) => -d.h / 2)
+        .attr("width", (d) => d.w)
+        .attr("height", (d) => d.h)
+        .attr("rx", (d) => d.h / 2);
       bsel.select("text").text((d) => d.text);
     }
 
     function layout() {
       const b = mapwrap.getBoundingClientRect();
-      const nw = Math.max(240, Math.round(b.width)), nh = Math.max(240, Math.round(b.height));
+      const nw = Math.max(240, Math.round(b.width)),
+        nh = Math.max(240, Math.round(b.height));
       if (nw === W && nh === H) return;
-      W = nw; H = nh;
+      W = nw;
+      H = nh;
       svg.attr("viewBox", `0 0 ${W} ${H}`);
       const pad = Math.max(10, Math.min(W, H) * 0.035);
-      projection.fitExtent([[pad, pad], [W - pad, H - pad]], landF);
+      projection.fitExtent(
+        [
+          [pad, pad],
+          [W - pad, H - pad],
+        ],
+        landF,
+      );
       landPath.attr("d", path(landF));
       innerPath.attr("d", path(innerF));
-      for (const s of ST.values()) { const p = projection([s.lon, s.lat]); s.x = p[0]; s.y = p[1]; }
+      for (const s of ST.values()) {
+        const p = projection([s.lon, s.lat]);
+        s.x = p[0];
+        s.y = p[1];
+      }
       projectShapes();
       routeSel.attr("d", lineD);
       hitSel.attr("d", lineD);
       stSel.attr("cx", (s) => s.x).attr("cy", (s) => s.y);
       stHitSel.attr("cx", (s) => s.x).attr("cy", (s) => s.y);
-      zoom.extent([[0, 0], [W, H]]).translateExtent([[0, 0], [W, H]]);
+      zoom
+        .extent([
+          [0, 0],
+          [W, H],
+        ])
+        .translateExtent([
+          [0, 0],
+          [W, H],
+        ]);
       svg.call(zoom.transform, d3.zoomIdentity);
       project();
       overlay();
@@ -1288,10 +2107,17 @@ function start(raw) {
     new ResizeObserver(() => {
       if (resizeQueued) return;
       resizeQueued = true;
-      requestAnimationFrame(() => { resizeQueued = false; layout(); });
+      requestAnimationFrame(() => {
+        resizeQueued = false;
+        layout();
+      });
     }).observe(mapwrap);
     layout();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { widthCache.clear(); scheduleLabels(); });
+    if (document.fonts && document.fonts.ready)
+      document.fonts.ready.then(() => {
+        widthCache.clear();
+        scheduleLabels();
+      });
     function setShapes(data) {
       SHAPES = new Map(Object.entries(data.lines).map(([k, text]) => [k, { pts: decode(text) }]));
       projectShapes();
@@ -1299,7 +2125,8 @@ function start(raw) {
       hitSel.attr("d", lineD);
       project();
       overlay();
-      $("lg-note").innerHTML = `Lines follow the track${data.estimated.length ? ", except a few short stretches drawn straight" : ""}. Track © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.`;
+      $("lg-note").innerHTML =
+        `Lines follow the track${data.estimated.length ? ", except a few short stretches drawn straight" : ""}. Track © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.`;
     }
     return { focus, overlay, setOverlay, legFocus, fitOverlay, fit, zoomToRoute, zoomToLeg, ensureVisible, setShapes };
   }
@@ -1313,25 +2140,48 @@ function start(raw) {
   toBox.set(savedTo);
   search();
   if (window.d3) {
-    try { map = initMap(); } catch (err) { console.error(err); }
+    try {
+      map = initMap();
+    } catch (err) {
+      console.error(err);
+    }
   }
-  if (!map) { const m = $("map-msg"); m.hidden = false; m.textContent = "The map could not load in this browser. Connections, circuits and the train list still work."; }
-  else {
+  if (!map) {
+    const m = $("map-msg");
+    m.hidden = false;
+    m.textContent = "The map could not load in this browser. Connections, circuits and the train list still work.";
+  } else {
     // the track lines are the biggest file, so they load once everything else is on screen
-    const loadShapes = () => fetch("data/shapes.json").then((r) => (r.ok ? r.json() : null)).then((d) => d && map.setShapes(d)).catch((err) => console.error(err));
-    if ("requestIdleCallback" in window) requestIdleCallback(loadShapes, { timeout: 1500 }); else setTimeout(loadShapes, 200);
+    const loadShapes = () =>
+      fetch("data/shapes.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && map.setShapes(d))
+        .catch((err) => console.error(err));
+    if ("requestIdleCallback" in window) requestIdleCallback(loadShapes, { timeout: 1500 });
+    else setTimeout(loadShapes, 200);
   }
 
   // Routing: #connections, #circuits, #trains, a train number (#22435) or a station code (#NDLS)
   function route() {
     const h = decodeURIComponent((location.hash || "").slice(1)).trim();
-    if (["connections", "circuits", "trains"].includes(h)) { if (state.tab !== h || state.sel) setTab(h, { keepHash: true }); return; }
+    if (["connections", "circuits", "trains"].includes(h)) {
+      if (state.tab !== h || state.sel) setTab(h, { keepHash: true });
+      return;
+    }
     if (/^\d{5}$/.test(h)) {
       const r = ROUTES.find((x) => x.numbers.has(h));
-      if (r) { if (state.tab !== "trains") setTab("trains", { keepHash: true }); selectRoute(r); return; }
+      if (r) {
+        if (state.tab !== "trains") setTab("trains", { keepHash: true });
+        selectRoute(r);
+        return;
+      }
     }
     const s = ST.get(h.toUpperCase());
-    if (s && !s.extra) { if (state.tab !== "trains") setTab("trains", { keepHash: true }); selectStation(s); return; }
+    if (s && !s.extra) {
+      if (state.tab !== "trains") setTab("trains", { keepHash: true });
+      selectStation(s);
+      return;
+    }
     if (!h) setTab("connections", { keepHash: true });
   }
   window.addEventListener("hashchange", route);
@@ -1341,7 +2191,9 @@ function start(raw) {
   // Installable on phones when served from a real site (service workers don't run inside previews)
   const pwa = document.querySelector("link[data-pwa]");
   if (pwa && "serviceWorker" in navigator && location.protocol === "https:") {
-    navigator.serviceWorker.register("sw.js").catch(() => { /* not available here */ });
+    navigator.serviceWorker.register("sw.js").catch(() => {
+      /* not available here */
+    });
   }
 }
 
