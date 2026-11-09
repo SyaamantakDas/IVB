@@ -114,7 +114,17 @@ The map's lines, the distances by rail and the GTFS feed's shapes come from Indi
 - Every dated journey found between 280 pairs of places, each on a different weekday, uses each train on a day it runs, arrives after it leaves, and leaves enough time at every change.
 - Both ready-made circuits, and three own circuits across the country, use only trains on days they run, and each own circuit visits every place it was given.
 
-`tests/ui.mjs` then runs the site in Chromium: the searches through the page, the own circuit's link and calendar file, a phone-sized screen, accessibility checks with axe-core in light and dark, every address in the sitemap, and the GTFS feed. Each week it runs against the published site too.
+`tests/ui.mjs` then runs the site in Chromium, WebKit (Safari's engine) and Firefox: the searches through the page, the own circuit's link and calendar file, a phone-sized screen, the light-or-dark switch, accessibility checks with axe-core in light and dark, every address in the sitemap, and the GTFS feed. Each week it runs against the published site too.
+
+## Publishing and updates
+
+GitHub Pages tells browsers they may reuse any file for 10 minutes without asking whether it has changed. A visitor who reloads just after a deploy can therefore get the new HTML with the old styles and script: the browser asks again for the page, but takes the styles from its memory. That once showed the new light-or-dark switch unstyled, with icons 190 pixels wide, in a browser that had opened IVB a few minutes before. Three things now prevent it:
+
+- **Version tags.** `tools/assemble.mjs` puts the site together as it is published and `tools/stamp.mjs` adds `?v=` and a hash of the file's contents to every reference to the styles and scripts, and to the modules they import (after the modules they import in turn, so a change anywhere changes every tag that leads to it). A new page asks for addresses no browser has seen, so it always gets files of its own version. GitHub Pages ignores the tag when it serves the file.
+- **The service worker** (`sw.js`) asks the server about every file while the visitor is online, and keeps its copies only for when they are offline or the network is slow. It keeps each file under its tagged address, so a slow network is never answered with a file of another version. Its first copies come straight from the server, not from the browser's cache.
+- **The data files** are fetched with `cache: "no-cache"`, so the server confirms each is current and the timetables and the routes always come from the same deploy.
+
+`tests/update.mjs` checks this in each browser: it serves a copy of the site as GitHub Pages does, lets the browser visit it so the service worker installs, then deploys a changed copy and reloads. At every step the page, its styles and its script must be of one version, the new version must arrive on the first reload, and the site must still open offline. The publish workflow tests the folder it publishes, so what is tested is what goes live.
 
 ## Limits
 

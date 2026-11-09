@@ -1,6 +1,7 @@
 // Browser checks: the site as a visitor uses it, under its own content security policy.
 //   node tests/ui.mjs                   the working copy, served from this folder, with the pages and GTFS feed
 //                                       that tools/build-pages.mjs and tools/build-gtfs.mjs built, if they are there
+//   node tests/ui.mjs --dir=site        the site as it will be published (tools/assemble.mjs builds the folder)
 //   node tests/ui.mjs --live [address]  the published site (https://syaamantakdas.github.io/IVB/ unless given);
 //                                       also checks that it runs the code on main and that its timetables are fresh
 //   --browser=webkit                    Safari's engine (or firefox; chromium unless given)
@@ -12,6 +13,7 @@ import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, sep } from "node:path";
+import { hashOf } from "../tools/stamp.mjs";
 
 const require = createRequire(import.meta.url);
 const flag = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -33,6 +35,7 @@ const given = process.argv[liveAt + 1];
 let base = LIVE ? (given && !given.startsWith("--") ? given : SITE).replace(/\/?$/, "/") : "";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const DIR = flag("dir");
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -49,8 +52,8 @@ const TYPES = {
 };
 let server = null;
 if (!LIVE) {
-  // the working copy, then the generated pages in pages/, as the deploy job lays them over it
-  const dirs = [root, join(root, "pages")];
+  // a folder as published, or else the working copy with the generated pages in pages/ laid over it
+  const dirs = DIR ? [resolve(DIR)] : [root, join(root, "pages")];
   server = createServer(async (req, res) => {
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (path.endsWith("/")) path += "index.html";
@@ -70,7 +73,7 @@ if (!LIVE) {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${server.address().port}/`;
 }
-console.log(`Checking ${LIVE ? "the published site" : "the working copy"} at ${base} in ${BROWSER}`);
+console.log(`Checking ${LIVE ? "the published site" : DIR ? DIR : "the working copy"} at ${base} in ${BROWSER}`);
 
 let failures = 0,
   passes = 0;
@@ -118,7 +121,9 @@ async function open(path, opts = {}) {
   const page = await ctx.newPage();
   current = page;
   page.on("console", (m) => {
-    if (m.type() === "error") problems.push(`${path}: ${m.text()}`);
+    // WebKit reports the style Playwright adds to take a screenshot, which the site's policy refuses: not the site's
+    const shooting = SHOTS && BROWSER === "webkit" && /^Refused to apply a stylesheet/.test(m.text());
+    if (m.type() === "error" && !shooting) problems.push(`${path}: ${m.text()}`);
   });
   page.on("pageerror", (e) => problems.push(`${path}: ${e.message}`));
   await page.goto(base + path);
@@ -397,7 +402,8 @@ if (BROWSER === "chromium")
 
 if (LIVE && BROWSER === "chromium")
   await section("The published site", async () => {
-    // the deploy job lays the generated pages over a checkout of main, so these should match this checkout
+    // the published site is a checkout of main with version tags added, so without them these should match it
+    const untag = (b) => Buffer.from(b.toString("utf8").replace(/\?v=[0-9a-f]{10}/g, ""));
     const files = [
       "index.html",
       "sw.js",
@@ -411,7 +417,8 @@ if (LIVE && BROWSER === "chromium")
     for (const f of files) {
       const res = await get(base + f);
       const body = res.ok ? Buffer.from(await res.arrayBuffer()) : null;
-      if (!body || !body.equals(await readFile(join(root, f)))) differ.push(`${f} (${res.status})`);
+      const plain = body && /\.(html|js)$/.test(f) ? untag(body) : body;
+      if (!plain || !plain.equals(await readFile(join(root, f)))) differ.push(`${f} (${res.status})`);
       if (body && f === "data/timetables.json") timetables = JSON.parse(body.toString());
     }
     ok(
@@ -424,6 +431,25 @@ if (LIVE && BROWSER === "chromium")
     ok(age < 330, `the timetables were checked less than 330 days ago (${checked}), before the GTFS feed runs out`);
     if (age >= 90 && age < 330)
       warn(`The timetables were last checked on ${checked}, ${age} days ago: time to check them again.`);
+  });
+
+// version tags (tools/stamp.mjs): each must name the contents of the very file it points to, or a page could still
+// get the styles or scripts of another version
+if (BROWSER === "chromium" && (LIVE || DIR))
+  await section("Version tags", async () => {
+    const tags = new Map();
+    const html = await (await get(base + "index.html")).text();
+    for (const [, f, v] of html.matchAll(/((?:assets|vendor)\/[\w.-]+)\?v=([0-9a-f]{10})/g)) tags.set(f, v);
+    const app = await (await get(base + "assets/app.js")).text();
+    for (const [, f, v] of app.matchAll(/"\.\.\/(lib\/[\w-]+\.js)\?v=([0-9a-f]{10})"/g)) tags.set(f, v);
+    const wrong = [];
+    for (const [f, v] of tags) {
+      const res = await get(base + f);
+      const got = res.ok ? hashOf(Buffer.from(await res.arrayBuffer())) : res.status;
+      if (got !== v) wrong.push(`${f} (tag ${v}, file ${got})`);
+    }
+    ok(tags.size >= 10, `the page and its modules carry version tags (${tags.size})`);
+    ok(wrong.length === 0, `every version tag names its file's contents: ${wrong.join(", ")}`);
   });
 
 ok(problems.length === 0, `no errors in the console: ${problems.join(" | ")}`);

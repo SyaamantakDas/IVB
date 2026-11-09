@@ -64,11 +64,16 @@ npm ci                                   # ESLint, Prettier, TypeScript, Playwri
 npx eslint .                             # mistakes in the code
 npx prettier --check .                   # its layout; npx prettier --write . fixes it
 npx tsc -p jsconfig.json                 # the library's types (JSDoc, lib/types.js)
-npx playwright install chromium
-node tools/build-gtfs.mjs gtfs && node tools/build-pages.mjs pages   # so the browser checks cover the feed and pages too
-node tests/ui.mjs                        # the site in a browser, with axe-core accessibility checks
-node tests/ui.mjs --live                 # the same on the published site, which also checks every address in its sitemap
+npx playwright install chromium webkit firefox
+node tools/build-gtfs.mjs gtfs && node tools/build-pages.mjs pages   # the feed and the pages
+node tools/assemble.mjs site             # the site as it is published, with version tags on its styles and scripts
+node tests/ui.mjs --dir=site             # the site in a browser, with axe-core accessibility checks
+node tests/ui.mjs --dir=site --browser=webkit   # the same in Safari's engine (or --browser=firefox)
+node tests/update.mjs                    # a visitor who comes back after a deploy gets the new version whole
+node tests/ui.mjs --live                 # the published site, which also checks every address in its sitemap
 ```
+
+`node tests/ui.mjs` on its own checks the working copy, with the feed and pages if they are built. `--shots=<folder>` saves screenshots of the main views and of any check that fails.
 
 The site sets a strict content security policy: it loads nothing from other servers (the fonts are in `assets/fonts`), runs no inline script and sends no data anywhere.
 
@@ -76,9 +81,9 @@ The site sets a strict content security policy: it loads nothing from other serv
 
 | Workflow | When | What it does |
 |---|---|---|
-| **Test and publish** | every push and pull request | All the checks above, then the GTFS feed (checked with MobilityData's validator) and the pages; on `main` it publishes the site |
+| **Test and publish** | every push and pull request | All the checks above: the GTFS feed (checked with MobilityData's validator) and the pages are built, the site is put together with its version tags, and that folder is tested in Chromium, WebKit (Safari) and Firefox; on `main` it publishes that same folder |
 | **Code scanning** | every change, and Tuesdays | GitHub's CodeQL reads the JavaScript and the workflows for security problems; findings appear under **Security** |
-| **Check the live site** | Mondays, and by hand | The browser checks against the published site, every address in its sitemap, the GTFS feed, that the site runs the code on `main`, and that the timetables were checked in the last 90 days (a warning) or 330 days (a failure, before the feed's calendar runs out) |
+| **Check the live site** | Mondays, and by hand | The browser checks against the published site in Chromium, WebKit and Firefox, every address in its sitemap, that every version tag names its file, the GTFS feed, that the site runs the code on `main`, and that the timetables were checked in the last 90 days (a warning) or 330 days (a failure, before the feed's calendar runs out) |
 | **Dependabot** | weekly and monthly | Pull requests to update the workflows' actions and the checking tools |
 
 Every action a workflow uses is pinned to an exact commit, so a changed release cannot slip in unseen; Dependabot proposes the updates. The weekly timetable check is described in [DATA.md](DATA.md#the-weekly-check).

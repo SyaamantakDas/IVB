@@ -42,6 +42,3 @@ jobs:
           path: shots/
           if-no-files-found: ignore
           retention-days: 14
-      - name: Screenshots into the log (diagnosis)
-        if: always() && matrix.browser == 'webkit'
-        run: for f in shots/*.jpg; do echo "SHOT $f $(base64 -w0 "$f")"; done

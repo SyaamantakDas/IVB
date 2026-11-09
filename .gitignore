@@ -29,3 +29,6 @@ android/*.keystore
 android/*.aab
 android/*.apk
 android/*.idsig
+# the site as published (tools/assemble.mjs)
+site/
+shots/
