@@ -109,10 +109,14 @@ function provenance(t) {
   const list = links.length > 1 ? links.slice(0, -1).join(", ") + " and " + links[links.length - 1] : links[0];
   return `${t.checked ? `Checked ${esc(fmtISO(t.checked))}` : "Checked"} against ${list} (${reportLink(t.num)})`;
 }
-// An issue form on GitHub, with the train filled in
+// Two ways to report a problem with a train, each with the train filled in: an email, or the issue form on GitHub.
+// The address is put together here, so that it is not lying in the page for robots to collect.
+const CONTACT = ["syaamantak", "gmail.com"].join("@");
 function reportLink(num) {
-  const url = `https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&title=${encodeURIComponent(`Train ${num}: `)}&train=${encodeURIComponent(num)}`;
-  return `<a href="${url}" target="_blank" rel="noopener">report a problem</a>`;
+  const seen = `${location.origin}${location.pathname}#${num}`;
+  const mail = `mailto:${CONTACT}?subject=${encodeURIComponent(`IVB: train ${num}`)}&body=${encodeURIComponent(`Train ${num}\nSeen at ${seen}\n\nWhat looks wrong, and where you saw the right times:\n`)}`;
+  const issue = `https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&title=${encodeURIComponent(`Train ${num}: `)}&train=${encodeURIComponent(num)}`;
+  return `report a problem <a href="${esc(mail)}">by email</a> or <a href="${issue}" target="_blank" rel="noopener">on GitHub</a>`;
 }
 const fmtDur = (min) =>
   min < 60

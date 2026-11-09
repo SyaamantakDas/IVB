@@ -27,7 +27,7 @@ IVB's timetables are open data, published as a GTFS feed under the Open Database
 
 **Category:** Travel & Local · **Tags:** trains, trip planner, travel India
 
-**Contact email:** [the address you want shown on Play]
+**Contact email:** IVB's contact address, as on the site's privacy page (under Questions)
 
 **Privacy policy:** https://syaamantakdas.github.io/IVB/privacy/
 

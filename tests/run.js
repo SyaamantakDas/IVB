@@ -342,6 +342,23 @@ console.log("Search engines");
   );
 }
 
+// ---------- Writing to IVB ----------
+console.log("Writing to IVB");
+{
+  // the contact address is put together in the code, or written as character references in the HTML, so that
+  // robots reading the pages for addresses do not find it
+  const address = ["syaamantak", "gmail.com"].join("@");
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  ok(!html.includes(address), "index.html does not spell out the contact address");
+  const refs = [...html.matchAll(/href="((?:&#\d+;)+)"/g)].map((m) =>
+    m[1].replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)),
+  );
+  ok(
+    refs.some((h) => h.startsWith(`mailto:${address}?`)),
+    "the app's footer has a link to write to IVB",
+  );
+}
+
 // ---------- Light or dark ----------
 console.log("Light or dark");
 {

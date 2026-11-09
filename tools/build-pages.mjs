@@ -20,6 +20,12 @@ const net = buildNetwork({ stations: load("stations.json"), routes: load("routes
 const { ST, ROUTES, TRAINS, PLACES } = net;
 
 const SITE = "https://syaamantakdas.github.io/IVB/";
+// the contact address, written as character references so that it is not lying in the pages for robots to
+// collect (browsers read it as usual)
+const CONTACT = ["syaamantak", "gmail.com"].join("@");
+const hide = (text) => [...text].map((c) => `&#${c.codePointAt(0)};`).join("");
+const mailto = (subject, body) =>
+  hide(`mailto:${CONTACT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
 // the light-or-dark switch, as in the app's masthead (assets/theme.js wires it up)
 const THEME = (readFileSync(join(root, "index.html"), "utf8").match(/<fieldset class="theme"[\s\S]*?<\/fieldset>/) ||
   [])[0];
@@ -174,7 +180,7 @@ for (const t of trainsSorted) {
 <table><caption>Timetable</caption><thead><tr><th>Station</th><th>Arrives</th><th>Leaves</th><th>Day</th><th>Distance</th></tr></thead><tbody>${rows}</tbody></table>
 ${t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
 ${back ? `<p>The return train is ${link(path, trainPath(back.num), back.num)}, ${esc(ST.get(back.from).name)} to ${esc(ST.get(back.to).name)}.</p>` : ""}
-<p class="src">Checked ${longDate(t.checked)} against ${srcs.length > 1 ? srcs.slice(0, -1).join(", ") + " and " + srcs[srcs.length - 1] : srcs[0]}. Distances are measured along the track. Something wrong? <a href="https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&amp;title=${encodeURIComponent(`Train ${t.num}: `)}&amp;train=${t.num}">Report a problem</a>.</p>`,
+<p class="src">Checked ${longDate(t.checked)} against ${srcs.length > 1 ? srcs.slice(0, -1).join(", ") + " and " + srcs[srcs.length - 1] : srcs[0]}. Distances are measured along the track. Something wrong? Report it <a href="${mailto(`IVB: train ${t.num}`, `Train ${t.num}\nSeen at ${SITE}${trainPath(t.num)}\n\nWhat looks wrong, and where you saw the right times:\n`)}">by email</a> or <a href="https://github.com/SyaamantakDas/IVB/issues/new?template=timetable-problem.yml&amp;title=${encodeURIComponent(`Train ${t.num}: `)}&amp;train=${t.num}">on GitHub</a>.</p>`,
     jsonld: {
       "@context": "https://schema.org",
       "@type": "TrainTrip",
@@ -335,8 +341,10 @@ page("privacy/", {
 <p>The app opens IVB in Chrome or another browser on your phone, as a full-screen window, so that browser's own privacy policy applies too. The app asks for no permissions and collects nothing itself.</p>
 <h2>Links to other sites</h2>
 <p>Links to timetable sources, IRCTC and booking sites, and the form for reporting a problem on GitHub, take you to those sites, whose own privacy policies apply.</p>
+<h2>If you write to IVB</h2>
+<p>An email to IVB, sent from your own email app, brings your message and your address to the person who runs IVB. They are used only to reply and to put the problem right, and are not passed on.</p>
 <h2>Questions</h2>
-<p>Ask on <a href="https://github.com/SyaamantakDas/IVB/issues">IVB's issue tracker</a>. This page was last updated on 9 November 2026.</p>`,
+<p>Write to <a href="${mailto("IVB: a question", "")}">${hide(CONTACT)}</a>, or ask on <a href="https://github.com/SyaamantakDas/IVB/issues">IVB's issue tracker</a>. This page was last updated on 10 November 2026.</p>`,
 });
 
 // ---------- the index of everything, and the sitemap

@@ -199,6 +199,8 @@ await section("Connections", async () => {
   await p.waitForSelector(".jcard");
   ok(/Direct/.test(await p.$eval(".jcard .jsum", (e) => e.textContent)), "Chennai to Mysuru: a direct train first");
   ok(/20607/.test(await p.$eval(".jcard.open", (e) => e.textContent)), "Chennai to Mysuru: the 20607");
+  const mail = await p.$eval('.jcard.open a[href^="mailto:"]', (a) => decodeURIComponent(a.href)).catch(() => "");
+  ok(/IVB: train 20607/.test(mail), "each train can be reported by email, the train filled in");
   await shot(p, "connections");
   const second = (await p.$$(".jsum[role=button]"))[1];
   await second.focus();
@@ -376,6 +378,14 @@ await section("Sitemap and generated pages", async () => {
   for (const path of samples) {
     const p = await open(path);
     ok((await p.$$("h1")).length === 1, `${path} has one main heading`);
+    if (/^(train|privacy)\//.test(path)) {
+      const href = await p.$eval('a[href^="mailto:"]', (a) => a.href).catch(() => "");
+      const raw = await (await get(base + path)).text();
+      ok(
+        href.startsWith("mailto:") && !raw.includes(href.slice(7, href.indexOf("?"))),
+        `${path} links to write to IVB, without spelling out the address`,
+      );
+    }
     await p.context().close();
     if (!AXE) continue;
     for (const colorScheme of ["light", "dark"]) {
