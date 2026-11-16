@@ -94,8 +94,9 @@ The map outline and state lines, simplified from the Survey of India map publish
 2. Update the halts in `routes.json` if they changed, and the times and days in `timetables.json`.
 3. Put the pages you used in `src`, the one the times come from first, and today's date in `checked`.
 4. If you changed a route's halts or a station's position, retrace the track (see below).
-5. Run `node tools/format-data.mjs` to lay the files out as IVB keeps them (one entry per line for stations and routes; elsewhere, a value on one line when it fits in 100 characters).
-6. Run `node tests/run.js`. It checks that halts and times line up, that every train names its sources and the date it was checked, that both circuits still only use trains on days they run, and that each track line starts and ends at its stations.
+5. If the number of routes, trains or stations changed, run `node tools/counts.mjs --image`. It updates the numbers written out in the README, the Google Play listing and the share card's description, and redraws them on the share card (`assets/og-image.jpg`, from `assets/og-base.jpg`).
+6. Run `node tools/format-data.mjs` to lay the files out as IVB keeps them (one entry per line for stations and routes; elsewhere, a value on one line when it fits in 100 characters).
+7. Run `node tests/run.js`. It checks that the numbers in step 5 are current, that halts and times line up, that every train names its sources and the date it was checked, that both circuits still only use trains on days they run, and that each track line starts and ends at its stations.
 
 Timetable sites sometimes show a train as running every day when it has a day off. When sources disagree on days, check the train's Wikipedia page and its return train, and say in `note` which source IVB follows.
 
