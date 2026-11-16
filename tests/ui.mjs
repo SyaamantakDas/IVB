@@ -272,6 +272,10 @@ await section("Phone", async () => {
 });
 
 await section("First visit", async () => {
+  // the page is drawn and its fonts are in before a reload, which would otherwise stop them half-way
+  // (Firefox reports a font download cut short as an error)
+  const settled = (pg) =>
+    pg.waitForSelector(".jcard").then(() => pg.evaluate(() => document.fonts.ready.then(() => 1)));
   const p = await open("index.html");
   await p.waitForSelector("#intro:not([hidden])");
   ok(true, "a first visit shows what IVB is for");
@@ -280,6 +284,7 @@ await section("First visit", async () => {
   await p.waitForSelector("#v-circuits:not([hidden])");
   ok(await p.isHidden("#intro"), "Try a circuit opens the circuits and closes the introduction");
   ok((await p.evaluate(() => location.hash)) === "#circuits", "and the address says so");
+  await p.evaluate(() => document.fonts.ready.then(() => 1));
   await p.reload();
   await p.waitForSelector("#v-circuits:not([hidden])");
   ok(await p.isHidden("#intro"), "a visitor who has seen it does not see it again");
@@ -287,6 +292,7 @@ await section("First visit", async () => {
 
   // in the installed app it never shows
   const a = await open("index.html", { colorScheme: "light" });
+  await settled(a);
   await a.addInitScript(() => {
     const real = window.matchMedia.bind(window);
     window.matchMedia = (q) => (q === "(display-mode: standalone)" ? { ...real(q), matches: true, media: q } : real(q));
@@ -310,6 +316,7 @@ await section("First visit", async () => {
     (await ph.evaluate(() => document.activeElement && document.activeElement.id)) === "from",
     "Plan a journey puts the cursor in From",
   );
+  await settled(ph);
   await ph.reload();
   await ph.waitForSelector(".jcard");
   ok((await bottom("#from")) <= 844, "and on a later visit the From box is on the first screen");
@@ -318,6 +325,7 @@ await section("First visit", async () => {
 
   // a service that began recently is listed as new until it is closed
   const n = await open("index.html");
+  await settled(n);
   const today = new Date().toISOString().slice(0, 10);
   await n.route("**/data/routes.json", async (r) => {
     const res = await r.fetch();
