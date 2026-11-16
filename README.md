@@ -19,7 +19,7 @@ IVB plans journeys across India on Vande Bharat trains alone. It is a static web
 - **Dated journeys.** Pick a day to leave and IVB lists the actual trains and dates, soonest arrival first, each leaving as late as it can; it searches every run of every train with RAPTOR, the round-based method journey planners use. Each ride shows when its booking opens.
 - **Circuits.** The Central India Loop, Kashmir to Kerala and back, with or without a two-week swing through the east, or **your own**: pick the places and the nights in each, and IVB finds the Vande Bharats between them and brings you back to the start. Pick a start date and IVB lays the trip out day by day, waiting a night wherever a train has its weekly day off. Every stop says what to see and whether you will be there in a good month.
 - **When to go.** A chart scores every start date by the share of your nights spent in each place's good months, so you can see the best season for the whole loop.
-- **Trains.** All 83 routes and 84 train pairs running on 8 November 2026, including the three Vande Bharat Sleepers, with every halt, on a map of India.
+- **Trains.** All 84 routes and 85 train pairs, including the three Vande Bharat Sleepers, with every halt, on a map of India.
 
 ## Open data: the GTFS feed
 
@@ -27,7 +27,7 @@ IVB publishes its timetables as a [GTFS](https://gtfs.org/) feed, the world stan
 
 **https://syaamantakdas.github.io/IVB/gtfs/ivb-gtfs.zip**
 
-It holds every Vande Bharat service on IVB's network: 83 routes, 168 trains and 415 stations, with every halt, time and running day, and each route's line along the track. One community feed covers all Indian Railways trains ([indianrailways-gtfs](https://github.com/Neo2308/indianrailways-gtfs)), but it states no licence and was last generated in November 2025. IVB's covers Vande Bharat trains only, and it is openly licensed, names the sources of every train and is re-checked every week. It is rebuilt from `data/` on every change by `tools/build-gtfs.mjs` and checked with [MobilityData's GTFS Validator](https://github.com/MobilityData/gtfs-validator); the publish stops if the validator finds an error, and the latest report is at [gtfs/report/report.html](https://syaamantakdas.github.io/IVB/gtfs/report/report.html). The feed is under the ODbL 1.0, like the rest of IVB's data (see below).
+It holds every Vande Bharat service on IVB's network: 84 routes, 170 trains and 425 stations, with every halt, time and running day, and each route's line along the track. One community feed covers all Indian Railways trains ([indianrailways-gtfs](https://github.com/Neo2308/indianrailways-gtfs)), but it states no licence and was last generated in November 2025. IVB's covers Vande Bharat trains only, and it is openly licensed, names the sources of every train and is re-checked every week. It is rebuilt from `data/` on every change by `tools/build-gtfs.mjs` and checked with [MobilityData's GTFS Validator](https://github.com/MobilityData/gtfs-validator); the publish stops if the validator finds an error, and the latest report is at [gtfs/report/report.html](https://syaamantakdas.github.io/IVB/gtfs/report/report.html). The feed is under the ODbL 1.0, like the rest of IVB's data (see below).
 
 To build it yourself: `node tools/build-gtfs.mjs` writes the feed to `gtfs/`.
 

@@ -322,6 +322,11 @@ await section("First visit", async () => {
   await ph.reload();
   await ph.waitForSelector(".jcard");
   ok((await bottom("#from")) <= 844, "and on a later visit the From box is on the first screen");
+  // and on a short phone (an iPhone SE in Safari, with its bars showing)
+  await ph.setViewportSize({ width: 375, height: 553 });
+  await ph.evaluate(() => window.scrollTo(0, 0));
+  await ph.waitForTimeout(300);
+  ok((await bottom("#from")) <= 553, "and on a short phone too");
   await shot(ph, "phone-first-screen");
   await ph.context().close();
 

@@ -9,6 +9,7 @@ import { bookingDates, bookingCalendar } from "../lib/booking.js";
 import { decode } from "../lib/polyline.js";
 import { planJourneys, MIN_CHANGE } from "../lib/planner.js";
 import { buildCircuit, ownPlaces, ownFromText, ownToText } from "../lib/own.js";
+import { stale } from "../tools/counts.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const load = (f) => JSON.parse(readFileSync(join(root, "data", f), "utf8"));
@@ -33,6 +34,9 @@ const ok = (cond, msg) => {
 // ---------- Data ----------
 console.log("Data");
 for (const r of routes) for (const c of r.s) ok(c in stations, `route ${r.n}: unknown station ${c}`);
+// the network's size where it is written out by hand (README, Play listing, share card) matches the data
+for (const { file } of stale())
+  ok(false, `${file} gives old numbers for the network: run node tools/counts.mjs --image`);
 // "since", the day a new service began, is a real date (the app lists services from the last six weeks as new)
 for (const r of routes.filter((x) => "since" in x))
   ok(

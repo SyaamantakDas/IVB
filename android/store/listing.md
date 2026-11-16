@@ -17,7 +17,7 @@ IVB is a free trip planner for seeing India on Vande Bharat trains: see India on
 • Connections: find the way between 29 destinations, among them Delhi, Agra, Varanasi, Jaipur, Mumbai, Goa, Kochi and Kolkata, on Vande Bharat trains alone, with every change of train.
 • Pick a date: see the actual trains, dates and times, each journey leaving as late as it can for its arrival, and the day each ride's booking opens.
 • Circuits: ready-made round trips of six to nine weeks, or your own. Choose the places and the nights in each, and IVB finds the trains and brings you back to where you started, waiting a night wherever a train has its day off.
-• Every Vande Bharat: all 168 trains with their halts, times and days, each with the sources its timetable was checked against.
+• Every Vande Bharat: all 170 trains with their halts, times and days, each with the sources its timetable was checked against.
 • The whole network on a map, drawn along the real track.
 • Works offline once opened. No account, no advertising, no tracking.
 
