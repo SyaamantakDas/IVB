@@ -271,6 +271,75 @@ await section("Phone", async () => {
   await p.context().close();
 });
 
+await section("First visit", async () => {
+  const p = await open("index.html");
+  await p.waitForSelector("#intro:not([hidden])");
+  ok(true, "a first visit shows what IVB is for");
+  await shot(p, "intro", { x: 0, y: 0, width: 1280, height: 320 });
+  await p.click('#intro [data-go="circuits"]');
+  await p.waitForSelector("#v-circuits:not([hidden])");
+  ok(await p.isHidden("#intro"), "Try a circuit opens the circuits and closes the introduction");
+  ok((await p.evaluate(() => location.hash)) === "#circuits", "and the address says so");
+  await p.reload();
+  await p.waitForSelector("#v-circuits:not([hidden])");
+  ok(await p.isHidden("#intro"), "a visitor who has seen it does not see it again");
+  await p.context().close();
+
+  // in the installed app it never shows
+  const a = await open("index.html", { colorScheme: "light" });
+  await a.addInitScript(() => {
+    const real = window.matchMedia.bind(window);
+    window.matchMedia = (q) => (q === "(display-mode: standalone)" ? { ...real(q), matches: true, media: q } : real(q));
+  });
+  await a.reload();
+  await a.waitForSelector(".jcard");
+  ok(await a.isHidden("#intro"), "the installed app shows no introduction");
+  await a.context().close();
+
+  // on a phone the introduction's buttons are on the first screen, and once it is closed, so is the search
+  const ph = await open("index.html", { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await ph.waitForSelector("#intro:not([hidden])");
+  const bottom = async (sel) => {
+    const b = await ph.locator(sel).boundingBox();
+    return b ? b.y + b.height : Infinity;
+  };
+  ok((await bottom("#intro")) <= 844, "on a phone the introduction fits on the first screen");
+  await shot(ph, "phone-intro");
+  await ph.click('#intro [data-go="connections"]');
+  ok(
+    (await ph.evaluate(() => document.activeElement && document.activeElement.id)) === "from",
+    "Plan a journey puts the cursor in From",
+  );
+  await ph.reload();
+  await ph.waitForSelector(".jcard");
+  ok((await bottom("#from")) <= 844, "and on a later visit the From box is on the first screen");
+  await shot(ph, "phone-first-screen");
+  await ph.context().close();
+
+  // a service that began recently is listed as new until it is closed
+  const n = await open("index.html");
+  const today = new Date().toISOString().slice(0, 10);
+  await n.route("**/data/routes.json", async (r) => {
+    const res = await r.fetch();
+    const routes = await res.json();
+    routes[0].since = today;
+    await r.fulfill({ response: res, json: routes });
+  });
+  await n.reload();
+  await n.waitForSelector("#news:not([hidden])");
+  const first = await n.$eval("#news a", (e) => e.getAttribute("href"));
+  ok(/^#\d{5}$/.test(first), "a new service is listed, with a link to its train");
+  await n.click("#news a");
+  await n.waitForSelector("#v-route:not([hidden])");
+  ok((await n.evaluate(() => location.hash)) === first, "the link opens the train");
+  await n.click("#news .x-btn");
+  ok(await n.isHidden("#news"), "the news closes");
+  await n.reload();
+  await n.waitForSelector("#v-route:not([hidden])");
+  ok(await n.isHidden("#news"), "and stays closed");
+  await n.context().close();
+});
+
 await section("Light or dark", async () => {
   const LIGHT = "rgb(237, 241, 246)",
     DARK = "rgb(10, 17, 29)";

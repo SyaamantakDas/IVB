@@ -33,6 +33,12 @@ const ok = (cond, msg) => {
 // ---------- Data ----------
 console.log("Data");
 for (const r of routes) for (const c of r.s) ok(c in stations, `route ${r.n}: unknown station ${c}`);
+// "since", the day a new service began, is a real date (the app lists services from the last six weeks as new)
+for (const r of routes.filter((x) => "since" in x))
+  ok(
+    /^\d{4}-\d{2}-\d{2}$/.test(r.since) && new Date(r.since + "T00:00:00Z").toISOString().startsWith(r.since),
+    `route ${r.n}: since ${r.since} is not a date as YYYY-MM-DD`,
+  );
 const routeN = new Map(routes.map((r) => [r.n, r]));
 for (const [num, t] of Object.entries(timetables.trains)) {
   const r = routeN.get(t.route);

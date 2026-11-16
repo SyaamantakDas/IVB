@@ -201,8 +201,8 @@ select {
 .app {
   box-sizing: border-box;
   height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   padding-block: 12px 16px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -338,8 +338,131 @@ select {
   stroke: none;
 }
 
+/* First visit: what IVB is for, and where to start (assets/app.js shows it until it is closed) */
+.intro {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 28px;
+  padding: 14px 56px 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--saffron);
+  border-radius: 12px;
+}
+.intro-title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1;
+}
+.intro p {
+  margin: 4px 0 0;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 14px;
+}
+.intro-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.intro-btn {
+  height: 38px;
+  padding: 0 16px;
+  cursor: pointer;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+.intro-btn:hover {
+  border-color: var(--ink);
+}
+.intro-btn.go {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+.intro-link {
+  padding: 0 4px;
+  color: var(--vb);
+  font-size: 14px;
+  text-underline-offset: 2px;
+}
+.x-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  color: var(--muted);
+  border: 0;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+}
+.x-btn:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+.intro .x-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.intro-btn:focus-visible,
+.x-btn:focus-visible,
+.news a:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 2px;
+}
+/* New services, from "since" in routes.json */
+.news {
+  display: flex;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 0;
+  padding: 4px 6px 4px 14px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  font-size: 14px;
+}
+.news-items {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+}
+.news-tag {
+  flex: none;
+  padding: 2px 8px 1px;
+  background: var(--board);
+  color: var(--board-ink);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.news a {
+  color: var(--vb);
+  text-underline-offset: 2px;
+}
+
 /* Stage */
 .stage {
+  flex: 1 1 0;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
@@ -2315,7 +2438,9 @@ select {
   }
   .app {
     height: auto;
-    grid-template-rows: auto auto;
+  }
+  .stage {
+    flex: none;
   }
   .tally {
     gap: 20px;
@@ -2350,9 +2475,57 @@ select {
     display: inline-block;
   }
 }
+@media (max-width: 700px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 14px 14px;
+  }
+  .intro-title {
+    padding-right: 36px;
+    font-size: 23px;
+  }
+  .intro .x-btn {
+    top: 4px;
+    right: 4px;
+  }
+  .intro p {
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .intro-acts {
+    gap: 8px 6px;
+  }
+  .intro-btn {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13.5px;
+  }
+  /* a phone shows the search on its first screen: a shorter map, with the full-screen button for more */
+  .mapstage {
+    aspect-ratio: 1 / 0.78;
+    max-height: 46vh;
+    max-height: 46svh;
+  }
+}
 @media (max-width: 480px) {
+  .app {
+    gap: 10px;
+  }
   .logo {
-    width: 84px;
+    width: 72px;
+  }
+  .brand {
+    gap: 10px;
+  }
+  .tally {
+    gap: 18px;
+  }
+  .tally dd {
+    font-size: 26px;
+  }
+  .tally dt {
+    margin-top: 4px;
+    font-size: 10px;
   }
   .brand-dek {
     font-size: 13px;
