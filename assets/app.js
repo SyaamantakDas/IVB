@@ -2221,16 +2221,28 @@ function start(raw) {
   // the introduction is for a first visit to the site; the installed app (and the Android app) never shows it
   const installed =
     window.matchMedia("(display-mode: standalone)").matches || document.referrer.startsWith("android-app://");
-  const intro = $("intro");
-  if (!installed && !store.get("intro-done", false)) intro.hidden = false;
+  const intro = $("intro"),
+    how = $("how");
+  const showIntro = (on) => {
+    intro.hidden = !on;
+    how.setAttribute("aria-expanded", String(on));
+  };
+  if (!installed && !store.get("intro-done", false)) showIntro(true);
+  // "How IVB works" in the masthead brings it back, for anyone who closed it (or uses the installed app)
+  how.addEventListener("click", () => {
+    if (!intro.hidden) return showIntro(false);
+    showIntro(true);
+    intro.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    $("intro-title").focus({ preventScroll: true });
+  });
   intro.addEventListener("click", (e) => {
     const t = e.target.closest("button, a");
     if (!t) return;
     store.set("intro-done", true);
     if (t.dataset.go === "browse") return; // the link opens the index of every page
     const before = t === $("intro-close") ? null : t.dataset.go;
-    intro.hidden = true;
-    if (!before) return document.querySelector('.tab[aria-selected="true"]').focus({ preventScroll: true });
+    showIntro(false);
+    if (!before) return how.focus({ preventScroll: true });
     goTo(before);
     if (before === "connections") {
       $("from").focus({ preventScroll: true });

@@ -338,6 +338,50 @@ select {
   stroke: none;
 }
 
+/* "How IVB works": reopens the introduction */
+.how {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.how:hover {
+  border-color: var(--coast);
+}
+.how[aria-expanded="true"] {
+  border-color: var(--saffron);
+}
+.how:focus-visible,
+.intro-title:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 2px;
+}
+.intro-title:focus:not(:focus-visible) {
+  outline: none;
+}
+.how svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.how svg .fill {
+  fill: currentColor;
+  stroke: none;
+}
 /* First visit: what IVB is for, and where to start (assets/app.js shows it until it is closed) */
 .intro {
   position: relative;
@@ -2511,6 +2555,26 @@ select {
   .app {
     gap: 10px;
   }
+  .mast-end {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+  }
+  .theme-face {
+    width: 28px;
+  }
+  .how {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+  .how-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .logo {
     width: 72px;
   }
@@ -2518,7 +2582,7 @@ select {
     gap: 10px;
   }
   .tally {
-    gap: 18px;
+    gap: 14px;
   }
   .tally dd {
     font-size: 26px;
@@ -2526,6 +2590,7 @@ select {
   .tally dt {
     margin-top: 4px;
     font-size: 10px;
+    letter-spacing: 0.06em;
   }
   .brand-dek {
     font-size: 13px;

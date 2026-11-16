@@ -290,6 +290,15 @@ await section("First visit", async () => {
   await p.reload();
   await p.waitForSelector("#v-circuits:not([hidden])");
   ok(await p.isHidden("#intro"), "a visitor who has seen it does not see it again");
+  await p.click("#how");
+  ok(
+    (await p.isVisible("#intro")) && (await p.getAttribute("#how", "aria-expanded")) === "true",
+    "How IVB works brings it back",
+  );
+  ok((await p.evaluate(() => document.activeElement.id)) === "intro-title", "and moves to it");
+  await p.click("#intro-close");
+  ok(await p.isHidden("#intro"), "closing it hides it again");
+  ok((await p.evaluate(() => document.activeElement.id)) === "how", "and goes back to the button");
   await p.context().close();
 
   // in the installed app it never shows
@@ -302,6 +311,8 @@ await section("First visit", async () => {
   await a.reload();
   await a.waitForSelector(".jcard");
   ok(await a.isHidden("#intro"), "the installed app shows no introduction");
+  await a.click("#how");
+  ok(await a.isVisible("#intro"), "but How IVB works opens it there too");
   await a.context().close();
 
   // on a phone the introduction's buttons are on the first screen, and once it is closed, so is the search
