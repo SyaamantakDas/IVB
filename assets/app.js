@@ -194,11 +194,25 @@ function start(raw) {
   $("c-all").textContent = ROUTES.length;
   $("c-cc").textContent = ROUTES.filter((r) => r.type === "cc").length;
   $("c-sl").textContent = ROUTES.filter((r) => r.type === "sleeper").length;
-  if (net.checked) {
-    const [y, m, d] = net.checked.split("-").map(Number);
-    $("checked-date").textContent =
-      `${d} ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m - 1]} ${y}`;
-  }
+  const MONTH_NAMES = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const longDate = (iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return `${d} ${MONTH_NAMES[m - 1]} ${y}`;
+  };
+  if (net.checked) $("checked-date").textContent = longDate(net.checked);
 
   /* ---------- State ---------- */
   const today = (() => {
@@ -2192,6 +2206,71 @@ function start(raw) {
   window.addEventListener("hashchange", route);
   route();
   if (!location.hash) refreshMap(true);
+
+  /* ---------- First visit and new services ---------- */
+  // on a phone the panel sits under the map: bring it into view when a button above asks for it
+  const toPanel = () => {
+    if (getComputedStyle(panel).overflowY === "visible")
+      panel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  };
+  const goTo = (hash) => {
+    if (location.hash.slice(1) === hash) route();
+    else location.hash = hash;
+    toPanel();
+  };
+  // the introduction is for a first visit to the site; the installed app (and the Android app) never shows it
+  const installed =
+    window.matchMedia("(display-mode: standalone)").matches || document.referrer.startsWith("android-app://");
+  const intro = $("intro");
+  if (!installed && !store.get("intro-done", false)) intro.hidden = false;
+  intro.addEventListener("click", (e) => {
+    const t = e.target.closest("button, a");
+    if (!t) return;
+    store.set("intro-done", true);
+    if (t.dataset.go === "browse") return; // the link opens the index of every page
+    const before = t === $("intro-close") ? null : t.dataset.go;
+    intro.hidden = true;
+    if (!before) return document.querySelector('.tab[aria-selected="true"]').focus({ preventScroll: true });
+    goTo(before);
+    if (before === "connections") {
+      $("from").focus({ preventScroll: true });
+      $("from").select();
+    }
+  });
+  // a service that began in the last six weeks, or begins soon, from "since" in routes.json
+  const fresh = ROUTES.filter((r) => {
+    if (!r.since) return false;
+    const [y, m, d] = r.since.split("-").map(Number);
+    const age = today - toDay(y, m, d);
+    return age >= -30 && age <= 42;
+  });
+  const seenNews = store.get("news-seen", []);
+  const showNews = fresh.filter((r) => !seenNews.includes(r.n));
+  if (showNews.length) {
+    const news = $("news");
+    news.innerHTML =
+      `<span class="news-tag">New</span><span class="news-items">` +
+      showNews
+        .map((r) => {
+          const [y, m, d] = r.since.split("-").map(Number);
+          const word = toDay(y, m, d) > today ? "from" : "since";
+          const kind = r.type === "sleeper" ? "Vande Bharat Sleeper" : "Vande Bharat";
+          return `<span>${esc(r.label)} ${kind}, ${word} ${d} ${MONTHS[m - 1]}: <a href="#${r.nums[0].split("/")[0]}">see the train</a></span>`;
+        })
+        .join("") +
+      `</span><button class="x-btn" type="button" aria-label="Hide this news">&times;</button>`;
+    news.hidden = false;
+    news.addEventListener("click", (e) => {
+      const a = e.target.closest("a");
+      if (a) {
+        e.preventDefault();
+        return goTo(a.getAttribute("href").slice(1));
+      }
+      if (!e.target.closest("button")) return;
+      store.set("news-seen", [...seenNews, ...showNews.map((r) => r.n)].slice(-20));
+      news.hidden = true;
+    });
+  }
 
   // Installable on phones when served from a real site (service workers don't run inside previews), and on this
   // computer for the checks in tests/update.mjs

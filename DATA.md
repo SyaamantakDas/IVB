@@ -32,6 +32,7 @@ One entry per route, in calling order from one end to the other:
 - `t`: `cc` for chair car, `sleeper` for the Vande Bharat Sleeper.
 - `s`: the halts in order. Only list a halt that a current timetable shows.
 - `u`: halts that only some timetables show. IVB labels them unconfirmed and draws them with a dashed ring.
+- `since`: for a new service, the day it began (or begins), as `YYYY-MM-DD`. For six weeks after that day, and for a month before it, the app lists the service as new above the map. Leave it in place afterwards; it does no harm.
 - `km`: the route's length by rail, and `k` the distance by rail from the first stop to each stop, both in km. `tools/build-shapes.mjs` measures them along the track in OpenStreetMap; where it cannot trace the track between two stops, it counts that stretch as 1.2 times the straight line.
 
 ### `timetables.json`
@@ -113,7 +114,7 @@ For each two stops in a row, it looks for the shortest way along broad-gauge tra
 
 ## The weekly check
 
-A scheduled task checks the data every Monday morning (India time). It searches for new Vande Bharat services, extensions, new halts and retimings announced in the past ten days, and re-verifies a quarter of the trains against ConfirmTkt and a second site, so every train is checked about once a month. It puts what it found in a pull request: changes with their sources, and new `checked` dates for the trains it verified. If last week's pull request is still open, it adds to that one. It never changes the live site by itself; the owner reviews and merges.
+A scheduled task checks the data every Monday morning (India time). It searches for new Vande Bharat services, extensions, new halts and retimings announced in the past ten days, and re-verifies a quarter of the trains against ConfirmTkt and a second site, so every train is checked about once a month. When it adds a new service, it sets the route's `since` to the day the service began, so that the app lists it as new. It puts what it found in a pull request: changes with their sources, and new `checked` dates for the trains it verified. If last week's pull request is still open, it adds to that one. It never changes the live site by itself; the owner reviews and merges.
 
 ## Sources
 
