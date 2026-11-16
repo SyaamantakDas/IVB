@@ -272,10 +272,12 @@ await section("Phone", async () => {
 });
 
 await section("First visit", async () => {
-  // the page is drawn and its fonts are in before a reload, which would otherwise stop them half-way
-  // (Firefox reports a font download cut short as an error)
+  // a reload waits until the page has loaded everything, the track lines and fonts included: a reload stops
+  // a download half-way, which browsers report as an error (Firefox for a font, WebKit for a fetch)
   const settled = (pg) =>
-    pg.waitForSelector(".jcard").then(() => pg.evaluate(() => document.fonts.ready.then(() => 1)));
+    pg
+      .waitForFunction(() => /follow the track/.test(document.getElementById("lg-note").textContent))
+      .then(() => pg.evaluate(() => document.fonts.ready.then(() => 1)));
   const p = await open("index.html");
   await p.waitForSelector("#intro:not([hidden])");
   ok(true, "a first visit shows what IVB is for");
@@ -284,7 +286,7 @@ await section("First visit", async () => {
   await p.waitForSelector("#v-circuits:not([hidden])");
   ok(await p.isHidden("#intro"), "Try a circuit opens the circuits and closes the introduction");
   ok((await p.evaluate(() => location.hash)) === "#circuits", "and the address says so");
-  await p.evaluate(() => document.fonts.ready.then(() => 1));
+  await settled(p);
   await p.reload();
   await p.waitForSelector("#v-circuits:not([hidden])");
   ok(await p.isHidden("#intro"), "a visitor who has seen it does not see it again");
