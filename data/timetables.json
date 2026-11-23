@@ -1,5 +1,5 @@
 {
-  "checked": "2026-11-16",
+  "checked": "2026-11-23",
   "trains": {
     "20901": {
       "route": "20901/20902",
@@ -122,17 +122,17 @@
       "days": ["Sun", "Mon", "Wed", "Thu", "Fri", "Sat"],
       "times": {
         "JAT": [null, "06:20"],
-        "SVDK": [null, "08:08"],
-        "REAI": [null, "08:30"],
-        "BAHL": [null, "09:58"],
+        "MCTM": ["07:39", "07:41"],
+        "SVDK": ["08:05", "08:10"],
+        "REAI": ["08:28", "08:30"],
+        "BAHL": ["09:56", "09:58"],
         "SINA": ["11:10", null]
       },
       "src": [
-        "https://www.railpost.in/?p=25387",
-        "https://www.newsonair.gov.in/northern-railway-extends-svdk-sina-vande-bharat-express-to-jammu-tawi"
+        "https://www.confirmtkt.com/train-schedule/26401-VANDE-BHARAT-EXP",
+        "https://etrain.info/train/Vande-Bharat-Exp-26401/schedule"
       ],
-      "checked": "2026-11-06",
-      "note": "Katra, Reasi and Banihal times are from the March 2026 timetable."
+      "checked": "2026-11-23"
     },
     "26402": {
       "route": "26401/26402",
@@ -262,7 +262,7 @@
         "NZM": ["23:10", null]
       },
       "src": ["https://www.confirmtkt.com/train-schedule/22469-vande-bharat-exp"],
-      "checked": "2026-11-06"
+      "checked": "2026-11-23"
     },
     "20176": {
       "route": "20175/20176",
@@ -313,8 +313,8 @@
         "AGC": ["11:01", "11:05"],
         "NZM": ["13:16", null]
       },
-      "src": ["https://www.railmitra.com/train-schedule/20171"],
-      "checked": "2026-11-06"
+      "src": ["https://www.confirmtkt.com/train-schedule/20171"],
+      "checked": "2026-11-23"
     },
     "20172": {
       "route": "20171/20172",
@@ -345,8 +345,8 @@
         "BZU": ["11:58", "12:00"],
         "NGP": ["14:35", null]
       },
-      "src": ["https://www.railmitra.com/train-schedule/20911"],
-      "checked": "2026-11-06",
+      "src": ["https://confirmtkt.com/train-schedule/20911"],
+      "checked": "2026-11-23",
       "note": "One listing shows all seven days; IVB assumes no Sunday run."
     },
     "20101": {
@@ -383,8 +383,12 @@
         "SLO": ["11:23", "11:25"],
         "VSKP": ["13:50", null]
       },
-      "src": ["https://www.confirmtkt.com/train-schedule/20707"],
-      "checked": "2026-11-06"
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/20707",
+        "https://erail.in/train-enquiry/20707",
+        "https://etrain.info/train/Vskp-Vandebharat-20707/schedule"
+      ],
+      "checked": "2026-11-23"
     },
     "20678": {
       "route": "20677/20678",
@@ -607,11 +611,8 @@
         "KYQ": ["11:14", "11:16"],
         "GHY": ["11:40", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22227",
-        "https://www.railmitra.com/train-schedule/22227"
-      ],
-      "checked": "2026-11-06"
+      "src": ["https://confirmtkt.com/train-schedule/22227-VANDE-BHARAT-EXP"],
+      "checked": "2026-11-23"
     },
     "27575": {
       "route": "27575/27576",
@@ -682,11 +683,8 @@
         "GZB": ["05:23+1", "05:25+1"],
         "NDLS": ["06:10+1", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/27421-",
-        "https://etrain.info/train/Vande-Bharat-Sl-27421/schedule"
-      ],
-      "checked": "2026-11-09",
+      "src": ["https://www.confirmtkt.com/train-schedule/27421"],
+      "checked": "2026-11-23",
       "sleeper": true
     },
     "27422": {
@@ -724,7 +722,7 @@
         "SMVB": ["12:00+1", null]
       },
       "src": ["https://www.confirmtkt.com/train-schedule/27651-CSMT-SMVT-VB-SL"],
-      "checked": "2026-11-09",
+      "checked": "2026-11-23",
       "sleeper": true
     },
     "27652": {
@@ -865,9 +863,23 @@
       "from": "TATA",
       "to": "PNBE",
       "days": ["Sun"],
-      "times": {"TATA": [null, "05:30"], "GAYA": ["14:30", "14:35"], "PNBE": ["15:55", null]},
-      "src": ["https://en.wikipedia.org/wiki/Tatanagar%E2%80%93Patna_Vande_Bharat_Express"],
-      "checked": "2026-11-06",
+      "times": {
+        "TATA": [null, "05:25"],
+        "CNI": ["06:08", "06:10"],
+        "MURI": ["07:08", "07:10"],
+        "BRKA": ["08:30", "08:35"],
+        "DTO": ["10:42", "10:44"],
+        "GHD": ["11:45", "11:50"],
+        "SEB": ["13:05", "13:15"],
+        "GAYA": ["14:25", "14:30"],
+        "PNBE": ["15:55", null]
+      },
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/21893",
+        "https://etrain.info/train/Vande-Bharat-Exp-21893/schedule",
+        "https://erail.in/train-enquiry/21893"
+      ],
+      "checked": "2026-11-23",
       "via": "Barkakana"
     },
     "20887": {
@@ -907,11 +919,8 @@
         "MSH": ["10:49", "10:51"],
         "SBIB": ["12:05", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/12461",
-        "https://etrain.info/train/Vande-Bharat-Exp-12461/schedule"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/12461-VANDE-BHARAT-EXP"],
+      "checked": "2026-11-23"
     },
     "20102": {
       "route": "20101/20102",
@@ -989,10 +998,12 @@
         "AGC": ["22:20", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/20175-vande-bharat-exp",
-        "https://etrain.info/train/Vande-Bharat-Exp-20175/schedule"
+        "https://www.confirmtkt.com/train-schedule/20175-VANDE-BHARAT-EXP",
+        "https://etrain.info/train/Vande-Bharat-Exp-20175/schedule",
+        "https://erail.in/train-enquiry/20175"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23",
+      "note": "Timetable sites now give Banaras as BNRS."
     },
     "20608": {
       "route": "20607/20608",
@@ -1024,11 +1035,8 @@
         "TEN": ["12:38", "12:40"],
         "NCJ": ["13:50", null]
       },
-      "src": [
-        "https://www.totaltraininfo.com/train/20627/schedule",
-        "https://indianrailways.gov.in/railwayboard/uploads/directorate/coaching/Coaching_Circulars/2024/CC%20300-2024-INTRO-CHENNAI-NAGERCOIL%20AND%20MADURAI-SBC%20VANDE%20BHARAT.pdf"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/20627-MS-NCJ-VB-EXP"],
+      "checked": "2026-11-23"
     },
     "20628": {
       "route": "20627/20628",
@@ -1069,11 +1077,8 @@
         "QLN": ["21:32", "21:34"],
         "TVC": ["22:40", null]
       },
-      "src": [
-        "https://www.railmitra.com/train-schedule/20633",
-        "https://www.totaltraininfo.com/train/20633/schedule"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/20633-TVC-VANDEBHARAT"],
+      "checked": "2026-11-23"
     },
     "20634": {
       "route": "20633/20634",
@@ -1144,11 +1149,8 @@
         "TUP": ["19:18", "19:20"],
         "CBE": ["20:15", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/20643-CBE-VANDEBHARAT",
-        "https://www.railmitra.com/train-schedule/20643"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://confirmtkt.com/train-schedule/20643"],
+      "checked": "2026-11-23"
     },
     "20644": {
       "route": "20643/20644",
@@ -1198,12 +1200,13 @@
         "DWR": ["12:00", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/20661",
-        "https://www.railmitra.com/train-schedule/20661",
-        "https://en.wikipedia.org/wiki/KSR_Bengaluru%E2%80%93Dharwad_Vande_Bharat_Express"
+        "https://www.trainspnrstatus.com/train-schedule/20661",
+        "https://www.ixigo.com/trains/20661",
+        "https://www.confirmtkt.com/train-seat-availability/20661-dwr-vande-bharat",
+        "https://etrain.info/train/Dwr-Vande-Bharat-20661/schedule"
       ],
-      "checked": "2026-11-08",
-      "note": "Two timetable sites show it daily; Wikipedia and the return train, 20662, say it does not run on Tuesdays."
+      "checked": "2026-11-23",
+      "note": "Two timetable sites show it daily; Wikipedia and the return train, 20662, say it does not run on Tuesdays. etrain gives Davangere, Haveri and Hubballi about 15 minutes earlier; trainspnrstatus and ixigo agree with IVB."
     },
     "20662": {
       "route": "20661/20662",
@@ -1258,11 +1261,8 @@
         "CVP": ["21:48", "21:50"],
         "TEN": ["23:00", null]
       },
-      "src": [
-        "https://confirmtkt.com/train-schedule/20665-TEN-VANDEBHARAT",
-        "https://www.railmitra.com/train-schedule/20665"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/20665-ten-vandebharat"],
+      "checked": "2026-11-23"
     },
     "20666": {
       "route": "20665/20666",
@@ -1341,10 +1341,12 @@
         "BNC": ["13:00", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/20671",
-        "https://indianrailways.gov.in/railwayboard/uploads/directorate/coaching/Coaching_Circulars/2024/CC%20300-2024-INTRO-CHENNAI-NAGERCOIL%20AND%20MADURAI-SBC%20VANDE%20BHARAT.pdf"
+        "https://etrain.info/train/Mdu-Bnc-Vb-Exp-20671/schedule",
+        "https://erail.in/train-enquiry/20671",
+        "https://www.confirmtkt.com/train-schedule/20671-MDU-BNC-VB-EXP"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23",
+      "note": "ConfirmTkt gives Karur 08:03/08:05, Krishnarajapuram 12:30/12:32 and ends at SMVT Bengaluru; etrain and erail agree with IVB."
     },
     "20672": {
       "route": "20671/20672",
@@ -1414,12 +1416,8 @@
         "BVRT": ["13:14", "13:15"],
         "NS": ["14:10", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/20677-NS-VANDE-BHARAT",
-        "https://etrain.info/train/Ns-Vandebharat-20677/schedule",
-        "https://erail.in/train-enquiry/20677"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://confirmtkt.com/train-schedule/20677"],
+      "checked": "2026-11-23"
     },
     "20701": {
       "route": "20701/20702",
@@ -1472,11 +1470,8 @@
         "HUP": ["12:17", "12:19"],
         "YPR": ["14:00", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/20703",
-        "https://www.railmitra.com/train-schedule/20703"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://confirmtkt.com/train-schedule/20703"],
+      "checked": "2026-11-23"
     },
     "20704": {
       "route": "20703/20704",
@@ -1620,11 +1615,8 @@
         "VZM": ["12:30", "12:32"],
         "VSKP": ["13:55", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/20829-VANDE-BHARAT-EXP",
-        "https://www.railmitra.com/train-schedule/20829"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/20829-VANDE-BHARAT-EXP"],
+      "checked": "2026-11-23"
     },
     "20830": {
       "route": "20829/20830",
@@ -1712,10 +1704,11 @@
       "src": [
         "https://etrain.info/train/Vande-Bharat-Exp-20835/schedule",
         "https://www.railmitra.com/train-schedule/20835",
-        "https://www.totaltraininfo.com/train/20835/schedule",
-        "https://odishabytes.com/weekly-off-day-changed-for-puri-rourkela-puri-vande-bharat-express/"
+        "https://www.confirmtkt.com/train-seat-availability/20835-vande-bharat-exp",
+        "https://erail.in/train-enquiry/20835",
+        "https://en.wikipedia.org/wiki/Puri%E2%80%93Rourkela_Vande_Bharat_Express"
       ],
-      "checked": "2026-11-08",
+      "checked": "2026-11-23",
       "note": "Weekly off on Tuesday since June 2025. Timetable sites differ by a few minutes at Sambalpur, Rairakhol and Angul; IVB follows etrain, whose times fit the return train."
     },
     "20841": {
@@ -1772,10 +1765,10 @@
         "ROU": ["12:05", null]
       },
       "src": [
-        "https://etrain.info/train/Vande-Bharat-Exp-20871/schedule",
-        "https://www.totaltraininfo.com/train/20871/schedule"
+        "https://erail.in/train-enquiry/20871",
+        "https://www.confirmtkt.com/train-seat-availability/20871-vande-bharat-exp"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "20888": {
       "route": "20887/20888",
@@ -1817,9 +1810,9 @@
       },
       "src": [
         "https://www.confirmtkt.com/train-schedule/20891-VANDE-BHARAT-EXP",
-        "https://etrain.info/train/Vande-Bharat-Exp-20891/schedule"
+        "https://erail.in/train-enquiry/20891"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "20892": {
       "route": "20891/20892",
@@ -1880,10 +1873,10 @@
         "RNC": ["22:00", null]
       },
       "src": [
-        "https://www.railmitra.com/train-schedule/20897",
-        "https://www.totaltraininfo.com/train/20897/schedule"
+        "https://erail.in/train-enquiry/20897",
+        "https://www.confirmtkt.com/train-seat-availability/20897-vande-bharat-exp"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "20898": {
       "route": "20897/20898",
@@ -2022,11 +2015,8 @@
         "NK": ["08:57", "08:59"],
         "SNSI": ["11:30", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22223",
-        "https://www.railmitra.com/train-schedule/22223"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/22223"],
+      "checked": "2026-11-23"
     },
     "22224": {
       "route": "22223/22224",
@@ -2149,7 +2139,7 @@
         "https://www.confirmtkt.com/train-schedule/22231",
         "https://www.railmitra.com/train-schedule/22231"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "22232": {
       "route": "22231/22232",
@@ -2209,11 +2199,8 @@
         "KNE": ["12:15", "12:17"],
         "NJP": ["13:30", null]
       },
-      "src": [
-        "https://erail.in/train-enquiry/22301",
-        "https://www.totaltraininfo.com/train/22301/schedule"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/22301"],
+      "checked": "2026-11-23"
     },
     "22302": {
       "route": "22301/22302",
@@ -2287,10 +2274,10 @@
       },
       "src": [
         "https://www.confirmtkt.com/train-schedule/22309-VANDE-BHARAT-EXP",
-        "https://etrain.info/train/Vande-Bharat-Exp-22309/schedule",
-        "https://en.wikipedia.org/wiki/Howrah%E2%80%93Jamalpur_Vande_Bharat_Express"
+        "https://erail.in/train-enquiry/22309",
+        "https://www.railmitra.com/train-schedule/22309"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "22310": {
       "route": "22309/22310",
@@ -2354,8 +2341,12 @@
         "PNC": ["21:53", "21:55"],
         "PNBE": ["22:40", null]
       },
-      "src": ["https://www.confirmtkt.com/train-schedule/22347"],
-      "checked": "2026-11-08"
+      "src": [
+        "https://www.confirmtkt.com/train-schedule/22347",
+        "https://erail.in/train-enquiry/22347",
+        "https://etrain.info/train/Vande-Bharat-Exp-22347/schedule"
+      ],
+      "checked": "2026-11-23"
     },
     "22348": {
       "route": "22347/22348",
@@ -2430,10 +2421,10 @@
         "NDLS": ["14:05", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/22415-Vande-Bharat-Exp",
-        "https://www.totaltraininfo.com/train/22415/schedule"
+        "https://www.confirmtkt.com/train-schedule/22415",
+        "https://etrain.info/train/Vande-Bharat-Exp-22415/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "22416": {
       "route": "22415/22416",
@@ -2495,11 +2486,8 @@
         "CNB": ["18:30", "18:32"],
         "NDLS": ["23:00", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22435",
-        "https://www.railmitra.com/train-schedule/vande-bharat-ex-22435"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://confirmtkt.com/train-schedule/22435"],
+      "checked": "2026-11-23"
     },
     "22436": {
       "route": "22435/22436",
@@ -2549,11 +2537,8 @@
         "UHL": ["10:36", "10:38"],
         "AADR": ["11:10", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22447-Vande-Bharat-Ex",
-        "https://www.totaltraininfo.com/train/22447/schedule"
-      ],
-      "checked": "2026-11-08",
+      "src": ["https://www.confirmtkt.com/train-schedule/22447-vande-bharat-ex"],
+      "checked": "2026-11-23",
       "note": "Timetable sites disagree on the day off, Tuesday or Friday; IVB follows ConfirmTkt, the most recent, which gives Tuesday."
     },
     "22448": {
@@ -2665,11 +2650,10 @@
         "ASR": ["20:45", null]
       },
       "src": [
-        "https://www.cleartrip.com/trains/22487",
-        "https://www.totaltraininfo.com/train/22487/schedule",
-        "https://en.wikipedia.org/wiki/Amritsar%E2%80%93Delhi_Junction_Vande_Bharat_Express"
+        "https://erail.in/train-enquiry/22487",
+        "https://www.confirmtkt.com/train-seat-availability/22487-vande-bharat-exp"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "22489": {
       "route": "22489/22490",
@@ -2720,11 +2704,8 @@
         "DDU": ["21:30", "21:35"],
         "BSB": ["22:30", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22499",
-        "https://www.railmitra.com/train-schedule/22499"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/22499"],
+      "checked": "2026-11-23"
     },
     "22500": {
       "route": "22499/22500",
@@ -2796,11 +2777,8 @@
         "RBL": ["11:34", "11:36"],
         "PRYJ": ["13:35", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/22549",
-        "https://www.railmitra.com/train-schedule/22549"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/22549"],
+      "checked": "2026-11-23"
     },
     "22550": {
       "route": "22549/22550",
@@ -2858,10 +2836,10 @@
         "OKHA": ["13:20", null]
       },
       "src": [
-        "https://etrain.info/train/Jamnagar-Vande-B-22925/schedule",
-        "https://deshgujarat.com/2026/08/17/ahmedabad-okha-vande-bharat-express-gets-new-timings-terminal-shifted-to-sabarmati-rly-station/"
+        "https://www.confirmtkt.com/train-schedule/22925",
+        "https://etrain.info/train/Okha-Vande-Bharat-22925/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "22926": {
       "route": "22925/22926",
@@ -2922,11 +2900,10 @@
         "AJNI": ["18:25", null]
       },
       "src": [
-        "https://www.railmitra.com/train-schedule/26101",
-        "https://www.totaltraininfo.com/train/26101/schedule",
-        "https://en.wikipedia.org/wiki/Ajni_(Nagpur)%E2%80%93Pune_Vande_Bharat_Express"
+        "https://www.confirmtkt.com/train-schedule/26101-AJNI-VANDEBHARAT",
+        "https://etrain.info/train/Ajni-Vandebharat-26101/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23"
     },
     "26102": {
       "route": "26101/26102",
@@ -3027,11 +3004,8 @@
         "JAT": ["20:03", "20:05"],
         "SVDK": ["21:45", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/26405-VANDE-BHARAT-EXP",
-        "https://etrain.info/train/Vande-Bharat-Exp-26405/schedule"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/26405-Vande-Bharat-Exp"],
+      "checked": "2026-11-23"
     },
     "26461": {
       "route": "26461/26462",
@@ -3089,11 +3063,8 @@
         "GGN": ["11:20", "11:22"],
         "DEC": ["11:55", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/26471-dec-vande-bharat",
-        "https://www.railmitra.com/train-schedule/26471"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/26471-DEC-VANDE-BHARAT"],
+      "checked": "2026-11-23"
     },
     "26472": {
       "route": "26471/26472",
@@ -3155,11 +3126,8 @@
         "CPJ": ["21:38", "21:40"],
         "GKP": ["22:30", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/26501",
-        "https://etrain.info/train/Vande-Bharat-Exp-26501/schedule"
-      ],
-      "checked": "2026-11-08"
+      "src": ["https://www.confirmtkt.com/train-schedule/26501-VANDE-BHARAT-EXP"],
+      "checked": "2026-11-23"
     },
     "26502": {
       "route": "26501/26502",
@@ -3237,10 +3205,11 @@
         "BSBS": ["23:10", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/26505-VANDE-BHARAT-EXP",
+        "https://www.confirmtkt.com/train-schedule/26505",
         "https://etrain.info/train/Vande-Bharat-Exp-26505/schedule"
       ],
-      "checked": "2026-11-08"
+      "checked": "2026-11-23",
+      "note": "Timetable sites now give Banaras as BNRS."
     },
     "26652": {
       "route": "26651/26652",
@@ -3320,14 +3289,15 @@
         "DAS": ["09:17", "09:19"],
         "CTL": ["09:43", "09:44"],
         "JND": ["11:00", "11:02"],
-        "VRL": ["12:50", null]
+        "VRL": ["12:55", null]
       },
       "src": [
-        "https://www.confirmtkt.com/train-schedule/26901-VRL-VANDEBHARAT",
+        "https://www.confirmtkt.com/train-schedule/26901",
+        "https://erail.in/train-enquiry/26901",
         "https://etrain.info/train/Vrl-Vandebharat-26901/schedule"
       ],
-      "checked": "2026-11-09",
-      "note": "RailMitra shows an older route via Rajkot (05:25 from Sabarmati, 12:25 into Veraval); ConfirmTkt and etrain agree on the route via Botad."
+      "checked": "2026-11-23",
+      "note": "RailMitra shows an older route via Rajkot (05:25 from Sabarmati, 12:25 into Veraval); ConfirmTkt and etrain agree on the route via Botad. Veraval arrival: ConfirmTkt and erail give 12:55, etrain 12:50."
     },
     "26902": {
       "route": "26901/26902",
@@ -3421,15 +3391,8 @@
         "KAWR": ["19:45", "19:47"],
         "MAO": ["20:55", null]
       },
-      "src": [
-        "https://www.confirmtkt.com/train-schedule/26655-mao-vandebharat",
-        "https://railradar.in/train-status/26655",
-        "https://www.confirmtkt.com/trains/bengaluru-to-goa-train-tickets",
-        "https://www.indiatvnews.com/business/news/vande-bharat-express-train-bengaluru-goa-in-13-hours-key-stations-yesvantpur-junction-mangaluru-madgaon-timing-check-details-pm-modi-to-flag-off-2026-11-12-1059227",
-        "https://www.railpost.in/pm-modi-to-flag-off-yesvantpur-madgaon-new-vande-bharat/"
-      ],
-      "checked": "2026-11-16",
-      "note": "ConfirmTkt's schedule page shows it daily, but its route page, RailRadar and the launch reports say it does not run on Wednesdays."
+      "src": ["https://www.confirmtkt.com/train-schedule/26655"],
+      "checked": "2026-11-23"
     },
     "26656": {
       "route": "26655/26656",
